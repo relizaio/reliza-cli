@@ -19,6 +19,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/go-resty/resty"
 	"github.com/spf13/cobra"
@@ -28,20 +29,20 @@ import (
 )
 
 var cfgFile string
-var RelizaHubUri string
-var Branch string
-var Version string
-var ApiKeyId string
-var ApiKey string
-var VcsUri string
-var VcsType string
-var Commit string
+var relizaHubUri string
+var branch string
+var version string
+var apiKeyId string
+var apiKey string
+var vcsUri string
+var vcsType string
+var commit string
 var vcsTag string
-var artId string
-var artBuildId string
-var artCiMeta string
-var artType string
-var artDigest string
+var artId []string
+var artBuildId []string
+var artCiMeta []string
+var artType []string
+var artDigests []string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -60,17 +61,73 @@ var addreleaseCmd = &cobra.Command{
 	Long: `This CLI command would create new releases on Reliza Hub
 for authenticated project.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Using Reliza Hub at", RelizaHubUri)
+		fmt.Println("Using Reliza Hub at", relizaHubUri)
+
+		body := map[string]interface{}{"branch": branch, "version": version}
+		if commit != "" && vcsType != "" && vcsUri != "" {
+			commitMap := map[string]string{"uri": vcsUri, "type": vcsType, "commit": commit}
+			if vcsTag != "" {
+				commitMap["vcsTag"] = vcsTag
+			}
+			body["sourceCodeEntry"] = commitMap
+		}
+		if len(artId) > 0 {
+			// use artifacts, construct artifact array
+			artifacts := make([]map[string]interface{}, len(artId), len(artId))
+			for i, aid := range artId {
+				artifacts[i] = map[string]interface{}{"identifier": aid}
+			}
+
+			// now do some length validations and add elements
+			if len(artBuildId) > 0 && len(artBuildId) != len(artId) {
+				fmt.Println("number of --artbuildid flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artBuildId) > 0 {
+				for i, abid := range artBuildId {
+					artifacts[i]["buildId"] = abid
+				}
+			}
+
+			if len(artCiMeta) > 0 && len(artCiMeta) != len(artId) {
+				fmt.Println("number of --artcimeta flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artCiMeta) > 0 {
+				for i, acm := range artCiMeta {
+					artifacts[i]["cicdMeta"] = acm
+				}
+			}
+
+			if len(artType) > 0 && len(artType) != len(artId) {
+				fmt.Println("number of --arttype flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artType) > 0 {
+				for i, at := range artType {
+					artifacts[i]["type"] = at
+				}
+			}
+
+			if len(artDigests) > 0 && len(artDigests) != len(artId) {
+				fmt.Println("number of --artdigests flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artDigests) > 0 {
+				for i, ad := range artDigests {
+					adSpl := strings.Split(ad, ",")
+					artifacts[i]["digests"] = adSpl
+				}
+			}
+			body["artifacts"] = artifacts
+			//fmt.Println(artifacts)
+		}
 		client := resty.New()
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
 			SetHeader("User-Agent", "Reliza Go Client").
 			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBody(map[string]interface{}{"branch": Branch, "version": Version}).
-			SetBasicAuth(ApiKeyId, ApiKey).
-			Post(RelizaHubUri + "/api/programmatic/v1/release/create")
+			SetBody(body).
+			SetBasicAuth(apiKeyId, apiKey).
+			Post(relizaHubUri + "/api/programmatic/v1/release/create")
 
-		// Explore response object
+		// // Explore response object
 		fmt.Println("Response Info:")
 		fmt.Println("Error      :", err)
 		fmt.Println("Status Code:", resp.StatusCode())
@@ -99,15 +156,20 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.relizaGoClient.yaml)")
-	rootCmd.PersistentFlags().StringVarP(&RelizaHubUri, "uri", "u", "https://relizahub.com", "FQDN of Reliza Hub server")
-	rootCmd.PersistentFlags().StringVarP(&Branch, "branch", "b", "", "Name of VCS Branch used")
-	rootCmd.PersistentFlags().StringVarP(&Version, "version", "v", "", "Release version")
-	rootCmd.PersistentFlags().StringVarP(&ApiKey, "apikey", "k", "", "API Key Secret")
-	rootCmd.PersistentFlags().StringVarP(&ApiKeyId, "apikeyid", "i", "", "API Key ID")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVarP(&relizaHubUri, "uri", "u", "https://relizahub.com", "FQDN of Reliza Hub server")
+	rootCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "", "Name of VCS Branch used")
+	rootCmd.PersistentFlags().StringVarP(&version, "version", "v", "", "Release version")
+	rootCmd.PersistentFlags().StringVarP(&apiKey, "apikey", "k", "", "API Key Secret")
+	rootCmd.PersistentFlags().StringVarP(&apiKeyId, "apikeyid", "i", "", "API Key ID")
+	rootCmd.PersistentFlags().StringVarP(&vcsUri, "vcsuri", "", "", "URI of VCS repository")
+	rootCmd.PersistentFlags().StringVarP(&vcsType, "vcstype", "", "", "Type of VCS repository: git, svn")
+	rootCmd.PersistentFlags().StringVarP(&commit, "commit", "", "", "Commit id")
+	rootCmd.PersistentFlags().StringVarP(&vcsTag, "vcstag", "", "", "VCS Tag")
+	rootCmd.PersistentFlags().StringArrayVar(&artId, "artid", []string{}, "Artifact ID (multiple allowed)")
+	rootCmd.PersistentFlags().StringArrayVar(&artBuildId, "artbuildid", []string{}, "Artifact Build ID (multiple allowed)")
+	rootCmd.PersistentFlags().StringArrayVar(&artCiMeta, "artcimeta", []string{}, "Artifact CI Meta (multiple allowed)")
+	rootCmd.PersistentFlags().StringArrayVar(&artType, "arttype", []string{}, "Artifact Type (multiple allowed)")
+	rootCmd.PersistentFlags().StringArrayVar(&artDigests, "artdigests", []string{}, "Artifact Digests (multiple allowed, separate several digests for one artifact with commas)")
 
 	rootCmd.MarkPersistentFlagRequired("version")
 	rootCmd.MarkPersistentFlagRequired("branch")
