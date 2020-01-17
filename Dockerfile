@@ -6,6 +6,8 @@ RUN go install -v ./...
 # ENTRYPOINT ["app"]
 
 FROM debian:stable-20191224-slim as release-stage
+RUN apt-get update
+RUN apt-get -y install ca-certificates
 RUN mkdir /app
 RUN useradd apprunner && chown apprunner:apprunner /app
 COPY --from=build-stage --chown=apprunner:apprunner /go/bin/app /app/app
