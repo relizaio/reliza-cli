@@ -136,6 +136,10 @@ for authenticated project.`,
 		fmt.Println("Received At:", resp.ReceivedAt())
 		fmt.Println("Body       :\n", resp)
 		fmt.Println()
+
+		if resp.StatusCode() != 200 {
+			os.Exit(1)
+		}
 	},
 }
 
