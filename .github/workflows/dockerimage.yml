@@ -11,14 +11,14 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag relizaio/reliza-go-client --build-arg CI_ENV=github$GITHUB_ACTION --build-arg GIT_COMMIT=$GITHUB_SHA --build-arg GIT_BRANCH=$GITHUB_REF
+      run: docker build . --file Dockerfile --tag relizaio/reliza-go-client --build-arg CI_ENV=github$GITHUB_SHA --build-arg GIT_COMMIT=$GITHUB_SHA --build-arg GIT_BRANCH=$GITHUB_REF
     - name: Login to Docker Registry
       run: echo ${{ secrets.docker_token }} | docker login -u ${{ secrets.docker_login }} --password-stdin
     - name: Push image and stream version to Reliza Hub
       run: |
         echo -n "--artid relizaio/reliza-go-client " >> reliza_command
-        echo -n "--artbuildid github$GITHUB_ACTION " >> reliza_command
-        echo -n "--artcimeta github actions " >> reliza_command
+        echo -n "--artbuildid github$GITHUB_ACTION$GITHUB_SHA " >> reliza_command
+        echo -n "--artcimeta GitHub Actions " >> reliza_command
         echo -n "--arttype Docker " >> reliza_command
         echo -n "--artdigests " >> reliza_command
         echo -n $(docker push relizaio/reliza-go-client | grep sha256 | cut -f 3 -d ' ') >> reliza_command
