@@ -12,4 +12,5 @@ RUN mkdir /app
 RUN useradd apprunner && chown apprunner:apprunner /app
 COPY --from=build-stage --chown=apprunner:apprunner /go/bin/app /app/app
 USER apprunner
+RUN mkdir /app/localdata
 ENTRYPOINT ["/app/app"]
