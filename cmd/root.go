@@ -18,8 +18,10 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/go-resty/resty"
 	"github.com/spf13/cobra"
@@ -43,6 +45,7 @@ var artBuildId []string
 var artCiMeta []string
 var artType []string
 var artDigests []string
+var imageFilePath string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -57,7 +60,7 @@ var rootCmd = &cobra.Command{
 
 var addreleaseCmd = &cobra.Command{
 	Use:   "addrelease",
-	Short: "Creates release on Reliza hub",
+	Short: "Creates release on Reliza Hub",
 	Long: `This CLI command would create new releases on Reliza Hub
 for authenticated project.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -143,6 +146,47 @@ for authenticated project.`,
 	},
 }
 
+var instDataCmd = &cobra.Command{
+	Use:   "instdata",
+	Short: "Sends instance data to Reliza Hub",
+	Long:  `This CLI command would stream agent data from instance to Reliza Hub`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Using Reliza Hub at", relizaHubUri)
+
+		body := map[string]interface{}{"branch": branch, "version": version}
+		imageBytes, err := ioutil.ReadFile(imageFilePath)
+		if err != nil {
+			fmt.Println("Error when reading images file")
+			fmt.Print(err)
+			os.Exit(1)
+		}
+		body["images"] = strings.Fields(string(imageBytes))
+		body["timeSent"] = time.Now().String()
+		client := resty.New()
+		resp, err := client.R().
+			SetHeader("Content-Type", "application/json").
+			SetHeader("User-Agent", "Reliza Go Client").
+			SetHeader("Accept-Encoding", "gzip, deflate").
+			SetBody(body).
+			SetBasicAuth(apiKeyId, apiKey).
+			Put(relizaHubUri + "/api/programmatic/v1/instance/sendAgentData")
+
+		// Explore response object
+		fmt.Println("Response Info:")
+		fmt.Println("Error      :", err)
+		fmt.Println("Status Code:", resp.StatusCode())
+		fmt.Println("Status     :", resp.Status())
+		fmt.Println("Time       :", resp.Time())
+		fmt.Println("Received At:", resp.ReceivedAt())
+		fmt.Println("Body       :\n", resp)
+		fmt.Println()
+
+		if resp.StatusCode() != 200 {
+			os.Exit(1)
+		}
+	},
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
@@ -161,23 +205,29 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.relizaGoClient.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&relizaHubUri, "uri", "u", "https://relizahub.com", "FQDN of Reliza Hub server")
-	rootCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "", "Name of VCS Branch used")
-	rootCmd.PersistentFlags().StringVarP(&version, "version", "v", "", "Release version")
 	rootCmd.PersistentFlags().StringVarP(&apiKey, "apikey", "k", "", "API Key Secret")
 	rootCmd.PersistentFlags().StringVarP(&apiKeyId, "apikeyid", "i", "", "API Key ID")
-	rootCmd.PersistentFlags().StringVarP(&vcsUri, "vcsuri", "", "", "URI of VCS repository")
-	rootCmd.PersistentFlags().StringVarP(&vcsType, "vcstype", "", "", "Type of VCS repository: git, svn")
-	rootCmd.PersistentFlags().StringVarP(&commit, "commit", "", "", "Commit id")
-	rootCmd.PersistentFlags().StringVarP(&vcsTag, "vcstag", "", "", "VCS Tag")
-	rootCmd.PersistentFlags().StringArrayVar(&artId, "artid", []string{}, "Artifact ID (multiple allowed)")
-	rootCmd.PersistentFlags().StringArrayVar(&artBuildId, "artbuildid", []string{}, "Artifact Build ID (multiple allowed)")
-	rootCmd.PersistentFlags().StringArrayVar(&artCiMeta, "artcimeta", []string{}, "Artifact CI Meta (multiple allowed)")
-	rootCmd.PersistentFlags().StringArrayVar(&artType, "arttype", []string{}, "Artifact Type (multiple allowed)")
-	rootCmd.PersistentFlags().StringArrayVar(&artDigests, "artdigests", []string{}, "Artifact Digests (multiple allowed, separate several digests for one artifact with commas)")
 
-	rootCmd.MarkPersistentFlagRequired("version")
-	rootCmd.MarkPersistentFlagRequired("branch")
+	// flags for addrelease command
+	addreleaseCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "", "Name of VCS Branch used")
+	addreleaseCmd.PersistentFlags().StringVarP(&version, "version", "v", "", "Release version")
+	addreleaseCmd.MarkPersistentFlagRequired("version")
+	addreleaseCmd.MarkPersistentFlagRequired("branch")
+	addreleaseCmd.PersistentFlags().StringVarP(&vcsUri, "vcsuri", "", "", "URI of VCS repository")
+	addreleaseCmd.PersistentFlags().StringVarP(&vcsType, "vcstype", "", "", "Type of VCS repository: git, svn")
+	addreleaseCmd.PersistentFlags().StringVarP(&commit, "commit", "", "", "Commit id")
+	addreleaseCmd.PersistentFlags().StringVarP(&vcsTag, "vcstag", "", "", "VCS Tag")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&artId, "artid", []string{}, "Artifact ID (multiple allowed)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&artBuildId, "artbuildid", []string{}, "Artifact Build ID (multiple allowed)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&artCiMeta, "artcimeta", []string{}, "Artifact CI Meta (multiple allowed)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&artType, "arttype", []string{}, "Artifact Type (multiple allowed)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&artDigests, "artdigests", []string{}, "Artifact Digests (multiple allowed, separate several digests for one artifact with commas)")
+
+	// flags for instance data command
+	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images.txt", "Path to image file")
+
 	rootCmd.AddCommand(addreleaseCmd)
+	rootCmd.AddCommand(instDataCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
