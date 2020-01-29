@@ -39,6 +39,9 @@ var apiKey string
 var vcsUri string
 var vcsType string
 var commit string
+var metadata string
+var modifier string
+var action string
 var vcsTag string
 var artId []string
 var artBuildId []string
@@ -187,6 +190,50 @@ var instDataCmd = &cobra.Command{
 	},
 }
 
+var getVersionCmd = &cobra.Command{
+	Use:   "getversion",
+	Short: "Get next version for branch for a particular project",
+	Long: `This CLI command would connect to Reliza Hub which would generate next Atomic version for particular project.
+			Project would be identified by the API key that is used`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Using Reliza Hub at", relizaHubUri)
+
+		body := map[string]string{"branch": branch}
+		if len(modifier) > 0 {
+			body["modifier"] = modifier
+		}
+		if len(metadata) > 0 {
+			body["metadata"] = metadata
+		}
+		if len(action) > 0 {
+			body["action"] = action
+		}
+
+		client := resty.New()
+		resp, err := client.R().
+			SetHeader("Content-Type", "application/json").
+			SetHeader("User-Agent", "Reliza Go Client").
+			SetHeader("Accept-Encoding", "gzip, deflate").
+			SetBody(body).
+			SetBasicAuth(apiKeyId, apiKey).
+			Post(relizaHubUri + "/api/programmatic/v1/project/getNewVersion")
+
+		// Explore response object
+		fmt.Println("Response Info:")
+		fmt.Println("Error      :", err)
+		fmt.Println("Status Code:", resp.StatusCode())
+		fmt.Println("Status     :", resp.Status())
+		fmt.Println("Time       :", resp.Time())
+		fmt.Println("Received At:", resp.ReceivedAt())
+		fmt.Println("Body       :\n", resp)
+		fmt.Println()
+
+		if resp.StatusCode() != 200 {
+			os.Exit(1)
+		}
+	},
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
@@ -226,8 +273,16 @@ func init() {
 	// flags for instance data command
 	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images.txt", "Path to image file")
 
+	// flags for get version command
+	getVersionCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "", "Name of VCS Branch used")
+	getVersionCmd.MarkPersistentFlagRequired("branch")
+	getVersionCmd.PersistentFlags().StringVar(&action, "action", "", "Bump action name: bump | bumppatch | bumpminor | bumpmajor | bumpdate")
+	getVersionCmd.PersistentFlags().StringVar(&metadata, "metadata", "", "Version metadata")
+	getVersionCmd.PersistentFlags().StringVar(&modifier, "modifier", "", "Version modifier")
+
 	rootCmd.AddCommand(addreleaseCmd)
 	rootCmd.AddCommand(instDataCmd)
+	rootCmd.AddCommand(getVersionCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
