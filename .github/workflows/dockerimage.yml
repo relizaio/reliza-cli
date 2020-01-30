@@ -10,12 +10,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag relizaio/reliza-go-client --build-arg CI_ENV=github$GITHUB_SHA --build-arg GIT_COMMIT=$GITHUB_SHA --build-arg GIT_BRANCH=$GITHUB_REF
     - name: Login to Docker Registry
       run: echo ${{ secrets.docker_token }} | docker login -u ${{ secrets.docker_login }} --password-stdin
-    - name: Push image and stream version to Reliza Hub
+    - name: Build, push image, generate version and stream version to Reliza Hub
       run: |
+        docker pull relizaio/reliza-go-client
+        docker run --rm relizaio/reliza-go-client getversion -u https://test.relizahub.com -k ${{ secrets.RELIZA_VERSION_API_KEY }} -i ${{ secrets.RELIZA_VERSION_API_ID }} -b master --metadata GitHub | grep version | cut -d ':' -f 2 | cut -d '"' -f 2 > version
+        vvar=$(cat version)
+        # version without meta for docker registry
+        vvartag=$(cat version | cut -d '+' -f 1)
+        # build phase
+        docker build . --file Dockerfile --tag relizaio/reliza-go-client:latest --tag relizaio/reliza-go-client:$vvartag --build-arg VERSION=$vvar --build-arg CI_ENV=github$GITHUB_SHA --build-arg GIT_COMMIT=$GITHUB_SHA --build-arg GIT_BRANCH=$GITHUB_REF
         echo -n "--artid relizaio/reliza-go-client " >> reliza_command
         echo -n "--artbuildid github$GITHUB_ACTION$GITHUB_SHA " >> reliza_command
         echo -n "--artcimeta GitHub Actions " >> reliza_command
@@ -23,7 +28,6 @@ jobs:
         echo -n "--artdigests " >> reliza_command
         echo -n $(docker push relizaio/reliza-go-client | grep sha256 | cut -f 3 -d ' ') >> reliza_command
         echo -n " " >> reliza_command
-        echo -n "-u https://test.relizahub.com -b $GITHUB_REF --vcstype git --commit $GITHUB_SHA -k ${{ secrets.relizahub_api_key }} -i ${{ secrets.relizahub_api_id }} --vcsuri github.com/$GITHUB_REPOSITORY -v " >> reliza_command
-        echo -n $(docker run --rm --entrypoint "/bin/cat" relizaio/reliza-go-client /app/version | grep version | cut -f 2 -d '=') >> reliza_command
+        echo -n "-u https://test.relizahub.com -b $GITHUB_REF --vcstype git --commit $GITHUB_SHA -k ${{ secrets.relizahub_api_key }} -i ${{ secrets.relizahub_api_id }} --vcsuri github.com/$GITHUB_REPOSITORY -v $vvar" >> reliza_command
         cat reliza_command
         docker run --rm relizaio/reliza-go-client addrelease $(cat reliza_command)
