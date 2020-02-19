@@ -49,6 +49,7 @@ var artCiMeta []string
 var artType []string
 var artDigests []string
 var imageFilePath string
+var namespace string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -165,6 +166,9 @@ var instDataCmd = &cobra.Command{
 		}
 		body["images"] = strings.Fields(string(imageBytes))
 		body["timeSent"] = time.Now().String()
+		if len(namespace) > 0 {
+			body["namespace"] = namespace
+		}
 		client := resty.New()
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
@@ -234,6 +238,38 @@ var getVersionCmd = &cobra.Command{
 	},
 }
 
+var getMyReleaseCmd = &cobra.Command{
+	Use:   "getmyrelease",
+	Short: "Get releases to be deployed on this instance",
+	Long: `This CLI command is to be used by programmatic access from instance. 
+			It would connect to Reliza Hub which would return release and artifacts versions that should be used on this instance.
+			Instance would be identified by the API key that is used`,
+	Run: func(cmd *cobra.Command, args []string) {
+		path := relizaHubUri + "/api/programmatic/v1/instance/getMyFollowReleases"
+		if len(namespace) > 0 {
+			path += "?namespace=" + namespace
+		}
+
+		client := resty.New()
+		resp, err := client.R().
+			SetHeader("User-Agent", "Reliza Go Client").
+			SetHeader("Accept-Encoding", "gzip, deflate").
+			SetBasicAuth(apiKeyId, apiKey).
+			Get(path)
+		fmt.Println(resp)
+
+		if resp.StatusCode() != 200 {
+			fmt.Println("Error Response Info:")
+			fmt.Println("Error      :", err)
+			fmt.Println("Status Code:", resp.StatusCode())
+			fmt.Println("Status     :", resp.Status())
+			fmt.Println("Time       :", resp.Time())
+			fmt.Println("Received At:", resp.ReceivedAt())
+			os.Exit(1)
+		}
+	},
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
@@ -272,6 +308,10 @@ func init() {
 
 	// flags for instance data command
 	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images.txt", "Path to image file")
+	instDataCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace to submit instance data to")
+
+	// flags for getmyrelease command
+	getMyReleaseCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace to submit instance data to")
 
 	// flags for get version command
 	getVersionCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "", "Name of VCS Branch used")
@@ -283,6 +323,7 @@ func init() {
 	rootCmd.AddCommand(addreleaseCmd)
 	rootCmd.AddCommand(instDataCmd)
 	rootCmd.AddCommand(getVersionCmd)
+	rootCmd.AddCommand(getMyReleaseCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
