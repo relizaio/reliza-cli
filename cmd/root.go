@@ -50,6 +50,7 @@ var artType []string
 var artDigests []string
 var imageFilePath string
 var namespace string
+var senderId string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -157,7 +158,7 @@ var instDataCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Using Reliza Hub at", relizaHubUri)
 
-		body := map[string]interface{}{"branch": branch, "version": version}
+		body := map[string]interface{}{}
 		imageBytes, err := ioutil.ReadFile(imageFilePath)
 		if err != nil {
 			fmt.Println("Error when reading images file")
@@ -168,6 +169,9 @@ var instDataCmd = &cobra.Command{
 		body["timeSent"] = time.Now().String()
 		if len(namespace) > 0 {
 			body["namespace"] = namespace
+		}
+		if len(senderId) > 0 {
+			body["senderId"] = senderId
 		}
 		client := resty.New()
 		resp, err := client.R().
@@ -308,7 +312,8 @@ func init() {
 
 	// flags for instance data command
 	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images.txt", "Path to image file")
-	instDataCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace to submit instance data to")
+	instDataCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "Namespace to submit instance data to")
+	instDataCmd.PersistentFlags().StringVar(&senderId, "sender", "default", "Namespace to submit instance data to")
 
 	// flags for getmyrelease command
 	getMyReleaseCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace to submit instance data to")
