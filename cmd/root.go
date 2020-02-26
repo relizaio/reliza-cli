@@ -30,27 +30,28 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
-var relizaHubUri string
-var branch string
-var version string
+var action string
 var apiKeyId string
 var apiKey string
-var vcsUri string
-var vcsType string
-var commit string
-var metadata string
-var modifier string
-var action string
-var vcsTag string
-var artId []string
 var artBuildId []string
 var artCiMeta []string
-var artType []string
 var artDigests []string
+var artId []string
+var artType []string
+var branch string
+var cfgFile string
+var commit string
+var debug string
 var imageFilePath string
+var metadata string
+var modifier string
 var namespace string
+var relizaHubUri string
 var senderId string
+var version string
+var vcsUri string
+var vcsTag string
+var vcsType string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -69,7 +70,9 @@ var addreleaseCmd = &cobra.Command{
 	Long: `This CLI command would create new releases on Reliza Hub
 for authenticated project.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Using Reliza Hub at", relizaHubUri)
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
 
 		body := map[string]interface{}{"branch": branch, "version": version}
 		if commit != "" && vcsType != "" && vcsUri != "" {
@@ -135,17 +138,28 @@ for authenticated project.`,
 			SetBasicAuth(apiKeyId, apiKey).
 			Post(relizaHubUri + "/api/programmatic/v1/release/create")
 
-		// // Explore response object
-		fmt.Println("Response Info:")
-		fmt.Println("Error      :", err)
-		fmt.Println("Status Code:", resp.StatusCode())
-		fmt.Println("Status     :", resp.Status())
-		fmt.Println("Time       :", resp.Time())
-		fmt.Println("Received At:", resp.ReceivedAt())
-		fmt.Println("Body       :\n", resp)
-		fmt.Println()
+		if debug == "true" {
+			// Explore response object
+			fmt.Println("Response Info:")
+			fmt.Println("Error      :", err)
+			fmt.Println("Status Code:", resp.StatusCode())
+			fmt.Println("Status     :", resp.Status())
+			fmt.Println("Time       :", resp.Time())
+			fmt.Println("Received At:", resp.ReceivedAt())
+			fmt.Println("Body       :\n", resp)
+			fmt.Println()
+		} else {
+			fmt.Println(resp)
+		}
 
 		if resp.StatusCode() != 200 {
+			fmt.Println("Error      :", err)
+			fmt.Println("Status Code:", resp.StatusCode())
+			fmt.Println("Status     :", resp.Status())
+			fmt.Println("Time       :", resp.Time())
+			fmt.Println("Received At:", resp.ReceivedAt())
+			fmt.Println("Body       :\n", resp)
+			fmt.Println()
 			os.Exit(1)
 		}
 	},
@@ -156,7 +170,9 @@ var instDataCmd = &cobra.Command{
 	Short: "Sends instance data to Reliza Hub",
 	Long:  `This CLI command would stream agent data from instance to Reliza Hub`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Using Reliza Hub at", relizaHubUri)
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
 
 		body := map[string]interface{}{}
 		imageBytes, err := ioutil.ReadFile(imageFilePath)
@@ -183,16 +199,28 @@ var instDataCmd = &cobra.Command{
 			Put(relizaHubUri + "/api/programmatic/v1/instance/sendAgentData")
 
 		// Explore response object
-		fmt.Println("Response Info:")
-		fmt.Println("Error      :", err)
-		fmt.Println("Status Code:", resp.StatusCode())
-		fmt.Println("Status     :", resp.Status())
-		fmt.Println("Time       :", resp.Time())
-		fmt.Println("Received At:", resp.ReceivedAt())
-		fmt.Println("Body       :\n", resp)
-		fmt.Println()
+		if debug == "true" {
+			fmt.Println("Response Info:")
+			fmt.Println("Error      :", err)
+			fmt.Println("Status Code:", resp.StatusCode())
+			fmt.Println("Status     :", resp.Status())
+			fmt.Println("Time       :", resp.Time())
+			fmt.Println("Received At:", resp.ReceivedAt())
+			fmt.Println("Body       :\n", resp)
+			fmt.Println()
+		} else {
+			fmt.Println(resp)
+		}
 
 		if resp.StatusCode() != 200 {
+			fmt.Println("Response Info:")
+			fmt.Println("Error      :", err)
+			fmt.Println("Status Code:", resp.StatusCode())
+			fmt.Println("Status     :", resp.Status())
+			fmt.Println("Time       :", resp.Time())
+			fmt.Println("Received At:", resp.ReceivedAt())
+			fmt.Println("Body       :\n", resp)
+			fmt.Println()
 			os.Exit(1)
 		}
 	},
@@ -204,7 +232,9 @@ var getVersionCmd = &cobra.Command{
 	Long: `This CLI command would connect to Reliza Hub which would generate next Atomic version for particular project.
 			Project would be identified by the API key that is used`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Using Reliza Hub at", relizaHubUri)
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
 
 		body := map[string]string{"branch": branch}
 		if len(modifier) > 0 {
@@ -226,15 +256,19 @@ var getVersionCmd = &cobra.Command{
 			SetBasicAuth(apiKeyId, apiKey).
 			Post(relizaHubUri + "/api/programmatic/v1/project/getNewVersion")
 
-		// Explore response object
-		fmt.Println("Response Info:")
-		fmt.Println("Error      :", err)
-		fmt.Println("Status Code:", resp.StatusCode())
-		fmt.Println("Status     :", resp.Status())
-		fmt.Println("Time       :", resp.Time())
-		fmt.Println("Received At:", resp.ReceivedAt())
-		fmt.Println("Body       :\n", resp)
-		fmt.Println()
+		if debug == "true" {
+			// Explore response object
+			fmt.Println("Response Info:")
+			fmt.Println("Error      :", err)
+			fmt.Println("Status Code:", resp.StatusCode())
+			fmt.Println("Status     :", resp.Status())
+			fmt.Println("Time       :", resp.Time())
+			fmt.Println("Received At:", resp.ReceivedAt())
+			fmt.Println("Body       :\n", resp)
+			fmt.Println()
+		} else {
+			fmt.Println(resp)
+		}
 
 		if resp.StatusCode() != 200 {
 			os.Exit(1)
@@ -260,7 +294,20 @@ var getMyReleaseCmd = &cobra.Command{
 			SetHeader("Accept-Encoding", "gzip, deflate").
 			SetBasicAuth(apiKeyId, apiKey).
 			Get(path)
-		fmt.Println(resp)
+
+		if debug == "true" {
+			// Explore response object
+			fmt.Println("Response Info:")
+			fmt.Println("Error      :", err)
+			fmt.Println("Status Code:", resp.StatusCode())
+			fmt.Println("Status     :", resp.Status())
+			fmt.Println("Time       :", resp.Time())
+			fmt.Println("Received At:", resp.ReceivedAt())
+			fmt.Println("Body       :\n", resp)
+			fmt.Println()
+		} else {
+			fmt.Println(resp)
+		}
 
 		if resp.StatusCode() != 200 {
 			fmt.Println("Error Response Info:")
@@ -294,6 +341,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&relizaHubUri, "uri", "u", "https://www.relizahub.com", "FQDN of Reliza Hub server")
 	rootCmd.PersistentFlags().StringVarP(&apiKey, "apikey", "k", "", "API Key Secret")
 	rootCmd.PersistentFlags().StringVarP(&apiKeyId, "apikeyid", "i", "", "API Key ID")
+	rootCmd.PersistentFlags().StringVarP(&debug, "debug", "d", "false", "If set to true, print debug details")
 
 	// flags for addrelease command
 	addreleaseCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "", "Name of VCS Branch used")
