@@ -49,6 +49,7 @@ var namespace string
 var relizaHubUri string
 var senderId string
 var version string
+var versionSchema string
 var vcsUri string
 var vcsTag string
 var vcsType string
@@ -247,6 +248,10 @@ var getVersionCmd = &cobra.Command{
 			body["action"] = action
 		}
 
+		if len(versionSchema) > 0 {
+			body["versionSchema"] = versionSchema
+		}
+
 		client := resty.New()
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
@@ -372,6 +377,7 @@ func init() {
 	getVersionCmd.PersistentFlags().StringVar(&action, "action", "", "Bump action name: bump | bumppatch | bumpminor | bumpmajor | bumpdate")
 	getVersionCmd.PersistentFlags().StringVar(&metadata, "metadata", "", "Version metadata")
 	getVersionCmd.PersistentFlags().StringVar(&modifier, "modifier", "", "Version modifier")
+	getVersionCmd.PersistentFlags().StringVar(&versionSchema, "pin", "", "Version pin if creating new branch")
 
 	rootCmd.AddCommand(addreleaseCmd)
 	rootCmd.AddCommand(instDataCmd)
