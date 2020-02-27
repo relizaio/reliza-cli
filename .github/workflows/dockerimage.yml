@@ -15,7 +15,11 @@ jobs:
     - name: Build, push image, generate version and stream version to Reliza Hub
       run: |
         docker pull relizaio/reliza-go-client
-        docker run --rm relizaio/reliza-go-client getversion -k ${{ secrets.RELIZA_VERSION_API_KEY }} -i ${{ secrets.RELIZA_VERSION_API_ID }} -b master --metadata GitHub | grep version | cut -d ':' -f 2 | cut -d '"' -f 2 > version
+        docker run --rm relizaio/reliza-go-client getversion -k ${{ secrets.RELIZA_VERSION_API_KEY }} -i ${{ secrets.RELIZA_VERSION_API_ID }} -b master --metadata GitHub > full_version_output 2>&1
+        # show reliza command output in case there is error
+        cat full_version_output
+        # now construct actual version - we could use jq, but why install another tool in CI env?
+        cat full_version_output | grep version | cut -d ':' -f 2 | cut -d '"' -f 2 > version
         vvar=$(cat version)
         # version without meta for docker registry
         vvartag=$(cat version | cut -d '+' -f 1)
