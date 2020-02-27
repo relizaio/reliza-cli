@@ -76,7 +76,7 @@ for authenticated project.`,
 		}
 
 		body := map[string]interface{}{"branch": branch, "version": version}
-		if commit != "" && vcsType != "" && vcsUri != "" {
+		if commit != "" {
 			commitMap := map[string]string{"uri": vcsUri, "type": vcsType, "commit": commit}
 			if vcsTag != "" {
 				commitMap["vcsTag"] = vcsTag
