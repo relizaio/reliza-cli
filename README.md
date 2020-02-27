@@ -26,7 +26,7 @@ Flags stand for:
 - **-i** - flag for project api id (required).
 - **-k** - flag for project api key (required).
 - **-b** - flag to denote branch (required). If branch is not recorded yet, Reliza Hub will attempt to create it.
-- **--pin** - flag to denote branch pin. Required for new branches, optional for existing branches. If supplied for an existing branch and pin is different from current, it will override current pin.
+- **--pin** - flag to denote branch pin (optional for existing branches, required for new branches). If supplied for an existing branch and pin is different from current, it will override current pin.
 
 
 ## 2. Use Case: Send Release Metadata to Reliza Hub
