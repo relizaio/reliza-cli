@@ -42,6 +42,7 @@ var branch string
 var cfgFile string
 var commit string
 var debug string
+var hash string
 var imageFilePath string
 var metadata string
 var modifier string
@@ -281,6 +282,48 @@ var getVersionCmd = &cobra.Command{
 	},
 }
 
+var checkReleaseByHashCmd = &cobra.Command{
+	Use:   "checkhash",
+	Short: "Checks whether artifact with this hash is present for particular project",
+	Long: `This CLI command would connect to Reliza Hub which would check if the artifact was already submitted as a part of some
+			existing release of the current project.
+			Project would be identified by the API key that is used`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
+
+		body := map[string]string{"hash": hash}
+
+		client := resty.New()
+		resp, err := client.R().
+			SetHeader("Content-Type", "application/json").
+			SetHeader("User-Agent", "Reliza Go Client").
+			SetHeader("Accept-Encoding", "gzip, deflate").
+			SetBody(body).
+			SetBasicAuth(apiKeyId, apiKey).
+			Post(relizaHubUri + "/api/programmatic/v1/release/getByHash")
+
+		if debug == "true" {
+			// Explore response object
+			fmt.Println("Response Info:")
+			fmt.Println("Error      :", err)
+			fmt.Println("Status Code:", resp.StatusCode())
+			fmt.Println("Status     :", resp.Status())
+			fmt.Println("Time       :", resp.Time())
+			fmt.Println("Received At:", resp.ReceivedAt())
+			fmt.Println("Body       :\n", resp)
+			fmt.Println()
+		} else {
+			fmt.Println(resp)
+		}
+
+		if resp.StatusCode() != 200 {
+			os.Exit(1)
+		}
+	},
+}
+
 var getMyReleaseCmd = &cobra.Command{
 	Use:   "getmyrelease",
 	Short: "Get releases to be deployed on this instance",
@@ -379,10 +422,14 @@ func init() {
 	getVersionCmd.PersistentFlags().StringVar(&modifier, "modifier", "", "Version modifier")
 	getVersionCmd.PersistentFlags().StringVar(&versionSchema, "pin", "", "Version pin if creating new branch")
 
+	// flags for check release by hash command
+	checkReleaseByHashCmd.PersistentFlags().StringVar(&hash, "hash", "", "Hash of artifact to check")
+
 	rootCmd.AddCommand(addreleaseCmd)
 	rootCmd.AddCommand(instDataCmd)
 	rootCmd.AddCommand(getVersionCmd)
 	rootCmd.AddCommand(getMyReleaseCmd)
+	rootCmd.AddCommand(checkReleaseByHashCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
