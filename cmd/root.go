@@ -44,6 +44,7 @@ var commit string
 var debug string
 var hash string
 var imageFilePath string
+var imageString string
 var metadata string
 var modifier string
 var namespace string
@@ -177,13 +178,18 @@ var instDataCmd = &cobra.Command{
 		}
 
 		body := map[string]interface{}{}
-		imageBytes, err := ioutil.ReadFile(imageFilePath)
-		if err != nil {
-			fmt.Println("Error when reading images file")
-			fmt.Print(err)
-			os.Exit(1)
+		// if imageString (--images flag) is supplied, image File path is ignored
+		if imageString != "" {
+			body["images"] = strings.Fields(imageString)
+		} else {
+			imageBytes, err := ioutil.ReadFile(imageFilePath)
+			if err != nil {
+				fmt.Println("Error when reading images file")
+				fmt.Print(err)
+				os.Exit(1)
+			}
+			body["images"] = strings.Fields(string(imageBytes))
 		}
-		body["images"] = strings.Fields(string(imageBytes))
 		body["timeSent"] = time.Now().String()
 		if len(namespace) > 0 {
 			body["namespace"] = namespace
@@ -407,7 +413,8 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artDigests, "artdigests", []string{}, "Artifact Digests (multiple allowed, separate several digests for one artifact with commas)")
 
 	// flags for instance data command
-	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images.txt", "Path to image file")
+	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images.txt", "Path to image file, ignored if --images parameter is supplied")
+	instDataCmd.PersistentFlags().StringVar(&imageString, "images", "", "Whitespace separated images with digests or simply digests, if supplied takes precedence over imagefile")
 	instDataCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "Namespace to submit instance data to")
 	instDataCmd.PersistentFlags().StringVar(&senderId, "sender", "default", "Namespace to submit instance data to")
 
