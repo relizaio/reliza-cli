@@ -2,13 +2,17 @@
 
 # Reliza Go Client
 
-This tool allows streaming metadata about instances, releases and artifacts to [Reliza Hub at relizahub.com](https://relizahub.com) (currently in public preview mode). Community forum and support available at [r/Reliza](https://reddit.com/r/Reliza).
+This tool allows streaming metadata about instances, releases and artifacts to [Reliza Hub at relizahub.com](https://relizahub.com) (currently in public preview mode).
+
+Playground instance is operational at [playground.relizahub.com](https://playground.relizahub.com). Video tutorial about key functionality available on [YouTube](https://www.youtube.com/watch?v=yDlf5fMBGuI).
+
+Community forum and support available at [r/Reliza](https://reddit.com/r/Reliza).
 
 Docker image is available at [relizaio/reliza-go-client](https://hub.docker.com/r/relizaio/reliza-go-client)
 
 ## 1. Use Case: Get Version Assignment From Reliza Hub
 
-Note that project schema must be preset on Reliza Hub prior to using this API. API key must also be generated for the project from Reliza Hub.
+This use case requests Version from Reliza Hub for our project. Note that project schema must be preset on Reliza Hub prior to using this API. API key must also be generated for the project from Reliza Hub.
 
 Sample command for semver version schema:
 
@@ -31,7 +35,7 @@ Flags stand for:
 
 ## 2. Use Case: Send Release Metadata to Reliza Hub
 
-As in previous case, API key must be generated for the project on Reliza Hub prior to sending release details.
+This use case is commonly used in the CI workflow to stream Release metadata to Reliza Hub. As in previous case, API key must be generated for the project on Reliza Hub prior to sending release details.
 
 Sample command to send release details:
 
@@ -75,3 +79,69 @@ Flags stand for:
 Note that multiple artifacts per release are supported. In which case artifact specific flags (artid, arbuildid, artcimeta, arttype and artdigests must be repeated for each artifact).
 
 For sample of how to use workflow in CI, refer to the GitHub Actions build yaml of this project [here](https://github.com/relizaio/relizaGoClient/blob/master/.github/workflows/dockerimage.yml).
+
+## 3. Use Case: Check If Artifact Hash Already Present In Some Release
+
+This is particularly useful for monorepos to see if there was a change in sub-project or not. We are using this technique in our sample [playground project](https://github.com/relizaio/reliza-hub-playground). We supply artifact hash to Reliza Hub - and if it's present already, we get release details; if not - we get empty json response {}. Search space is scoped to single project which is defined by API Id and API Key.
+
+Sample command:
+
+```
+docker run --rm relizaio/reliza-go-client    \
+    checkhash    \
+    -i project_api_id    \
+    -k project_api_key    \
+    --hash sha256:hash
+```
+
+Flags stand for:
+- **checkhash** - command that denotes we are checking artifact hash.
+- **-i** - flag for project api id (required).
+- **-k** - flag for project api key (required).
+- **--hash** - flag to denote actual hash (required). By convention, hash must include hashing algorithm as its first part, i.e. sha256: or sha512:
+
+
+## 4. Use Case: Send Deployment Metadata From Instance To Reliza Hub
+
+This use case is for sending digests of active deployments from instance to Reliza Hub. API key must also be generated for the instance from Reliza Hub. Sample script is also provided in our [playground project](https://github.com/relizaio/reliza-hub-playground/blob/master/sample-instance-agent-scripts/send_instance_data.sh).
+
+Sample command:
+
+```
+docker run --rm relizaio/reliza-go-client    \
+    instdata    \
+    -i instance_api_id    \
+    -k instance_api_key    \
+    --images "sha256:c10779b369c6f2638e4c7483a3ab06f13b3f57497154b092c87e1b15088027a5 sha256:e6c2bcd817beeb94f05eaca2ca2fce5c9a24dc29bde89fbf839b652824304703"   \
+    --namespace default    \
+    --sender sender1
+```
+
+Flags stand for:
+- **instdata** - command that denotes we sending digest data from instance.
+- **-i** - flag for instance api id (required).
+- **-k** - flag for instance api key (required).
+- **--images** - flag which lists sha256 digests of images sent from the instances (required). Images must be white space separated. Note that sending full docker image URIs with digests is also accepted, i.e. it's ok to send images as relizaio/reliza-go-client:latest@sha256:ebe68a0427bf88d748a4cad0a419392c75c867a216b70d4cd9ef68e8031fe7af
+- **--namespace** - flag to denote namespace where we are sending images (optional, if not sent "default" namespace is used). Namespaces are useful to separate different products deployed on the same instance.
+- **--sender** - flag to denote unique sender within a single namespace (optional). This is useful if say there are different nodes where each streams only part of application deployment data. In this case such nodes need to use same namespace but different senders so that their data does not stomp on each other.
+
+
+## 5. Use Case: Request What Releases Must Be Deployed On This Instance From Reliza Hub
+
+This use case is when instance queries Reliza Hub to receive infromation about what release versions and specific artifacts it needs to deploy. This would usually be used by either simple deployment scripts or full-scale CD systems. A sample use is presented in our [playground project script](https://github.com/relizaio/reliza-hub-playground/blob/master/sample-instance-agent-scripts/request_instance_target.sh).
+
+Sample command:
+
+```
+docker run --rm relizaio/reliza-go-client    \
+    getmyrelease    \
+    -i instance_api_id    \
+    -k instance_api_key    \
+    --namespace default
+```
+
+Flags stand for:
+- **getmyrelease** - command that denotes we are requesting release data for instance from Reliza Hub.
+- **-i** - flag for instance api id (required).
+- **-k** - flag for instance api key (required).
+- **--namespace** - flag to denote namespace for which we are requesting release data (optional, if not sent "default" namespace is used). Namespaces are useful to separate different products deployed on the same instance.
