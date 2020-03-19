@@ -158,7 +158,7 @@ docker run --rm relizaio/reliza-go-client    \
     getlatestrelease    \
     -i instance_api_id    \
     -k instance_api_key    \
-    --project b4534a29-3309-4074-8a3a-34c92e1a168b
+    --project b4534a29-3309-4074-8a3a-34c92e1a168b    \
     --branch master
 ```
 
