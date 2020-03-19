@@ -49,6 +49,7 @@ var metadata string
 var modifier string
 var namespace string
 var relizaHubUri string
+var project string
 var senderId string
 var version string
 var versionSchema string
@@ -330,6 +331,44 @@ var checkReleaseByHashCmd = &cobra.Command{
 	},
 }
 
+var getLatestReleaseCmd = &cobra.Command{
+	Use:   "getlatestrelease",
+	Short: "Obtains latest release for Project or Product",
+	Long: `This CLI command would connect to Reliza Hub and would obtain latest release for specified Project and Branch
+			or specified Product and Feature Set.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
+
+		client := resty.New()
+		resp, err := client.R().
+			SetHeader("Content-Type", "application/json").
+			SetHeader("User-Agent", "Reliza Go Client").
+			SetHeader("Accept-Encoding", "gzip, deflate").
+			SetBasicAuth(apiKeyId, apiKey).
+			Get(relizaHubUri + "/api/programmatic/v1/release/getLatestProjectRelease/" + project + "/" + branch)
+
+		if debug == "true" {
+			// Explore response object
+			fmt.Println("Response Info:")
+			fmt.Println("Error      :", err)
+			fmt.Println("Status Code:", resp.StatusCode())
+			fmt.Println("Status     :", resp.Status())
+			fmt.Println("Time       :", resp.Time())
+			fmt.Println("Received At:", resp.ReceivedAt())
+			fmt.Println("Body       :\n", resp)
+			fmt.Println()
+		} else {
+			fmt.Println(resp)
+		}
+
+		if resp.StatusCode() != 200 {
+			os.Exit(1)
+		}
+	},
+}
+
 var getMyReleaseCmd = &cobra.Command{
 	Use:   "getmyrelease",
 	Short: "Get releases to be deployed on this instance",
@@ -432,11 +471,18 @@ func init() {
 	// flags for check release by hash command
 	checkReleaseByHashCmd.PersistentFlags().StringVar(&hash, "hash", "", "Hash of artifact to check")
 
+	// flags for latest project or product release
+	getLatestReleaseCmd.PersistentFlags().StringVar(&project, "project", "", "Project or Product UUID from Reliza Hub of project or product from which to obtain latest release")
+	getLatestReleaseCmd.PersistentFlags().StringVar(&branch, "branch", "", "Name of branch or Feature Set from Reliza Hub for which latest release is requested")
+	getLatestReleaseCmd.MarkPersistentFlagRequired("project")
+	getLatestReleaseCmd.MarkPersistentFlagRequired("branch")
+
 	rootCmd.AddCommand(addreleaseCmd)
 	rootCmd.AddCommand(instDataCmd)
 	rootCmd.AddCommand(getVersionCmd)
 	rootCmd.AddCommand(getMyReleaseCmd)
 	rootCmd.AddCommand(checkReleaseByHashCmd)
+	rootCmd.AddCommand(getLatestReleaseCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
