@@ -145,3 +145,26 @@ Flags stand for:
 - **-i** - flag for instance api id (required).
 - **-k** - flag for instance api key (required).
 - **--namespace** - flag to denote namespace for which we are requesting release data (optional, if not sent "default" namespace is used). Namespaces are useful to separate different products deployed on the same instance.
+
+
+## 6. Use Case: Request Latest Release Per Project Or Product
+
+This use case is when Reliza Hub is queried either by CI or CD environment or by integration instance to check latest release version available per specific Project or Product.
+
+Sample command:
+
+```
+docker run --rm relizaio/reliza-go-client    \
+    getlatestrelease    \
+    -i instance_api_id    \
+    -k instance_api_key    \
+    --project b4534a29-3309-4074-8a3a-34c92e1a168b
+    --branch master
+```
+
+Flags stand for:
+- **getlatestrelease** - command that denotes we are requesting latest release data for Project or Product from Reliza Hub
+- **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
+- **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
+- **--project** - flag to denote UUID of specific Project or Product, UUID must be obtained from (Reliza Hub)[https://relizahub.com] (required).
+- **--branch** - flag to denote required branch of chosen Project or Product (required).
