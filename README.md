@@ -160,6 +160,7 @@ docker run --rm relizaio/reliza-go-client    \
     -k api_key    \
     --project b4534a29-3309-4074-8a3a-34c92e1a168b    \
     --branch master
+    --env TEST
 ```
 
 Flags stand for:
@@ -168,3 +169,4 @@ Flags stand for:
 - **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
 - **--project** - flag to denote UUID of specific Project or Product, UUID must be obtained from (Reliza Hub)[https://relizahub.com] (required).
 - **--branch** - flag to denote required branch of chosen Project or Product (required).
+- **--env** - flag to denote environment to which release approvals should match. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION. If not supplied, latest release will be returned regardless of approvals (optional).

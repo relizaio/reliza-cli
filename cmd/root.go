@@ -42,6 +42,7 @@ var branch string
 var cfgFile string
 var commit string
 var debug string
+var environment string
 var hash string
 var imageFilePath string
 var imageString string
@@ -341,13 +342,18 @@ var getLatestReleaseCmd = &cobra.Command{
 			fmt.Println("Using Reliza Hub at", relizaHubUri)
 		}
 
+		path := relizaHubUri + "/api/programmatic/v1/release/getLatestProjectRelease/" + project + "/" + branch
+		if len(environment) > 0 {
+			path = path + "/" + environment
+		}
+
 		client := resty.New()
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
 			SetHeader("User-Agent", "Reliza Go Client").
 			SetHeader("Accept-Encoding", "gzip, deflate").
 			SetBasicAuth(apiKeyId, apiKey).
-			Get(relizaHubUri + "/api/programmatic/v1/release/getLatestProjectRelease/" + project + "/" + branch)
+			Get(path)
 
 		if debug == "true" {
 			// Explore response object
@@ -474,6 +480,7 @@ func init() {
 	// flags for latest project or product release
 	getLatestReleaseCmd.PersistentFlags().StringVar(&project, "project", "", "Project or Product UUID from Reliza Hub of project or product from which to obtain latest release")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&branch, "branch", "", "Name of branch or Feature Set from Reliza Hub for which latest release is requested")
+	getLatestReleaseCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment to obtain approvals details from (optional)")
 	getLatestReleaseCmd.MarkPersistentFlagRequired("project")
 	getLatestReleaseCmd.MarkPersistentFlagRequired("branch")
 
