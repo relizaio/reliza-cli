@@ -52,6 +52,8 @@ var namespace string
 var relizaHubUri string
 var project string
 var senderId string
+var tagKey string
+var tagVal string
 var version string
 var versionSchema string
 var vcsUri string
@@ -347,6 +349,11 @@ var getLatestReleaseCmd = &cobra.Command{
 			path = path + "/" + environment
 		}
 
+		if len(tagKey) > 0 && len(tagVal) > 0 {
+			path = path + "?tag=" + tagKey + "____" + tagVal
+		}
+		fmt.Println(path)
+
 		client := resty.New()
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
@@ -481,6 +488,8 @@ func init() {
 	getLatestReleaseCmd.PersistentFlags().StringVar(&project, "project", "", "Project or Product UUID from Reliza Hub of project or product from which to obtain latest release")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&branch, "branch", "", "Name of branch or Feature Set from Reliza Hub for which latest release is requested")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment to obtain approvals details from (optional)")
+	getLatestReleaseCmd.PersistentFlags().StringVar(&tagKey, "tagkey", "", "Tag key to use for picking artifact (optional)")
+	getLatestReleaseCmd.PersistentFlags().StringVar(&tagVal, "tagval", "", "Tag value to use for picking artifact (optional)")
 	getLatestReleaseCmd.MarkPersistentFlagRequired("project")
 	getLatestReleaseCmd.MarkPersistentFlagRequired("branch")
 
