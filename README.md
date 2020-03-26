@@ -182,3 +182,18 @@ Flags stand for:
 - **--env** - flag to denote environment to which release approvals should match. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION. If not supplied, latest release will be returned regardless of approvals (optional).
 - **--tagkey** - flag to denote tag key to use as a selector for artifact (optional, if provided tagval flag must also be supplied). Note that currently only single tag is supported.
 - **--tagkey** - flag to denote tag value to use as a selector for artifact (optional, if provided tagkey flag must also be supplied).
+
+Here is a full example how we can use getlatestrelease command leveraging jq to obtain latest docker image with sha256 that we need to use for integration (don't forget to change api_id, api_key, project, branch and env to proper values as needed):
+
+```
+rlzclientout=$(docker run --rm relizaio/reliza-go-client    \
+    getlatestrelease    \
+    -i api_id    \
+    -k api_key    \
+    --project b4534a29-3309-4074-8a3a-34c92e1a168b    \
+    --branch master    \
+    --env TEST    \
+    --tagkey deployable    \
+    --tagval true);    \
+    echo $(echo $rlzclientout | jq -r .artifacts[0].identifier)@$(echo $rlzclientout | jq -r .artifacts[0].digests[] | grep sha256)
+```
