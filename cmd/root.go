@@ -381,7 +381,10 @@ var getLatestReleaseCmd = &cobra.Command{
 		if len(tagKey) > 0 && len(tagVal) > 0 {
 			path = path + "?tag=" + tagKey + "____" + tagVal
 		}
-		fmt.Println(path)
+
+		if debug == "true" {
+			fmt.Println(path)
+		}
 
 		client := resty.New()
 		resp, err := client.R().
