@@ -54,7 +54,9 @@ docker run --rm relizaio/reliza-go-client    \
     --artbuildid 1    \
     --artcimeta Github Actions    \
     --arttype Docker    \
-    --artdigests sha256:4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd
+    --artdigests sha256:4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd    \
+    --tagkey key1
+    --tagval val1
 ```
 
 Flags stand for:
@@ -75,8 +77,16 @@ Flags stand for:
 ```
 --artdigests sha256:4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd,sha1:fe4165996a41501715ea0662b6a906b55e34a2a1
 ```
+- **tagkey** - flag to denote keys of artifact tags (optional, but every tag key must have corresponding tag value). Multiple tag keys per artifact are supported and must be comma separated. I.e.: 
+```
+--tagkey key1,key2
+```
+- **tagval** - flag to denote values of artifact tags (optional, but every tag value must have corresponding tag key). Multiple tag values per artifact are supported and must be comma separated. I.e.: 
+```
+--tagval val1,val2
+```
 
-Note that multiple artifacts per release are supported. In which case artifact specific flags (artid, arbuildid, artcimeta, arttype and artdigests must be repeated for each artifact).
+Note that multiple artifacts per release are supported. In which case artifact specific flags (artid, arbuildid, artcimeta, arttype, artdigests, tagkey and tagval must be repeated for each artifact).
 
 For sample of how to use workflow in CI, refer to the GitHub Actions build yaml of this project [here](https://github.com/relizaio/relizaGoClient/blob/master/.github/workflows/dockerimage.yml).
 

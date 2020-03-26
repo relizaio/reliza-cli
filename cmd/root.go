@@ -53,7 +53,9 @@ var relizaHubUri string
 var project string
 var senderId string
 var tagKey string
+var tagKeyArr []string
 var tagVal string
+var tagValArr []string
 var version string
 var versionSchema string
 var vcsUri string
@@ -133,9 +135,36 @@ for authenticated project.`,
 					artifacts[i]["digests"] = adSpl
 				}
 			}
+
+			if len(tagKeyArr) > 0 && len(tagKeyArr) != len(artId) {
+				fmt.Println("number of --tagkey flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(tagValArr) > 0 && len(tagValArr) != len(artId) {
+				fmt.Println("number of --tagval flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(tagKeyArr) > 0 && len(tagValArr) < 1 {
+				fmt.Println("number of --tagval and --tagkey flags must be the same and must match number of --artid flags")
+				os.Exit(2)
+			} else if len(tagKeyArr) > 0 {
+				for i, key := range tagKeyArr {
+					tagKeys := strings.Split(key, ",")
+					tagVals := strings.Split(tagValArr[i], ",")
+					if len(tagKeys) != len(tagVals) {
+						fmt.Println("number of keys and values per each --tagval and --tagkey flag must be the same")
+						os.Exit(2)
+					}
+					k := map[string]string{}
+					for j := range tagKeys {
+						k[tagKeys[j]] = tagVals[j]
+					}
+					artifacts[i]["tags"] = k
+				}
+			}
+
 			body["artifacts"] = artifacts
 			//fmt.Println(artifacts)
 		}
+		fmt.Println(body)
 		client := resty.New()
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
@@ -463,6 +492,8 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artCiMeta, "artcimeta", []string{}, "Artifact CI Meta (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artType, "arttype", []string{}, "Artifact Type (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artDigests, "artdigests", []string{}, "Artifact Digests (multiple allowed, separate several digests for one artifact with commas)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&tagKeyArr, "tagkey", []string{}, "Artifact Tag Keys (multiple allowed, separate several tag keys for one artifact with commas)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&tagValArr, "tagval", []string{}, "Artifact Tag Values (multiple allowed, separate several tag values for one artifact with commas)")
 
 	// flags for instance data command
 	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images.txt", "Path to image file, ignored if --images parameter is supplied")
