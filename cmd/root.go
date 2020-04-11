@@ -162,7 +162,6 @@ for authenticated project.`,
 			}
 
 			body["artifacts"] = artifacts
-			//fmt.Println(artifacts)
 		}
 		fmt.Println(body)
 		client := resty.New()
@@ -174,30 +173,7 @@ for authenticated project.`,
 			SetBasicAuth(apiKeyId, apiKey).
 			Post(relizaHubUri + "/api/programmatic/v1/release/create")
 
-		if debug == "true" {
-			// Explore response object
-			fmt.Println("Response Info:")
-			fmt.Println("Error      :", err)
-			fmt.Println("Status Code:", resp.StatusCode())
-			fmt.Println("Status     :", resp.Status())
-			fmt.Println("Time       :", resp.Time())
-			fmt.Println("Received At:", resp.ReceivedAt())
-			fmt.Println("Body       :\n", resp)
-			fmt.Println()
-		} else {
-			fmt.Println(resp)
-		}
-
-		if resp.StatusCode() != 200 {
-			fmt.Println("Error      :", err)
-			fmt.Println("Status Code:", resp.StatusCode())
-			fmt.Println("Status     :", resp.Status())
-			fmt.Println("Time       :", resp.Time())
-			fmt.Println("Received At:", resp.ReceivedAt())
-			fmt.Println("Body       :\n", resp)
-			fmt.Println()
-			os.Exit(1)
-		}
+		printResponse(err, resp)
 	},
 }
 
@@ -239,31 +215,7 @@ var instDataCmd = &cobra.Command{
 			SetBasicAuth(apiKeyId, apiKey).
 			Put(relizaHubUri + "/api/programmatic/v1/instance/sendAgentData")
 
-		// Explore response object
-		if debug == "true" {
-			fmt.Println("Response Info:")
-			fmt.Println("Error      :", err)
-			fmt.Println("Status Code:", resp.StatusCode())
-			fmt.Println("Status     :", resp.Status())
-			fmt.Println("Time       :", resp.Time())
-			fmt.Println("Received At:", resp.ReceivedAt())
-			fmt.Println("Body       :\n", resp)
-			fmt.Println()
-		} else {
-			fmt.Println(resp)
-		}
-
-		if resp.StatusCode() != 200 {
-			fmt.Println("Response Info:")
-			fmt.Println("Error      :", err)
-			fmt.Println("Status Code:", resp.StatusCode())
-			fmt.Println("Status     :", resp.Status())
-			fmt.Println("Time       :", resp.Time())
-			fmt.Println("Received At:", resp.ReceivedAt())
-			fmt.Println("Body       :\n", resp)
-			fmt.Println()
-			os.Exit(1)
-		}
+		printResponse(err, resp)
 	},
 }
 
@@ -301,23 +253,7 @@ var getVersionCmd = &cobra.Command{
 			SetBasicAuth(apiKeyId, apiKey).
 			Post(relizaHubUri + "/api/programmatic/v1/project/getNewVersion")
 
-		if debug == "true" {
-			// Explore response object
-			fmt.Println("Response Info:")
-			fmt.Println("Error      :", err)
-			fmt.Println("Status Code:", resp.StatusCode())
-			fmt.Println("Status     :", resp.Status())
-			fmt.Println("Time       :", resp.Time())
-			fmt.Println("Received At:", resp.ReceivedAt())
-			fmt.Println("Body       :\n", resp)
-			fmt.Println()
-		} else {
-			fmt.Println(resp)
-		}
-
-		if resp.StatusCode() != 200 {
-			os.Exit(1)
-		}
+		printResponse(err, resp)
 	},
 }
 
@@ -343,23 +279,7 @@ var checkReleaseByHashCmd = &cobra.Command{
 			SetBasicAuth(apiKeyId, apiKey).
 			Post(relizaHubUri + "/api/programmatic/v1/release/getByHash")
 
-		if debug == "true" {
-			// Explore response object
-			fmt.Println("Response Info:")
-			fmt.Println("Error      :", err)
-			fmt.Println("Status Code:", resp.StatusCode())
-			fmt.Println("Status     :", resp.Status())
-			fmt.Println("Time       :", resp.Time())
-			fmt.Println("Received At:", resp.ReceivedAt())
-			fmt.Println("Body       :\n", resp)
-			fmt.Println()
-		} else {
-			fmt.Println(resp)
-		}
-
-		if resp.StatusCode() != 200 {
-			os.Exit(1)
-		}
+		printResponse(err, resp)
 	},
 }
 
@@ -394,23 +314,7 @@ var getLatestReleaseCmd = &cobra.Command{
 			SetBasicAuth(apiKeyId, apiKey).
 			Get(path)
 
-		if debug == "true" {
-			// Explore response object
-			fmt.Println("Response Info:")
-			fmt.Println("Error      :", err)
-			fmt.Println("Status Code:", resp.StatusCode())
-			fmt.Println("Status     :", resp.Status())
-			fmt.Println("Time       :", resp.Time())
-			fmt.Println("Received At:", resp.ReceivedAt())
-			fmt.Println("Body       :\n", resp)
-			fmt.Println()
-		} else {
-			fmt.Println(resp)
-		}
-
-		if resp.StatusCode() != 200 {
-			os.Exit(1)
-		}
+		printResponse(err, resp)
 	},
 }
 
@@ -433,29 +337,7 @@ var getMyReleaseCmd = &cobra.Command{
 			SetBasicAuth(apiKeyId, apiKey).
 			Get(path)
 
-		if debug == "true" {
-			// Explore response object
-			fmt.Println("Response Info:")
-			fmt.Println("Error      :", err)
-			fmt.Println("Status Code:", resp.StatusCode())
-			fmt.Println("Status     :", resp.Status())
-			fmt.Println("Time       :", resp.Time())
-			fmt.Println("Received At:", resp.ReceivedAt())
-			fmt.Println("Body       :\n", resp)
-			fmt.Println()
-		} else {
-			fmt.Println(resp)
-		}
-
-		if resp.StatusCode() != 200 {
-			fmt.Println("Error Response Info:")
-			fmt.Println("Error      :", err)
-			fmt.Println("Status Code:", resp.StatusCode())
-			fmt.Println("Status     :", resp.Status())
-			fmt.Println("Time       :", resp.Time())
-			fmt.Println("Received At:", resp.ReceivedAt())
-			os.Exit(1)
-		}
+		printResponse(err, resp)
 	},
 }
 
@@ -533,6 +415,32 @@ func init() {
 	rootCmd.AddCommand(getMyReleaseCmd)
 	rootCmd.AddCommand(checkReleaseByHashCmd)
 	rootCmd.AddCommand(getLatestReleaseCmd)
+}
+
+func printResponse(err error, resp *resty.Response) {
+	if debug == "true" {
+		// Explore response object
+		fmt.Println("Response Info:")
+		fmt.Println("Error      :", err)
+		fmt.Println("Status Code:", resp.StatusCode())
+		fmt.Println("Status     :", resp.Status())
+		fmt.Println("Time       :", resp.Time())
+		fmt.Println("Received At:", resp.ReceivedAt())
+		fmt.Println("Body       :\n", resp)
+		fmt.Println()
+	} else {
+		fmt.Println(resp)
+	}
+
+	if resp.StatusCode() != 200 {
+		fmt.Println("Error Response Info:")
+		fmt.Println("Error      :", err)
+		fmt.Println("Status Code:", resp.StatusCode())
+		fmt.Println("Status     :", resp.Status())
+		fmt.Println("Time       :", resp.Time())
+		fmt.Println("Received At:", resp.ReceivedAt())
+		os.Exit(1)
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.
