@@ -49,6 +49,7 @@ var imageString string
 var metadata string
 var modifier string
 var namespace string
+var outDirectory string
 var parseDirectory string
 var relizaHubUri string
 var project string
@@ -325,7 +326,7 @@ var parseCopyTemplatesCmd = &cobra.Command{
 			versions of those projects from Reliza Hub as defined by target environment and tags`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		parseCopyTemplate(parseDirectory, relizaHubUri, environment, tagKey, tagVal, apiKeyId, apiKey)
+		parseCopyTemplate(parseDirectory, outDirectory, relizaHubUri, environment, tagKey, tagVal, apiKeyId, apiKey)
 		// path := relizaHubUri + "/api/programmatic/v1/instance/getMyFollowReleases"
 		// if len(namespace) > 0 {
 		// 	path += "?namespace=" + namespace
@@ -415,6 +416,7 @@ func init() {
 	parseCopyTemplatesCmd.PersistentFlags().StringVar(&tagKey, "tagkey", "", "Tag key to use for picking artifact (optional)")
 	parseCopyTemplatesCmd.PersistentFlags().StringVar(&tagVal, "tagval", "", "Tag value to use for picking artifact (optional)")
 	parseCopyTemplatesCmd.PersistentFlags().StringVar(&parseDirectory, "indirectory", "", "Input directory to parse template files from")
+	parseCopyTemplatesCmd.PersistentFlags().StringVar(&outDirectory, "outdirectory", "", "Output directory to output resulting files with substitutions")
 
 	rootCmd.AddCommand(addreleaseCmd)
 	rootCmd.AddCommand(instDataCmd)
