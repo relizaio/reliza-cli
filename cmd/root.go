@@ -49,6 +49,7 @@ var imageString string
 var metadata string
 var modifier string
 var namespace string
+var parseDirectory string
 var relizaHubUri string
 var project string
 var senderId string
@@ -289,32 +290,7 @@ var getLatestReleaseCmd = &cobra.Command{
 	Long: `This CLI command would connect to Reliza Hub and would obtain latest release for specified Project and Branch
 			or specified Product and Feature Set.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if debug == "true" {
-			fmt.Println("Using Reliza Hub at", relizaHubUri)
-		}
-
-		path := relizaHubUri + "/api/programmatic/v1/release/getLatestProjectRelease/" + project + "/" + branch
-		if len(environment) > 0 {
-			path = path + "/" + environment
-		}
-
-		if len(tagKey) > 0 && len(tagVal) > 0 {
-			path = path + "?tag=" + tagKey + "____" + tagVal
-		}
-
-		if debug == "true" {
-			fmt.Println(path)
-		}
-
-		client := resty.New()
-		resp, err := client.R().
-			SetHeader("Content-Type", "application/json").
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBasicAuth(apiKeyId, apiKey).
-			Get(path)
-
-		printResponse(err, resp)
+		getLatestReleaseFunc(debug, relizaHubUri, project, branch, environment, tagKey, tagVal, apiKeyId, apiKey)
 	},
 }
 
@@ -338,6 +314,31 @@ var getMyReleaseCmd = &cobra.Command{
 			Get(path)
 
 		printResponse(err, resp)
+	},
+}
+
+var parseCopyTemplatesCmd = &cobra.Command{
+	Use:   "parsetemplate",
+	Short: "Parses Reliza templates and copies to target",
+	Long: `This CLI command parses template files, replacing project codes styled as 
+			<%PROJECT__55fe88fc-5621-4c90-b006-db94ea1d8a08%> - and replaces them with the latest or target
+			versions of those projects from Reliza Hub as defined by target environment and tags`,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		parseCopyTemplate(parseDirectory, relizaHubUri, environment, tagKey, tagVal, apiKeyId, apiKey)
+		// path := relizaHubUri + "/api/programmatic/v1/instance/getMyFollowReleases"
+		// if len(namespace) > 0 {
+		// 	path += "?namespace=" + namespace
+		// }
+
+		// client := resty.New()
+		// resp, err := client.R().
+		// 	SetHeader("User-Agent", "Reliza Go Client").
+		// 	SetHeader("Accept-Encoding", "gzip, deflate").
+		// 	SetBasicAuth(apiKeyId, apiKey).
+		// 	Get(path)
+
+		// printResponse(err, resp)
 	},
 }
 
@@ -409,12 +410,19 @@ func init() {
 	getLatestReleaseCmd.MarkPersistentFlagRequired("project")
 	getLatestReleaseCmd.MarkPersistentFlagRequired("branch")
 
+	// flags for parse template command
+	parseCopyTemplatesCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment to obtain approvals details from (optional)")
+	parseCopyTemplatesCmd.PersistentFlags().StringVar(&tagKey, "tagkey", "", "Tag key to use for picking artifact (optional)")
+	parseCopyTemplatesCmd.PersistentFlags().StringVar(&tagVal, "tagval", "", "Tag value to use for picking artifact (optional)")
+	parseCopyTemplatesCmd.PersistentFlags().StringVar(&parseDirectory, "indirectory", "", "Input directory to parse template files from")
+
 	rootCmd.AddCommand(addreleaseCmd)
 	rootCmd.AddCommand(instDataCmd)
 	rootCmd.AddCommand(getVersionCmd)
 	rootCmd.AddCommand(getMyReleaseCmd)
 	rootCmd.AddCommand(checkReleaseByHashCmd)
 	rootCmd.AddCommand(getLatestReleaseCmd)
+	rootCmd.AddCommand(parseCopyTemplatesCmd)
 }
 
 func printResponse(err error, resp *resty.Response) {
