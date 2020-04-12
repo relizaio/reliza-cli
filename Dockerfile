@@ -14,6 +14,8 @@ RUN apt-get -y install ca-certificates
 RUN mkdir /app
 RUN useradd apprunner && chown apprunner:apprunner /app
 COPY --from=build-stage --chown=apprunner:apprunner /go/bin/app /app/app
+RUN mkdir /indir && chown apprunner:apprunner -R /indir
+RUN mkdir /outdir && chown apprunner:apprunner -R /outdir
 USER apprunner
 RUN echo "version=$VERSION" > /app/version && echo "commit=$GIT_COMMIT" >> /app/version && echo "branch=$GIT_BRANCH" >> /app/version
 RUN mkdir /app/localdata
