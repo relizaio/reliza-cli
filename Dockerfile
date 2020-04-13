@@ -12,7 +12,7 @@ ARG VERSION=not_versioned
 RUN apt-get update
 RUN apt-get -y install ca-certificates
 RUN mkdir /app
-RUN useradd --uid 1001 --gid 1001 apprunner && chown apprunner:apprunner /app
+RUN useradd --uid 1001 apprunner && chown apprunner:apprunner /app
 COPY --from=build-stage --chown=apprunner:apprunner /go/bin/app /app/app
 RUN mkdir /indir && chown apprunner:apprunner -R /indir
 RUN mkdir /outdir && chown apprunner:apprunner -R /outdir
