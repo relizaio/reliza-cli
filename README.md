@@ -177,7 +177,7 @@ Flags stand for:
 - **getlatestrelease** - command that denotes we are requesting latest release data for Project or Product from Reliza Hub
 - **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
 - **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
-- **--project** - flag to denote UUID of specific Project or Product, UUID must be obtained from (Reliza Hub)[https://relizahub.com] (required).
+- **--project** - flag to denote UUID of specific Project or Product, UUID must be obtained from [Reliza Hub](https://relizahub.com) (required).
 - **--branch** - flag to denote required branch of chosen Project or Product (required).
 - **--env** - flag to denote environment to which release approvals should match. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION. If not supplied, latest release will be returned regardless of approvals (optional).
 - **--tagkey** - flag to denote tag key to use as a selector for artifact (optional, if provided tagval flag must also be supplied). Note that currently only single tag is supported.
@@ -234,8 +234,6 @@ Flags stand for:
 - **parsetemplate** - command that denotes we are going to parse Reliza templates
 - **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
 - **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
-- **--project** - flag to denote UUID of specific Project or Product, UUID must be obtained from (Reliza Hub)[https://relizahub.com] (required).
-- **--branch** - flag to denote required branch of chosen Project or Product (required).
 - **--env** - flag to denote environment to which release approvals should match. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION. If not supplied, latest release will be returned regardless of approvals (optional).
 - **--tagkey** - flag to denote tag key to use as a selector for artifact (optional, if provided tagval flag must also be supplied). Note that currently only single tag is supported.
 - **--tagkey** - flag to denote tag value to use as a selector for artifact (optional, if provided tagkey flag must also be supplied).
