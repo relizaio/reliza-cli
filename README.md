@@ -197,3 +197,45 @@ rlzclientout=$(docker run --rm relizaio/reliza-go-client    \
     --tagval true);    \
     echo $(echo $rlzclientout | jq -r .artifacts[0].identifier)@$(echo $rlzclientout | jq -r .artifacts[0].digests[] | grep sha256)
 ```
+
+
+## 7. Use Case: Parse Deployment Templates To Inject Correct Artifacts For GitOps
+
+This use case was designed specifically for GitOps. Imagine that you have GitOps deployment to different environments, i.e. TEST and PRODUCTION but they require different versions of artifacts. Reliza Hub would manage the versions but Reliza Go Client can be leveraged to retrieve this information and create correct deployment files that can later be pushed to GitOps.
+
+For a real-life use-case please refer to a working script in [deployment project for Classic Mafia Game Card Shuffle](https://github.com/taleodor/mafia-deployment/blob/master/pull_reliza_push_github_production.sh) while working templates can be found [here](https://github.com/taleodor/mafia-deployment/tree/master/k8s_templates).
+
+Note that sample template formatting would look like:
+
+```
+image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31__master%>
+```
+
+where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com) and **master** is our desired branch.
+
+Sample command:
+
+```
+docker run --rm \
+    -v /deployment/k8s_templates/:/indir 
+    -v /deployment/k8s_production/:/outdir 
+    relizaio/reliza-go-client \
+    parsetemplate \
+    -i api_id \
+    -k api_key \
+    --env PRODUCTION
+```
+
+Note that selectors are generally identical to the **getlatestrelease** command. 
+
+Directory mapped to **/indir** (in this case **/deployment/k8s_templates/**) - is a directory containing parseable files with Reliza templates. Similarly, directory mapped to **/outdir** is a directory where output parsed files will be written. Both of those directories must exist.
+
+Flags stand for:
+- **parsetemplate** - command that denotes we are going to parse Reliza templates
+- **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
+- **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
+- **--project** - flag to denote UUID of specific Project or Product, UUID must be obtained from (Reliza Hub)[https://relizahub.com] (required).
+- **--branch** - flag to denote required branch of chosen Project or Product (required).
+- **--env** - flag to denote environment to which release approvals should match. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION. If not supplied, latest release will be returned regardless of approvals (optional).
+- **--tagkey** - flag to denote tag key to use as a selector for artifact (optional, if provided tagval flag must also be supplied). Note that currently only single tag is supported.
+- **--tagkey** - flag to denote tag value to use as a selector for artifact (optional, if provided tagkey flag must also be supplied).
