@@ -182,6 +182,8 @@ Flags stand for:
 - **--env** - flag to denote environment to which release approvals should match. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION. If not supplied, latest release will be returned regardless of approvals (optional).
 - **--tagkey** - flag to denote tag key to use as a selector for artifact (optional, if provided tagval flag must also be supplied). Note that currently only single tag is supported.
 - **--tagkey** - flag to denote tag value to use as a selector for artifact (optional, if provided tagkey flag must also be supplied).
+- **--instance** - flag to denote specific instance for which release should match (optional, if supplied namespace flag is also used and env flag gets overrided by instance's environment).
+- **--namespace** - flag to denote specific namespace within instance, if instance is supplied (optional).
 
 Here is a full example how we can use getlatestrelease command leveraging jq to obtain latest docker image with sha256 that we need to use for integration (don't forget to change api_id, api_key, project, branch and env to proper values as needed):
 
@@ -237,3 +239,5 @@ Flags stand for:
 - **--env** - flag to denote environment to which release approvals should match. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION. If not supplied, latest release will be returned regardless of approvals (optional).
 - **--tagkey** - flag to denote tag key to use as a selector for artifact (optional, if provided tagval flag must also be supplied). Note that currently only single tag is supported.
 - **--tagkey** - flag to denote tag value to use as a selector for artifact (optional, if provided tagkey flag must also be supplied).
+- **--instance** - flag to denote specific instance for which releases should match (optional, if supplied namespace flag is also used and env flag gets overrided by instance's environment).
+- **--namespace** - flag to denote specific namespace within instance, if instance is supplied (optional).
