@@ -12,7 +12,8 @@ import (
 	"github.com/go-resty/resty"
 )
 
-func parseCopyTemplate(directory string, outDirectory string, relizaHubUri string, environment string, tagKey string, tagVal string, apiKeyId string, apiKey string) {
+func parseCopyTemplate(directory string, outDirectory string, relizaHubUri string, environment string, tagKey string,
+	tagVal string, apiKeyId string, apiKey string, instance string, namespace string) {
 	files, err := ioutil.ReadDir(directory)
 	if err != nil {
 		fmt.Println(err)
@@ -50,7 +51,8 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 				//fmt.Println(branch)
 
 				// call Reliza Hub with specified project id
-				body := getLatestReleaseFunc("false", relizaHubUri, projectId, branch, environment, tagKey, tagVal, apiKeyId, apiKey)
+				body := getLatestReleaseFunc("false", relizaHubUri, projectId, branch, environment,
+					tagKey, tagVal, apiKeyId, apiKey, instance, namespace)
 
 				// parse body json
 				var bodyJson map[string]interface{}
@@ -82,22 +84,31 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 }
 
 func getLatestReleaseFunc(debug string, relizaHubUri string, project string, branch string, environment string,
-	tagKey string, tagVal string, apiKeyId string, apiKey string) func() []byte {
+	tagKey string, tagVal string, apiKeyId string, apiKey string, instance string, namespace string) func() []byte {
 	if debug == "true" {
 		fmt.Println("Using Reliza Hub at", relizaHubUri)
 	}
 
-	path := relizaHubUri + "/api/programmatic/v1/release/getLatestProjectRelease/" + project + "/" + branch
+	path := relizaHubUri + "/api/programmatic/v1/release/getLatestProjectRelease"
+	body := map[string]string{"project": project}
 	if len(environment) > 0 {
-		path = path + "/" + environment
+		body["environment"] = environment
 	}
 
 	if len(tagKey) > 0 && len(tagVal) > 0 {
-		path = path + "?tag=" + tagKey + "____" + tagVal
+		body["tags"] = tagKey + "____" + tagVal
 	}
 
-	if debug == "true" {
-		fmt.Println(path)
+	if len(branch) > 0 {
+		body["branch"] = branch
+	}
+
+	if len(instance) > 0 {
+		body["instance"] = instance
+	}
+
+	if len(namespace) > 0 {
+		body["namespace"] = namespace
 	}
 
 	client := resty.New()
@@ -105,9 +116,32 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, bra
 		SetHeader("Content-Type", "application/json").
 		SetHeader("User-Agent", "Reliza Go Client").
 		SetHeader("Accept-Encoding", "gzip, deflate").
+		SetBody(body).
 		SetBasicAuth(apiKeyId, apiKey).
-		Get(path)
+		Post(path)
 
 	printResponse(err, resp)
 	return resp.Body
+
+	// path := relizaHubUri + "/api/programmatic/v1/release/getLatestProjectRelease/" + project + "/" + branch
+	// if len(environment) > 0 {
+	// 	path = path + "/" + environment
+	// }
+
+	// if len(tagKey) > 0 && len(tagVal) > 0 {
+	// 	path = path + "?tag=" + tagKey + "____" + tagVal
+	// }
+
+	// if debug == "true" {
+	// 	fmt.Println(path)
+	// }
+
+	// client := resty.New()
+	// resp, err := client.R().
+	// 	SetHeader("Content-Type", "application/json").
+	// 	SetHeader("User-Agent", "Reliza Go Client").
+	// 	SetHeader("Accept-Encoding", "gzip, deflate").
+	// 	SetBasicAuth(apiKeyId, apiKey).
+	// 	Get(path)
+
 }

@@ -46,6 +46,7 @@ var environment string
 var hash string
 var imageFilePath string
 var imageString string
+var instance string
 var metadata string
 var modifier string
 var namespace string
@@ -291,7 +292,7 @@ var getLatestReleaseCmd = &cobra.Command{
 	Long: `This CLI command would connect to Reliza Hub and would obtain latest release for specified Project and Branch
 			or specified Product and Feature Set.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		getLatestReleaseFunc(debug, relizaHubUri, project, branch, environment, tagKey, tagVal, apiKeyId, apiKey)
+		getLatestReleaseFunc(debug, relizaHubUri, project, branch, environment, tagKey, tagVal, apiKeyId, apiKey, instance, namespace)
 	},
 }
 
@@ -326,20 +327,8 @@ var parseCopyTemplatesCmd = &cobra.Command{
 			versions of those projects from Reliza Hub as defined by target environment and tags`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		parseCopyTemplate(parseDirectory, outDirectory, relizaHubUri, environment, tagKey, tagVal, apiKeyId, apiKey)
-		// path := relizaHubUri + "/api/programmatic/v1/instance/getMyFollowReleases"
-		// if len(namespace) > 0 {
-		// 	path += "?namespace=" + namespace
-		// }
-
-		// client := resty.New()
-		// resp, err := client.R().
-		// 	SetHeader("User-Agent", "Reliza Go Client").
-		// 	SetHeader("Accept-Encoding", "gzip, deflate").
-		// 	SetBasicAuth(apiKeyId, apiKey).
-		// 	Get(path)
-
-		// printResponse(err, resp)
+		parseCopyTemplate(parseDirectory, outDirectory, relizaHubUri, environment, tagKey, tagVal, apiKeyId, apiKey,
+			instance, namespace)
 	},
 }
 
@@ -406,6 +395,8 @@ func init() {
 	getLatestReleaseCmd.PersistentFlags().StringVar(&project, "project", "", "Project or Product UUID from Reliza Hub of project or product from which to obtain latest release")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&branch, "branch", "", "Name of branch or Feature Set from Reliza Hub for which latest release is requested")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment to obtain approvals details from (optional)")
+	getLatestReleaseCmd.PersistentFlags().StringVar(&instance, "instance", "", "Instance ID for which to check release (optional)")
+	getLatestReleaseCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace within instance for which to check release (optional)")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&tagKey, "tagkey", "", "Tag key to use for picking artifact (optional)")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&tagVal, "tagval", "", "Tag value to use for picking artifact (optional)")
 	getLatestReleaseCmd.MarkPersistentFlagRequired("project")
