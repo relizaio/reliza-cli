@@ -59,7 +59,7 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 				// assume only one artifact - should be configured by tags - later add type selector - TODO
 				// for now only use first digest - TODO
 				var pickedArtifact string
-				artifactsArr := bodyJson["artifacts"].([]interface{})
+				artifactsArr := bodyJson["artifactDetails"].([]interface{})
 				zeroArtifact := artifactsArr[0].(map[string]interface{})
 				artifactsIdentifier := zeroArtifact["identifier"].(string)
 				artifactDigests := zeroArtifact["digests"].([]interface{})
