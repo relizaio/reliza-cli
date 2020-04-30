@@ -55,6 +55,7 @@ var parseDirectory string
 var relizaHubUri string
 var project string
 var senderId string
+var status string
 var tagKey string
 var tagKeyArr []string
 var tagVal string
@@ -93,6 +94,9 @@ for authenticated project.`,
 				commitMap["vcsTag"] = vcsTag
 			}
 			body["sourceCodeEntry"] = commitMap
+		}
+		if len(status) > 0 {
+			body["status"] = status
 		}
 		if len(artId) > 0 {
 			// use artifacts, construct artifact array
@@ -370,6 +374,7 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artDigests, "artdigests", []string{}, "Artifact Digests (multiple allowed, separate several digests for one artifact with commas)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&tagKeyArr, "tagkey", []string{}, "Artifact Tag Keys (multiple allowed, separate several tag keys for one artifact with commas)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&tagValArr, "tagval", []string{}, "Artifact Tag Values (multiple allowed, separate several tag values for one artifact with commas)")
+	addreleaseCmd.PersistentFlags().StringVar(&status, "status", "", "Status of release - set to 'rejected' for failed releases, otherwise 'completed' is used (optional).")
 
 	// flags for instance data command
 	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images.txt", "Path to image file, ignored if --images parameter is supplied")

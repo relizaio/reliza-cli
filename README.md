@@ -69,6 +69,7 @@ Flags stand for:
 - **vcstype** - flag to denote vcs type (optional). Supported values: git, svn, mercurial. As with vcsuri, this flag is needed if we want to set a commit for the release. However, soon it will be needed only if the vcs uri is not yet set for the project.
 - **commit** - flag to denote vcs commit id or hash (optional). This is needed to provide source code entry metadata into the release.
 - **vcstag** - flag to denote vcs tag (optional). This is needed to include vcs tag into commit, if present.
+- **status** - flag to denote release status (optional). Supply "rejected" for failed releases, otherwise "completed" is used.
 - **artid** - flag to denote artifact identifier (optional). This is required to add artifact metadata into release.
 - **artbuildid** - flag to denote artifact build id (optional). This flag is optional and may be used to indicate build system id of the release (i.e., this could be circleci build number).
 - **artcimeta** - flag to denote artifact CI metadata (optional). This flag is optional and like artbuildid may be used to indicate build system metadata in free form.
