@@ -41,6 +41,8 @@ var artType []string
 var branch string
 var cfgFile string
 var commit string
+var dateStart string
+var dateEnd string
 var debug string
 var environment string
 var hash string
@@ -92,6 +94,9 @@ for authenticated project.`,
 			commitMap := map[string]string{"uri": vcsUri, "type": vcsType, "commit": commit}
 			if vcsTag != "" {
 				commitMap["vcsTag"] = vcsTag
+			}
+			if dateStart != "" {
+				commitMap["dateActual"] = dateStart
 			}
 			body["sourceCodeEntry"] = commitMap
 		}
@@ -363,10 +368,11 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringVarP(&version, "version", "v", "", "Release version")
 	addreleaseCmd.MarkPersistentFlagRequired("version")
 	addreleaseCmd.MarkPersistentFlagRequired("branch")
-	addreleaseCmd.PersistentFlags().StringVarP(&vcsUri, "vcsuri", "", "", "URI of VCS repository")
-	addreleaseCmd.PersistentFlags().StringVarP(&vcsType, "vcstype", "", "", "Type of VCS repository: git, svn")
-	addreleaseCmd.PersistentFlags().StringVarP(&commit, "commit", "", "", "Commit id")
-	addreleaseCmd.PersistentFlags().StringVarP(&vcsTag, "vcstag", "", "", "VCS Tag")
+	addreleaseCmd.PersistentFlags().StringVar(&vcsUri, "vcsuri", "", "URI of VCS repository")
+	addreleaseCmd.PersistentFlags().StringVar(&vcsType, "vcstype", "", "Type of VCS repository: git, svn, mercurial")
+	addreleaseCmd.PersistentFlags().StringVar(&commit, "commit", "", "Commit id")
+	addreleaseCmd.PersistentFlags().StringVar(&vcsTag, "vcstag", "", "VCS Tag")
+	addreleaseCmd.PersistentFlags().StringVar(&dateStart, "date", "", "Commit date and time in iso strict format, use git log --date=iso-strict (optional).")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artId, "artid", []string{}, "Artifact ID (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artBuildId, "artbuildid", []string{}, "Artifact Build ID (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artCiMeta, "artcimeta", []string{}, "Artifact CI Meta (multiple allowed)")
