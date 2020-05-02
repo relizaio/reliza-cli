@@ -41,8 +41,9 @@ var artType []string
 var branch string
 var cfgFile string
 var commit string
-var dateStart string
-var dateEnd string
+var dateActual string
+var dateStart []string
+var dateEnd []string
 var debug string
 var environment string
 var hash string
@@ -95,8 +96,8 @@ for authenticated project.`,
 			if vcsTag != "" {
 				commitMap["vcsTag"] = vcsTag
 			}
-			if dateStart != "" {
-				commitMap["dateActual"] = dateStart
+			if dateActual != "" {
+				commitMap["dateActual"] = dateActual
 			}
 			body["sourceCodeEntry"] = commitMap
 		}
@@ -145,6 +146,24 @@ for authenticated project.`,
 				for i, ad := range artDigests {
 					adSpl := strings.Split(ad, ",")
 					artifacts[i]["digests"] = adSpl
+				}
+			}
+
+			if len(dateStart) > 0 && len(dateStart) != len(artId) {
+				fmt.Println("number of --dateStart flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(dateStart) > 0 {
+				for i, ds := range dateStart {
+					artifacts[i]["dateFrom"] = ds
+				}
+			}
+
+			if len(dateEnd) > 0 && len(dateEnd) != len(artId) {
+				fmt.Println("number of --dateEnd flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(dateEnd) > 0 {
+				for i, de := range dateEnd {
+					artifacts[i]["dateTo"] = de
 				}
 			}
 
@@ -372,7 +391,7 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringVar(&vcsType, "vcstype", "", "Type of VCS repository: git, svn, mercurial")
 	addreleaseCmd.PersistentFlags().StringVar(&commit, "commit", "", "Commit id")
 	addreleaseCmd.PersistentFlags().StringVar(&vcsTag, "vcstag", "", "VCS Tag")
-	addreleaseCmd.PersistentFlags().StringVar(&dateStart, "date", "", "Commit date and time in iso strict format, use git log --date=iso-strict (optional).")
+	addreleaseCmd.PersistentFlags().StringVar(&dateActual, "date", "", "Commit date and time in iso strict format, use git log --date=iso-strict (optional).")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artId, "artid", []string{}, "Artifact ID (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artBuildId, "artbuildid", []string{}, "Artifact Build ID (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artCiMeta, "artcimeta", []string{}, "Artifact CI Meta (multiple allowed)")
@@ -380,6 +399,8 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artDigests, "artdigests", []string{}, "Artifact Digests (multiple allowed, separate several digests for one artifact with commas)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&tagKeyArr, "tagkey", []string{}, "Artifact Tag Keys (multiple allowed, separate several tag keys for one artifact with commas)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&tagValArr, "tagval", []string{}, "Artifact Tag Values (multiple allowed, separate several tag values for one artifact with commas)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&dateStart, "datestart", []string{}, "Artifact Build Start date and time (optional, multiple allowed)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&dateEnd, "dateend", []string{}, "Artifact Build End date and time (optional, multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringVar(&status, "status", "", "Status of release - set to 'rejected' for failed releases, otherwise 'completed' is used (optional).")
 
 	// flags for instance data command
