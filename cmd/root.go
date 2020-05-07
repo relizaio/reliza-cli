@@ -38,6 +38,7 @@ var artCiMeta []string
 var artDigests []string
 var artId []string
 var artType []string
+var approvalType string
 var branch string
 var cfgFile string
 var commit string
@@ -55,6 +56,7 @@ var modifier string
 var namespace string
 var outDirectory string
 var parseDirectory string
+var releaseId string
 var relizaHubUri string
 var project string
 var senderId string
@@ -84,7 +86,7 @@ var addreleaseCmd = &cobra.Command{
 	Use:   "addrelease",
 	Short: "Creates release on Reliza Hub",
 	Long: `This CLI command would create new releases on Reliza Hub
-for authenticated project.`,
+			for authenticated project.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if debug == "true" {
 			fmt.Println("Using Reliza Hub at", relizaHubUri)
@@ -203,6 +205,34 @@ for authenticated project.`,
 			SetBody(body).
 			SetBasicAuth(apiKeyId, apiKey).
 			Post(relizaHubUri + "/api/programmatic/v1/release/create")
+
+		printResponse(err, resp)
+	},
+}
+
+var approveReleaseCmd = &cobra.Command{
+	Use:   "approverelease",
+	Short: "Programmatic approval of releases using valid API key",
+	Long: `This CLI command would connect to Reliza Hub and submit approval for a release using valid API key.
+			The API key used must be valid and also must be authorized
+			to perform requested approval.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
+
+		body := map[string]interface{}{"uuid": releaseId}
+		approvalMap := map[string]bool{approvalType: true}
+		body["approvals"] = approvalMap
+
+		client := resty.New()
+		resp, err := client.R().
+			SetHeader("Content-Type", "application/json").
+			SetHeader("User-Agent", "Reliza Go Client").
+			SetHeader("Accept-Encoding", "gzip, deflate").
+			SetBody(body).
+			SetBasicAuth(apiKeyId, apiKey).
+			Put(relizaHubUri + "/api/programmatic/v1/release/approve")
 
 		printResponse(err, resp)
 	},
@@ -403,6 +433,10 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringArrayVar(&dateEnd, "dateend", []string{}, "Artifact Build End date and time (optional, multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringVar(&status, "status", "", "Status of release - set to 'rejected' for failed releases, otherwise 'completed' is used (optional).")
 
+	// flags for approve release command
+	approveReleaseCmd.PersistentFlags().StringVar(&releaseId, "release", "", "UUID of release to be approved")
+	approveReleaseCmd.PersistentFlags().StringVar(&approvalType, "approval", "", "Name of approval to set")
+
 	// flags for instance data command
 	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images.txt", "Path to image file, ignored if --images parameter is supplied")
 	instDataCmd.PersistentFlags().StringVar(&imageString, "images", "", "Whitespace separated images with digests or simply digests, if supplied takes precedence over imagefile")
@@ -444,11 +478,12 @@ func init() {
 	parseCopyTemplatesCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace within instance for which to check release (optional)")
 
 	rootCmd.AddCommand(addreleaseCmd)
-	rootCmd.AddCommand(instDataCmd)
-	rootCmd.AddCommand(getVersionCmd)
-	rootCmd.AddCommand(getMyReleaseCmd)
+	rootCmd.AddCommand(approveReleaseCmd)
 	rootCmd.AddCommand(checkReleaseByHashCmd)
 	rootCmd.AddCommand(getLatestReleaseCmd)
+	rootCmd.AddCommand(getMyReleaseCmd)
+	rootCmd.AddCommand(getVersionCmd)
+	rootCmd.AddCommand(instDataCmd)
 	rootCmd.AddCommand(parseCopyTemplatesCmd)
 }
 

@@ -245,3 +245,26 @@ Flags stand for:
 - **--tagkey** - flag to denote tag value to use as a selector for artifact (optional, if provided tagkey flag must also be supplied).
 - **--instance** - flag to denote specific instance for which releases should match (optional, if supplied namespace flag is also used and env flag gets overrided by instance's environment).
 - **--namespace** - flag to denote specific namespace within instance, if instance is supplied (optional).
+
+
+## 8. Use Case: Programmatic Approvals of Releases on Reliza Hub
+
+This use case is for the case when we have configured an API key in Org settings which is allowed to perform programmatic approvals in releases.
+
+Sample command:
+
+```
+docker run --rm relizaio/reliza-go-client    \
+    approverelease    \
+    -i api_id    \
+    -k api_key    \
+    --release release_uuid    \
+    --approval approval_type
+```
+
+Flags stand for:
+- **approverelease** - command that denotes that we are approving release programmatically for the specific type
+- **-i** - flag for api id (required).
+- **-k** - flag for api key (required).
+- **--release** - flag to specify release uuid, which can be obtained from the release view or programmatically (required).
+- **--approval** - approval type as per approval matrix on the Organization Settings page in Reliza Hub (required).
