@@ -38,6 +38,10 @@ var artCiMeta []string
 var artDigests []string
 var artId []string
 var artType []string
+var artVersion []string
+var artPublisher []string
+var artGroup []string
+var artPackage []string
 var approvalType string
 var branch string
 var cfgFile string
@@ -152,7 +156,7 @@ var addreleaseCmd = &cobra.Command{
 			}
 
 			if len(dateStart) > 0 && len(dateStart) != len(artId) {
-				fmt.Println("number of --dateStart flags must be either zero or match number of --artid flags")
+				fmt.Println("number of --datestart flags must be either zero or match number of --artid flags")
 				os.Exit(2)
 			} else if len(dateStart) > 0 {
 				for i, ds := range dateStart {
@@ -166,6 +170,42 @@ var addreleaseCmd = &cobra.Command{
 			} else if len(dateEnd) > 0 {
 				for i, de := range dateEnd {
 					artifacts[i]["dateTo"] = de
+				}
+			}
+
+			if len(artVersion) > 0 && len(artVersion) != len(artId) {
+				fmt.Println("number of --artversion flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artVersion) > 0 {
+				for i, av := range artVersion {
+					artifacts[i]["artifactVersion"] = av
+				}
+			}
+
+			if len(artPublisher) > 0 && len(artPublisher) != len(artId) {
+				fmt.Println("number of --artpublisher flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artPublisher) > 0 {
+				for i, ap := range artPublisher {
+					artifacts[i]["publisher"] = ap
+				}
+			}
+
+			if len(artPackage) > 0 && len(artPackage) != len(artId) {
+				fmt.Println("number of --artpackage flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artPackage) > 0 {
+				for i, ap := range artPackage {
+					artifacts[i]["packageType"] = ap
+				}
+			}
+
+			if len(artGroup) > 0 && len(artGroup) != len(artId) {
+				fmt.Println("number of --artgroup flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artGroup) > 0 {
+				for i, ag := range artGroup {
+					artifacts[i]["group"] = ag
 				}
 			}
 
@@ -431,6 +471,11 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringArrayVar(&tagValArr, "tagval", []string{}, "Artifact Tag Values (multiple allowed, separate several tag values for one artifact with commas)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&dateStart, "datestart", []string{}, "Artifact Build Start date and time (optional, multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&dateEnd, "dateend", []string{}, "Artifact Build End date and time (optional, multiple allowed)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&artVersion, "artversion", []string{}, "Artifact version, if different from release (multiple allowed)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&artPackage, "artpackage", []string{}, "Artifact package type (multiple allowed)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&artPublisher, "artpublisher", []string{}, "Artifact publisher (multiple allowed)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&artGroup, "artgroup", []string{}, "Artifact group (multiple allowed)")
+
 	addreleaseCmd.PersistentFlags().StringVar(&status, "status", "", "Status of release - set to 'rejected' for failed releases, otherwise 'completed' is used (optional).")
 
 	// flags for approve release command
