@@ -50,6 +50,7 @@ var dateActual string
 var dateStart []string
 var dateEnd []string
 var debug string
+var endpoint string
 var environment string
 var hash string
 var imageFilePath string
@@ -109,6 +110,9 @@ var addreleaseCmd = &cobra.Command{
 		}
 		if len(status) > 0 {
 			body["status"] = status
+		}
+		if len(endpoint) > 0 {
+			body["endpoint"] = endpoint
 		}
 		if len(artId) > 0 {
 			// use artifacts, construct artifact array
@@ -457,6 +461,7 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringVarP(&version, "version", "v", "", "Release version")
 	addreleaseCmd.MarkPersistentFlagRequired("version")
 	addreleaseCmd.MarkPersistentFlagRequired("branch")
+	addreleaseCmd.PersistentFlags().StringVar(&endpoint, "endpoint", "", "Test endpoint for this release")
 	addreleaseCmd.PersistentFlags().StringVar(&vcsUri, "vcsuri", "", "URI of VCS repository")
 	addreleaseCmd.PersistentFlags().StringVar(&vcsType, "vcstype", "", "Type of VCS repository: git, svn, mercurial")
 	addreleaseCmd.PersistentFlags().StringVar(&commit, "commit", "", "Commit id")
