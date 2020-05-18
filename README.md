@@ -65,6 +65,7 @@ Flags stand for:
 - **-k** - flag for project api key (required).
 - **-b** - flag to denote branch (required). If branch is not recorded yet, Reliza Hub will attempt to create it.
 - **-v** - version (required). Note that Reliza Hub will reject the call if a release with this exact version is already present for this project.
+- **endpoint** - flag to denote test endpoint URI (optional). This would be useful for systems where every release gets test URI.
 - **vcsuri** - flag to denote vcs uri (optional). Currently this flag is needed if we want to set a commit for the release. However, soon it will be needed only if the vcs uri is not yet set for the project.
 - **vcstype** - flag to denote vcs type (optional). Supported values: git, svn, mercurial. As with vcsuri, this flag is needed if we want to set a commit for the release. However, soon it will be needed only if the vcs uri is not yet set for the project.
 - **commit** - flag to denote vcs commit id or hash (optional). This is needed to provide source code entry metadata into the release.
@@ -77,6 +78,10 @@ Flags stand for:
 - **arttype** - flag to denote artifact type (optional). This flag is used to denote artifact type. Types are based on [CycloneDX](https://cyclonedx.org/) spec. Supported values: Docker, File, Image, Font, Library, Application, Framework, OS, Device, Firmware.
 - **datestart** - flag to denote artifact build start date and time, must conform to ISO strict date (in bash, use *date -Iseconds*, if used there must be one datestart flag entry per artifact, optional).
 - **dateend** - flag to denote artifact build end date and time, must conform to ISO strict date (in bash, use *date -Iseconds*, if used there must be one datestart flag entry per artifact, optional).
+- **publisher** - flag to denote artifact publisher (if used there must be one publisher flag entry per artifact, optional).
+- **version** - flag to denote artifact version if different from release version (if used there must be one publisher flag entry per artifact, optional).
+- **package** - flag to denote artifact package type according to CycloneDX spec: MAVEN, NPM, NUGET, GEM, PYPI, DOCKER (if used there must be one publisher flag entry per artifact, optional).
+- **group** - flag to denote artifact group (if used there must be one group flag entry per artifact, optional).
 - **artdigests** - flag to denote artifact digests (optional). This flag is used to indicate artifact digests. By convention, digests must be prefixed with type followed by colon and then actual digest hash, i.e. *sha256:4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd* - here type is *sha256* and digest is *4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd*. Multiple digests are supported and must be comma separated. I.e.: 
 ```
 --artdigests sha256:4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd,sha1:fe4165996a41501715ea0662b6a906b55e34a2a1
