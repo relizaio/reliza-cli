@@ -206,7 +206,7 @@ rlzclientout=$(docker run --rm relizaio/reliza-go-client    \
     --env TEST    \
     --tagkey deployable    \
     --tagval true);    \
-    echo $(echo $rlzclientout | jq -r .artifacts[0].identifier)@$(echo $rlzclientout | jq -r .artifacts[0].digests[] | grep sha256)
+    echo $(echo $rlzclientout | jq -r .artifactDetails[0].identifier)@$(echo $rlzclientout | jq -r .artifactDetails[0].digests[] | grep sha256)
 ```
 
 
