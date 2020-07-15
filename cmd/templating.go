@@ -45,7 +45,10 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 				projectIdWBranch := r.FindStringSubmatch(line)[1]
 				projectIdWBranchArr := strings.Split(projectIdWBranch, "__")
 				projectId := projectIdWBranchArr[0]
-				branch := projectIdWBranchArr[1]
+				branch := ""
+				if len(projectIdWBranchArr) == 2 {
+					branch = projectIdWBranchArr[1]
+				}
 				//fmt.Println(subLineToReplace)
 				//fmt.Println(projectId)
 				//fmt.Println(branch)
