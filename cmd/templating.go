@@ -38,29 +38,41 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 		for s.Scan() {
 			line := s.Text()
 			if strings.Contains(line, "<%PROJECT__") {
+				// reset all params to avoid incorrect results from old templates
+				branch = ""
+				project = ""
+				product = ""
 				// extract project id to request latest applicable release from reliza hub
 				//match, _ := regexp.MatchString("<%PROJECT__(.+)%>", line)
-				r, _ := regexp.Compile("<%PROJECT__([-_a-zA-Z0-9]+)%>")
+				r, _ := regexp.Compile("<%PROJECT__([-_a-zA-Z0-9\\s]+)%>")
 				subLineToReplace := r.FindStringSubmatch(line)[0]
-				projectIdWBranch := r.FindStringSubmatch(line)[1]
-				projectIdWBranchArr := strings.Split(projectIdWBranch, "__")
+				projectProductTemplate := r.FindStringSubmatch(line)[1]
+				projectProductArray := strings.Split(projectProductTemplate, "PRODUCT__")
+				productId := ""
+				if len(projectProductArray) == 2 {
+					// product is present
+					productIdWBranchArr := strings.Split(projectProductArray[1], "__")
+					productId = productIdWBranchArr[0]
+					if len(productIdWBranchArr) == 2 {
+						branch = productIdWBranchArr[1]
+					}
+				}
+
+				projectIdWBranchArr := strings.Split(projectProductArray[0], "__")
 				projectId := projectIdWBranchArr[0]
-				branch := ""
-				if len(projectIdWBranchArr) == 2 {
+				if len(branch) < 1 && len(productId) < 1 && len(projectIdWBranchArr) == 2 {
 					branch = projectIdWBranchArr[1]
 				}
 				//fmt.Println(subLineToReplace)
 				//fmt.Println(projectId)
 				//fmt.Println(branch)
-
 				// call Reliza Hub with specified project id
-				body := getLatestReleaseFunc("false", relizaHubUri, projectId, branch, environment,
+				body := getLatestReleaseFunc("false", relizaHubUri, projectId, productId, branch, environment,
 					tagKey, tagVal, apiKeyId, apiKey, instance, namespace)
 
 				// parse body json
 				var bodyJson map[string]interface{}
 				json.Unmarshal(body(), &bodyJson)
-
 				// assume only one artifact - should be configured by tags - later add type selector - TODO
 				// for now only use first digest - TODO
 				var pickedArtifact string
@@ -86,7 +98,7 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 	}
 }
 
-func getLatestReleaseFunc(debug string, relizaHubUri string, project string, branch string, environment string,
+func getLatestReleaseFunc(debug string, relizaHubUri string, project string, product string, branch string, environment string,
 	tagKey string, tagVal string, apiKeyId string, apiKey string, instance string, namespace string) func() []byte {
 	if debug == "true" {
 		fmt.Println("Using Reliza Hub at", relizaHubUri)
@@ -96,6 +108,10 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, bra
 	body := map[string]string{"project": project}
 	if len(environment) > 0 {
 		body["environment"] = environment
+	}
+
+	if len(product) > 0 {
+		body["product"] = product
 	}
 
 	if len(tagKey) > 0 && len(tagVal) > 0 {

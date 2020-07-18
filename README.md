@@ -187,7 +187,8 @@ Flags stand for:
 - **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
 - **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
 - **--project** - flag to denote UUID of specific Project or Product, UUID must be obtained from [Reliza Hub](https://relizahub.com) (required).
-- **--branch** - flag to denote required branch of chosen Project or Product (required).
+- **--product** - flag to denote UUID of Product which packages Project or Product for which we inquiry about its version via --project flag, UUID must be obtained from [Reliza Hub](https://relizahub.com) (optional).
+- **--branch** - flag to denote required branch of chosen Project or Product (optional, if not supplied settings from Reliza Hub UI are used).
 - **--env** - flag to denote environment to which release approvals should match. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION. If not supplied, latest release will be returned regardless of approvals (optional).
 - **--tagkey** - flag to denote tag key to use as a selector for artifact (optional, if provided tagval flag must also be supplied). Note that currently only single tag is supported.
 - **--tagkey** - flag to denote tag value to use as a selector for artifact (optional, if provided tagkey flag must also be supplied).
@@ -216,7 +217,9 @@ This use case was designed specifically for GitOps. Imagine that you have GitOps
 
 For a real-life use-case please refer to a working script in [deployment project for Classic Mafia Game Card Shuffle](https://github.com/taleodor/mafia-deployment/blob/master/pull_reliza_push_github_production.sh) while working templates can be found [here](https://github.com/taleodor/mafia-deployment/tree/master/k8s_templates).
 
-Note that sample template formatting would look like:
+Allowed template formatting types:
+
+1. Basic project
 
 ```
 image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31%>
@@ -224,13 +227,29 @@ image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31%>
 
 where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com). In this format release branch would be resolved via settings in Reliza Hub UI in project settings -> **What branch to use for which environment?** setting.
 
-Alternative, template formatting may specify branch explicitly as following:
+2. Basic project with branch - template formatting may specify branch explicitly as following:
 
 ```
 image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31__master%>
 ```
 
 where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com) and **master** is our desired branch.
+
+3. Project conditioned on Product
+
+```
+image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31__PRODUCT__f407a320-8c3f-4658-be34-7635a69a8c05%>
+```
+
+where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com), and **f407a320-8c3f-4658-be34-7635a69a8c05** is a product UUID from Reliza Hub which bundles this project we inquire about. In this format release feature set would be resolved via settings in Reliza Hub UI in product settings -> **What feature set to use for which environment?** setting.
+
+4. Project conditioned on Product with explicit feature set
+
+```
+image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31__PRODUCT__f407a320-8c3f-4658-be34-7635a69a8c05__Base Feature Set%>
+```
+
+where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com), and **f407a320-8c3f-4658-be34-7635a69a8c05** is a product UUID from Reliza Hub which bundles this project we inquire about, and **Base Feature Set** is out desired feature set.
 
 Sample command:
 

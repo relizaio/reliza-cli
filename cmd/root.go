@@ -65,6 +65,7 @@ var parseDirectory string
 var releaseId string
 var releaseVersion string
 var relizaHubUri string
+var product string
 var project string
 var senderId string
 var status string
@@ -404,7 +405,7 @@ var getLatestReleaseCmd = &cobra.Command{
 	Long: `This CLI command would connect to Reliza Hub and would obtain latest release for specified Project and Branch
 			or specified Product and Feature Set.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		getLatestReleaseFunc(debug, relizaHubUri, project, branch, environment, tagKey, tagVal, apiKeyId, apiKey, instance, namespace)
+		getLatestReleaseFunc(debug, relizaHubUri, project, product, branch, environment, tagKey, tagVal, apiKeyId, apiKey, instance, namespace)
 	},
 }
 
@@ -523,14 +524,14 @@ func init() {
 
 	// flags for latest project or product release
 	getLatestReleaseCmd.PersistentFlags().StringVar(&project, "project", "", "Project or Product UUID from Reliza Hub of project or product from which to obtain latest release")
-	getLatestReleaseCmd.PersistentFlags().StringVar(&branch, "branch", "", "Name of branch or Feature Set from Reliza Hub for which latest release is requested")
+	getLatestReleaseCmd.PersistentFlags().StringVar(&product, "product", "", "Product UUID from Reliza Hub to condition project release to this product bundle (optional)")
+	getLatestReleaseCmd.PersistentFlags().StringVar(&branch, "branch", "", "Name of branch or Feature Set from Reliza Hub for which latest release is requested, if not supplied UI mapping is used (optional)")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment to obtain approvals details from (optional)")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&instance, "instance", "", "Instance ID for which to check release (optional)")
-	getLatestReleaseCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace within instance for which to check release (optional)")
+	getLatestReleaseCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace within instance for which to check release, only matters if instance is supplied (optional)")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&tagKey, "tagkey", "", "Tag key to use for picking artifact (optional)")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&tagVal, "tagval", "", "Tag value to use for picking artifact (optional)")
 	getLatestReleaseCmd.MarkPersistentFlagRequired("project")
-	getLatestReleaseCmd.MarkPersistentFlagRequired("branch")
 
 	// flags for parse template command
 	parseCopyTemplatesCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment to obtain approvals details from (optional)")
