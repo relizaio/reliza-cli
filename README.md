@@ -219,6 +219,14 @@ For a real-life use-case please refer to a working script in [deployment project
 Note that sample template formatting would look like:
 
 ```
+image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31%>
+```
+
+where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com). In this format release branch would be resolved via settings in Reliza Hub UI in project settings -> **What branch to use for which environment?** setting.
+
+Alternative, template formatting may specify branch explicitly as following:
+
+```
 image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31__master%>
 ```
 
@@ -271,5 +279,8 @@ Flags stand for:
 - **approverelease** - command that denotes that we are approving release programmatically for the specific type
 - **-i** - flag for api id (required).
 - **-k** - flag for api key (required).
-- **--release** - flag to specify release uuid, which can be obtained from the release view or programmatically (required).
+- **--releaseid** - flag to specify release uuid, which can be obtained from the release view or programmatically (either this flag or project id and release version is required).
+- **--project** - flag to specify project uuid, which can be obtained from the project settings on Reliza Hub UI (either this flag and release version or releaseid must be provided).
+- **--releaseversion** - flag to specify release string version with the project flag above (either this flag and project or releaseid must be provided).
 - **--approval** - approval type as per approval matrix on the Organization Settings page in Reliza Hub (required).
+- **--disapprove** - flag to indicate disapproval event instead of approval (optional).

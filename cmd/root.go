@@ -50,6 +50,7 @@ var dateActual string
 var dateStart []string
 var dateEnd []string
 var debug string
+var disapprove bool // approve (default) or disapprove
 var endpoint string
 var environment string
 var hash string
@@ -62,6 +63,7 @@ var namespace string
 var outDirectory string
 var parseDirectory string
 var releaseId string
+var releaseVersion string
 var relizaHubUri string
 var project string
 var senderId string
@@ -264,10 +266,18 @@ var approveReleaseCmd = &cobra.Command{
 		if debug == "true" {
 			fmt.Println("Using Reliza Hub at", relizaHubUri)
 		}
-
-		body := map[string]interface{}{"uuid": releaseId}
-		approvalMap := map[string]bool{approvalType: true}
+		body := map[string]interface{}{}
+		approvalMap := map[string]bool{approvalType: !disapprove}
 		body["approvals"] = approvalMap
+		if len(releaseId) > 0 {
+			body["uuid"] = releaseId
+		}
+		if len(releaseVersion) > 0 {
+			body["version"] = releaseVersion
+		}
+		if len(project) > 0 {
+			body["project"] = project
+		}
 
 		client := resty.New()
 		resp, err := client.R().
@@ -484,8 +494,12 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringVar(&status, "status", "", "Status of release - set to 'rejected' for failed releases, otherwise 'completed' is used (optional).")
 
 	// flags for approve release command
-	approveReleaseCmd.PersistentFlags().StringVar(&releaseId, "release", "", "UUID of release to be approved")
+	approveReleaseCmd.PersistentFlags().StringVar(&releaseId, "releaseid", "", "UUID of release to be approved (either releaseid or releaseversion and project must be set)")
+	approveReleaseCmd.PersistentFlags().StringVar(&releaseVersion, "releaseversion", "", "Version of release to be approved (either releaseid or releaseversion and project must be set)")
+	approveReleaseCmd.PersistentFlags().StringVar(&project, "project", "", "UUID of project or product which release should be approved (either releaseid or releaseversion and project must be set)")
 	approveReleaseCmd.PersistentFlags().StringVar(&approvalType, "approval", "", "Name of approval to set")
+	approveReleaseCmd.PersistentFlags().BoolVar(&disapprove, "disapprove", false, "(Optional) Set --disapprove flag to indicate disapproval instead of approval")
+	approveReleaseCmd.MarkPersistentFlagRequired("approval")
 
 	// flags for instance data command
 	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images.txt", "Path to image file, ignored if --images parameter is supplied")
