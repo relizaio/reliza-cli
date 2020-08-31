@@ -117,6 +117,9 @@ var addreleaseCmd = &cobra.Command{
 		if len(endpoint) > 0 {
 			body["endpoint"] = endpoint
 		}
+		if len(project) > 0 {
+			body["project"] = project
+		}
 		if len(artId) > 0 {
 			// use artifacts, construct artifact array
 			artifacts := make([]map[string]interface{}, len(artId), len(artId))
@@ -346,6 +349,9 @@ var getVersionCmd = &cobra.Command{
 		}
 
 		body := map[string]string{"branch": branch}
+		if len(project) > 0 {
+			body["project"] = project
+		}
 		if len(modifier) > 0 {
 			body["modifier"] = modifier
 		}
@@ -473,6 +479,7 @@ func init() {
 	addreleaseCmd.MarkPersistentFlagRequired("version")
 	addreleaseCmd.MarkPersistentFlagRequired("branch")
 	addreleaseCmd.PersistentFlags().StringVar(&endpoint, "endpoint", "", "Test endpoint for this release")
+	addreleaseCmd.PersistentFlags().StringVar(&project, "project", "", "Project UUID for this release if org-wide key is used")
 	addreleaseCmd.PersistentFlags().StringVar(&vcsUri, "vcsuri", "", "URI of VCS repository")
 	addreleaseCmd.PersistentFlags().StringVar(&vcsType, "vcstype", "", "Type of VCS repository: git, svn, mercurial")
 	addreleaseCmd.PersistentFlags().StringVar(&commit, "commit", "", "Commit id")
@@ -514,6 +521,7 @@ func init() {
 	// flags for get version command
 	getVersionCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "", "Name of VCS Branch used")
 	getVersionCmd.MarkPersistentFlagRequired("branch")
+	getVersionCmd.PersistentFlags().StringVar(&project, "project", "", "Project UUID for this release if org-wide key is used")
 	getVersionCmd.PersistentFlags().StringVar(&action, "action", "", "Bump action name: bump | bumppatch | bumpminor | bumpmajor | bumpdate")
 	getVersionCmd.PersistentFlags().StringVar(&metadata, "metadata", "", "Version metadata")
 	getVersionCmd.PersistentFlags().StringVar(&modifier, "modifier", "", "Version modifier")

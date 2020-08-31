@@ -19,8 +19,8 @@ Sample command for semver version schema:
 ```
 docker run --rm relizaio/reliza-go-client    \
     getversion    \
-    -i project_api_id    \
-    -k project_api_key    \
+    -i project_or_organization_wide_rw_api_id    \
+    -k project_or_organization_wide_rw_api_key    \
     -b master    \
     --pin 1.2.patch
 ```
@@ -30,6 +30,7 @@ Flags stand for:
 - **-i** - flag for project api id (required).
 - **-k** - flag for project api key (required).
 - **-b** - flag to denote branch (required). If branch is not recorded yet, Reliza Hub will attempt to create it.
+- **project** - flag to denote project uuid (optional). Required if organization-wide read-write key is used, ignored if project specific api key is used.
 - **--pin** - flag to denote branch pin (optional for existing branches, required for new branches). If supplied for an existing branch and pin is different from current, it will override current pin.
 
 
@@ -42,8 +43,8 @@ Sample command to send release details:
 ```
 docker run --rm relizaio/reliza-go-client    \
     addrelease    \
-    -i project_api_id    \
-    -k project_api_key    \
+    -i project_or_organization_wide_rw_api_id    \
+    -k project_or_organization_wide_rw_api_key    \
     -b master    \
     -v 20.02.3    \
     --vcsuri github.com/relizaio/relizaGoClient    \
@@ -61,11 +62,12 @@ docker run --rm relizaio/reliza-go-client    \
 
 Flags stand for:
 - **addrelease** - command that denotes we are sending Release Metadata of a Project to Reliza Hub.
-- **-i** - flag for project api id (required).
-- **-k** - flag for project api key (required).
+- **-i** - flag for project api id or organization-wide read-write api id (required).
+- **-k** - flag for project api key or organization-wide read-write api key (required).
 - **-b** - flag to denote branch (required). If branch is not recorded yet, Reliza Hub will attempt to create it.
 - **-v** - version (required). Note that Reliza Hub will reject the call if a release with this exact version is already present for this project.
 - **endpoint** - flag to denote test endpoint URI (optional). This would be useful for systems where every release gets test URI.
+- **project** - flag to denote project uuid (optional). Required if organization-wide read-write key is used, ignored if project specific api key is used.
 - **vcsuri** - flag to denote vcs uri (optional). Currently this flag is needed if we want to set a commit for the release. However, soon it will be needed only if the vcs uri is not yet set for the project.
 - **vcstype** - flag to denote vcs type (optional). Supported values: git, svn, mercurial. As with vcsuri, this flag is needed if we want to set a commit for the release. However, soon it will be needed only if the vcs uri is not yet set for the project.
 - **commit** - flag to denote vcs commit id or hash (optional). This is needed to provide source code entry metadata into the release.
