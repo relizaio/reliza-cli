@@ -17,6 +17,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -62,6 +63,8 @@ var modifier string
 var namespace string
 var outDirectory string
 var parseDirectory string
+var tagSourceFile string
+var definitionReferenceFile string
 var releaseId string
 var releaseVersion string
 var relizaHubUri string
@@ -451,6 +454,38 @@ var parseCopyTemplatesCmd = &cobra.Command{
 	},
 }
 
+// Modern way to parse templates (re-write over parse copy template)
+var replaceTagsCmd = &cobra.Command{
+	Use:   "replacetags",
+	Short: "Replaces tags in k8s, helm or compose files",
+	Long:  `Modern version of parse copy template`,
+	Run: func(cmd *cobra.Command, args []string) {
+		// v1 - takes parseDirectory, outDirectory, source txt file, definition reference file - i.e. result of helm template
+		// parseDirectory, outDirectory, tagSourceFile, definitionReferenceFile
+
+		// 1st - scan definition reference file and identify all used tags (scan by "image:" pattern)
+		defFile, fileOpenErr := os.Open(definitionReferenceFile)
+		if fileOpenErr != nil {
+			fmt.Println(fileOpenErr)
+			os.Exit(1)
+		}
+
+		defScanner := bufio.NewScanner(defFile)
+		// input files must be utf-8 !!!
+		for defScanner.Scan() {
+			defScanner.Bytes()
+			line := defScanner.Text()
+			if strings.Contains(line, "image: ") {
+				// extract actual image
+				imageLineArray := strings.Split(line, "image: ")
+				image := imageLineArray[1]
+				fmt.Println(image)
+			}
+		}
+
+	},
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
@@ -550,6 +585,12 @@ func init() {
 	parseCopyTemplatesCmd.PersistentFlags().StringVar(&instance, "instance", "", "Instance ID for which to check release (optional)")
 	parseCopyTemplatesCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace within instance for which to check release (optional)")
 
+	// flags for get tags
+	replaceTagsCmd.PersistentFlags().StringVar(&parseDirectory, "indirectory", "/indir", "Input directory to parse template files from")
+	replaceTagsCmd.PersistentFlags().StringVar(&outDirectory, "outdirectory", "/outdir", "Output directory to output resulting files with substitutions")
+	replaceTagsCmd.PersistentFlags().StringVar(&tagSourceFile, "tagsource", "", "Source file with tags")
+	replaceTagsCmd.PersistentFlags().StringVar(&definitionReferenceFile, "defsource", "", "Source file for definitions")
+
 	rootCmd.AddCommand(addreleaseCmd)
 	rootCmd.AddCommand(approveReleaseCmd)
 	rootCmd.AddCommand(checkReleaseByHashCmd)
@@ -558,6 +599,7 @@ func init() {
 	rootCmd.AddCommand(getVersionCmd)
 	rootCmd.AddCommand(instDataCmd)
 	rootCmd.AddCommand(parseCopyTemplatesCmd)
+	rootCmd.AddCommand(replaceTagsCmd)
 }
 
 func printResponse(err error, resp *resty.Response) {
