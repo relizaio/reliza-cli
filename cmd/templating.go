@@ -98,6 +98,36 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 	}
 }
 
+func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map[string]string) {
+	// open read file
+	inFileOpened, fileOpenErr := os.Open(inFile)
+	if fileOpenErr != nil {
+		fmt.Println(fileOpenErr)
+		os.Exit(1)
+	}
+
+	// open write file
+	outFileOpened, fileOpenErr := os.Create(outFile)
+	if fileOpenErr != nil {
+		fmt.Println(fileOpenErr)
+		os.Exit(1)
+	}
+
+	inScanner := bufio.NewScanner(inFileOpened)
+	for inScanner.Scan() {
+		line := inScanner.Text()
+		// check if line contains any key of substitution map
+		for k, v := range substitutionMap {
+			if strings.Contains(line, k) {
+				line = strings.ReplaceAll(line, k, v)
+				break
+			}
+		}
+		outFileOpened.WriteString(line + "\n")
+	}
+
+}
+
 func getLatestReleaseFunc(debug string, relizaHubUri string, project string, product string, branch string, environment string,
 	tagKey string, tagVal string, apiKeyId string, apiKey string, instance string, namespace string) func() []byte {
 	if debug == "true" {

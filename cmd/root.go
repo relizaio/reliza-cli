@@ -461,8 +461,8 @@ var replaceTagsCmd = &cobra.Command{
 	Short: "Replaces tags in k8s, helm or compose files",
 	Long:  `Modern version of parse copy template`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// v1 - takes parseDirectory, outDirectory, source txt file, definition reference file - i.e. result of helm template
-		// parseDirectory, outDirectory, tagSourceFile, definitionReferenceFile
+		// v1 - takes inFile = parseDirectory var, outFile = outDirectory, source txt file, definition reference file - i.e. result of helm template
+		// inFile = parseDirectory, outFile = outDirectory, tagSourceFile, definitionReferenceFile
 
 		// 1st - scan tag source file and construct a map of generic tag to actual tag
 		tagFile, fileOpenErr := os.Open(tagSourceFile)
@@ -537,7 +537,7 @@ var replaceTagsCmd = &cobra.Command{
 		}
 
 		fmt.Println(substitutionMap)
-
+		substituteCopyBasedOnMap(parseDirectory, outDirectory, substitutionMap)
 	},
 }
 
@@ -641,10 +641,10 @@ func init() {
 	parseCopyTemplatesCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace within instance for which to check release (optional)")
 
 	// flags for get tags
-	replaceTagsCmd.PersistentFlags().StringVar(&parseDirectory, "indirectory", "/indir", "Input directory to parse template files from")
-	replaceTagsCmd.PersistentFlags().StringVar(&outDirectory, "outdirectory", "/outdir", "Output directory to output resulting files with substitutions")
+	replaceTagsCmd.PersistentFlags().StringVar(&parseDirectory, "infile", "", "Input file to parse, such as helm values file or docker compose file")
+	replaceTagsCmd.PersistentFlags().StringVar(&outDirectory, "outfile", "", "Output file with parsed values")
 	replaceTagsCmd.PersistentFlags().StringVar(&tagSourceFile, "tagsource", "", "Source file with tags")
-	replaceTagsCmd.PersistentFlags().StringVar(&definitionReferenceFile, "defsource", "", "Source file for definitions")
+	replaceTagsCmd.PersistentFlags().StringVar(&definitionReferenceFile, "defsource", "", "Source file for definitions (optional, if not set input file is used). For helm, should be output of helm template command")
 
 	rootCmd.AddCommand(addreleaseCmd)
 	rootCmd.AddCommand(approveReleaseCmd)
