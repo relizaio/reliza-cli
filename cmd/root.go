@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -463,25 +464,79 @@ var replaceTagsCmd = &cobra.Command{
 		// v1 - takes parseDirectory, outDirectory, source txt file, definition reference file - i.e. result of helm template
 		// parseDirectory, outDirectory, tagSourceFile, definitionReferenceFile
 
-		// 1st - scan definition reference file and identify all used tags (scan by "image:" pattern)
+		// 1st - scan tag source file and construct a map of generic tag to actual tag
+		tagFile, fileOpenErr := os.Open(tagSourceFile)
+		if fileOpenErr != nil {
+			fmt.Println(fileOpenErr)
+			os.Exit(1)
+		}
+		tagSourceMap := map[string]string{}
+		tagScanner := bufio.NewScanner(tagFile)
+		for tagScanner.Scan() {
+			// TODO: for now inspect one per line for simplicity, we'll sort out formatting later
+			line := tagScanner.Text()
+			if strings.Contains(line, "@") {
+				sourceTagSplit := strings.Split(line, "@")
+				tagSourceMap[sourceTagSplit[0]] = line
+			} else if strings.Contains(line, ":") {
+				sourceTagSplit := strings.SplitN(line, ":", 2)
+				tagSourceMap[sourceTagSplit[0]] = line
+			} else {
+				tagSourceMap[line] = line
+			}
+		}
+
+		fmt.Println(tagSourceMap)
+
+		// 2nd - scan definition reference file and identify all used tags (scan by "image:" pattern)
 		defFile, fileOpenErr := os.Open(definitionReferenceFile)
 		if fileOpenErr != nil {
 			fmt.Println(fileOpenErr)
 			os.Exit(1)
 		}
 
+		// map to store definition images to their replacements -> will be applied on source files
+		defScanMap := map[string]string{}
+
 		defScanner := bufio.NewScanner(defFile)
 		// input files must be utf-8 !!!
 		for defScanner.Scan() {
-			defScanner.Bytes()
 			line := defScanner.Text()
 			if strings.Contains(line, "image: ") {
 				// extract actual image
 				imageLineArray := strings.Split(line, "image: ")
 				image := imageLineArray[1]
+				// remove beginning and ending quotes if present
+				re := regexp.MustCompile("^\"")
+				image = re.ReplaceAllLiteralString(image, "")
+				re = regexp.MustCompile("\"$")
+				image = re.ReplaceAllLiteralString(image, "")
 				fmt.Println(image)
+				// parse and add to map
+				if strings.Contains(image, "@") {
+					tagSplit := strings.Split(image, "@")
+					defScanMap[tagSplit[0]] = image
+				} else if strings.Contains(line, ":") {
+					tagSplit := strings.SplitN(image, ":", 2)
+					defScanMap[tagSplit[0]] = image
+				} else {
+					defScanMap[image] = image
+				}
 			}
 		}
+
+		// combine 2 maps and come up with substitution map to apply to source (i.e. to source helm chart)
+		substitutionMap := map[string]string{}
+
+		// traverse defScanMap, map to tagSourceMap and put to substitution map
+		for k, v := range defScanMap {
+			// https://stackoverflow.com/questions/2050391/how-to-check-if-a-map-contains-a-key-in-go
+			if tagVal, ok := tagSourceMap[k]; ok {
+				substitutionMap[v] = tagVal
+			}
+		}
+
+		fmt.Println(substitutionMap)
 
 	},
 }
