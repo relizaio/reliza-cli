@@ -125,7 +125,34 @@ func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map
 		}
 		outFileOpened.WriteString(line + "\n")
 	}
+}
 
+func scanTagFile(tagSourceFile string, typeVal string) map[string]string {
+	tagFile, fileOpenErr := os.Open(tagSourceFile)
+	if fileOpenErr != nil {
+		fmt.Println(fileOpenErr)
+		os.Exit(1)
+	}
+
+	tagSourceMap := map[string]string{}
+	if typeVal == "cyclonedx" {
+
+	} else if typeVal == "text" {
+		tagScanner := bufio.NewScanner(tagFile)
+		for tagScanner.Scan() {
+			line := tagScanner.Text()
+			if strings.Contains(line, "@") {
+				sourceTagSplit := strings.Split(line, "@")
+				tagSourceMap[sourceTagSplit[0]] = line
+			} else if strings.Contains(line, ":") {
+				sourceTagSplit := strings.SplitN(line, ":", 2)
+				tagSourceMap[sourceTagSplit[0]] = line
+			} else {
+				tagSourceMap[line] = line
+			}
+		}
+	}
+	return tagSourceMap
 }
 
 func getLatestReleaseFunc(debug string, relizaHubUri string, project string, product string, branch string, environment string,

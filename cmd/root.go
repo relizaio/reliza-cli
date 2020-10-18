@@ -77,6 +77,7 @@ var tagKey string
 var tagKeyArr []string
 var tagVal string
 var tagValArr []string
+var typeVal string
 var version string
 var versionSchema string
 var vcsUri string
@@ -463,28 +464,10 @@ var replaceTagsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// v1 - takes inFile = parseDirectory var, outFile = outDirectory, source txt file, definition reference file - i.e. result of helm template
 		// inFile = parseDirectory, outFile = outDirectory, tagSourceFile, definitionReferenceFile
+		// type - typeVal: options - text, cyclonedx
 
 		// 1st - scan tag source file and construct a map of generic tag to actual tag
-		tagFile, fileOpenErr := os.Open(tagSourceFile)
-		if fileOpenErr != nil {
-			fmt.Println(fileOpenErr)
-			os.Exit(1)
-		}
-		tagSourceMap := map[string]string{}
-		tagScanner := bufio.NewScanner(tagFile)
-		for tagScanner.Scan() {
-			// TODO: for now inspect one per line for simplicity, we'll sort out formatting later
-			line := tagScanner.Text()
-			if strings.Contains(line, "@") {
-				sourceTagSplit := strings.Split(line, "@")
-				tagSourceMap[sourceTagSplit[0]] = line
-			} else if strings.Contains(line, ":") {
-				sourceTagSplit := strings.SplitN(line, ":", 2)
-				tagSourceMap[sourceTagSplit[0]] = line
-			} else {
-				tagSourceMap[line] = line
-			}
-		}
+		tagSourceMap := scanTagFile(tagSourceFile, typeVal)
 
 		fmt.Println(tagSourceMap)
 
@@ -645,6 +628,7 @@ func init() {
 	replaceTagsCmd.PersistentFlags().StringVar(&outDirectory, "outfile", "", "Output file with parsed values")
 	replaceTagsCmd.PersistentFlags().StringVar(&tagSourceFile, "tagsource", "", "Source file with tags")
 	replaceTagsCmd.PersistentFlags().StringVar(&definitionReferenceFile, "defsource", "", "Source file for definitions (optional, if not set input file is used). For helm, should be output of helm template command")
+	replaceTagsCmd.PersistentFlags().StringVar(&typeVal, "type", "cyclonedx", "Type of source tags file: cyclonedx (default) or text")
 
 	rootCmd.AddCommand(addreleaseCmd)
 	rootCmd.AddCommand(approveReleaseCmd)
