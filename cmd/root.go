@@ -469,8 +469,6 @@ var replaceTagsCmd = &cobra.Command{
 		// 1st - scan tag source file and construct a map of generic tag to actual tag
 		tagSourceMap := scanTagFile(tagSourceFile, typeVal)
 
-		fmt.Println(tagSourceMap)
-
 		// 2nd - scan definition reference file and identify all used tags (scan by "image:" pattern)
 		defFile, fileOpenErr := os.Open(definitionReferenceFile)
 		if fileOpenErr != nil {
@@ -494,7 +492,6 @@ var replaceTagsCmd = &cobra.Command{
 				image = re.ReplaceAllLiteralString(image, "")
 				re = regexp.MustCompile("\"$")
 				image = re.ReplaceAllLiteralString(image, "")
-				fmt.Println(image)
 				// parse and add to map
 				if strings.Contains(image, "@") {
 					tagSplit := strings.Split(image, "@")
@@ -518,8 +515,6 @@ var replaceTagsCmd = &cobra.Command{
 				substitutionMap[v] = tagVal
 			}
 		}
-
-		fmt.Println(substitutionMap)
 		substituteCopyBasedOnMap(parseDirectory, outDirectory, substitutionMap)
 	},
 }

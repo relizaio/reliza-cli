@@ -135,24 +135,87 @@ func scanTagFile(tagSourceFile string, typeVal string) map[string]string {
 	}
 
 	tagSourceMap := map[string]string{}
-	if typeVal == "cyclonedx" {
 
+	if typeVal == "cyclonedx" {
+		cycloneBytes, ioReadErr := ioutil.ReadAll(tagFile)
+		if ioReadErr != nil {
+			fmt.Println(ioReadErr)
+			os.Exit(1)
+		}
+		var bomJson map[string]interface{}
+		json.Unmarshal(cycloneBytes, &bomJson)
+		// go to components in cyclone dx
+		bomComponents := bomJson["components"].([]interface{})
+		for _, bomc := range bomComponents {
+			// check that type is container
+			if bomc.(map[string]interface{})["type"] == "container" {
+
+				resolvedImage := false
+
+				// name is a mandatory field in cyclonedx spec
+				contName := bomc.(map[string]interface{})["name"].(string)
+				// 1st try to parse purl if present
+
+				if bomc.(map[string]interface{})["purl"] != nil {
+					purl := bomc.(map[string]interface{})["purl"].(string)
+					// sample purl pkg:docker/test-cont@sha256:testsha256hash?repository_url=123.dkr.ecr.us-east-1.amazonaws.com
+					// remove pkg:docker/ thing first - must be there
+					purl = strings.ReplaceAll(purl, "pkg:docker/", "")
+					// check if the image is not on docker hub - split by ?repository_url= if present, otherewise repository is docker hub (ignore)
+					purlImageName := purl
+					if strings.Contains(purl, "?repository_url=") {
+						purlImageName = strings.Split(purl, "?repository_url=")[1] + "/" + strings.Split(purl, "?repository_url=")[0]
+					}
+					parseImageNameIntoMap(purlImageName, tagSourceMap)
+					resolvedImage = true
+				}
+				if !resolvedImage && bomc.(map[string]interface{})["hashes"] != nil {
+					// if purl is not set - use name and hash if present, but only if hashes contain SHA-256 algorithm
+					for _, hashEntry := range bomc.(map[string]interface{})["hashes"].([]interface{}) {
+						alg := hashEntry.(map[string]string)["alg"]
+						if 0 == strings.Compare(alg, "SHA-256") {
+							// take name and attach hash
+							fullImageName := stripImageHashTag(contName) + "@sha256:" + hashEntry.(map[string]string)["content"]
+							parseImageNameIntoMap(fullImageName, tagSourceMap)
+							resolvedImage = true
+							break
+						}
+					}
+				}
+				if !resolvedImage {
+					// if both purl and hashes are not set - use only name and treat it same as text file case
+					parseImageNameIntoMap(contName, tagSourceMap)
+				}
+			}
+		}
 	} else if typeVal == "text" {
 		tagScanner := bufio.NewScanner(tagFile)
 		for tagScanner.Scan() {
 			line := tagScanner.Text()
-			if strings.Contains(line, "@") {
-				sourceTagSplit := strings.Split(line, "@")
-				tagSourceMap[sourceTagSplit[0]] = line
-			} else if strings.Contains(line, ":") {
-				sourceTagSplit := strings.SplitN(line, ":", 2)
-				tagSourceMap[sourceTagSplit[0]] = line
-			} else {
-				tagSourceMap[line] = line
-			}
+			parseImageNameIntoMap(line, tagSourceMap)
 		}
 	}
 	return tagSourceMap
+}
+
+/**
+* This adds value into tag source map based on image name
+ */
+func parseImageNameIntoMap(imageName string, tagSourceMap map[string]string) {
+	strippedImageName := stripImageHashTag(imageName)
+	tagSourceMap[imageName] = strippedImageName
+}
+
+func stripImageHashTag(imageName string) string {
+	strippedImageName := imageName
+	if strings.Contains(imageName, "@") {
+		sourceTagSplit := strings.Split(imageName, "@")
+		strippedImageName = sourceTagSplit[0]
+	} else if strings.Contains(imageName, ":") {
+		sourceTagSplit := strings.SplitN(imageName, ":", 2)
+		strippedImageName = sourceTagSplit[0]
+	}
+	return strippedImageName
 }
 
 func getLatestReleaseFunc(debug string, relizaHubUri string, project string, product string, branch string, environment string,
