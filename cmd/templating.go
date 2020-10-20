@@ -16,6 +16,7 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 	tagVal string, apiKeyId string, apiKey string, instance string, namespace string) {
 	files, err := ioutil.ReadDir(directory)
 	if err != nil {
+		fmt.Println("Error opening parse directory", directory)
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -24,12 +25,14 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 		// open read file
 		fullFile, fileOpenErr := os.Open(directory + "/" + f.Name())
 		if fileOpenErr != nil {
+			fmt.Println("Error opening source file for parse", directory+"/"+f.Name())
 			fmt.Println(fileOpenErr)
 			os.Exit(1)
 		}
 		// open write file
 		writeFile, writeFileCreateErr := os.Create(outDirectory + "/" + f.Name())
 		if writeFileCreateErr != nil {
+			fmt.Println("Error creating parse output file", outDirectory+"/"+f.Name())
 			fmt.Println(writeFileCreateErr)
 			os.Exit(1)
 		}
