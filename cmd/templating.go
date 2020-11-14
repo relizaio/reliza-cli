@@ -102,20 +102,22 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 }
 
 func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map[string]string) {
+	fmt.Println("Opening in file...")
 	// open read file
 	inFileOpened, fileOpenErr := os.Open(inFile)
 	if fileOpenErr != nil {
+		fmt.Println("Error opening inFile = " + inFile)
 		fmt.Println(fileOpenErr)
 		os.Exit(1)
 	}
-
+	fmt.Println("Opening output file...")
 	// open write file
 	outFileOpened, fileOpenErr := os.Create(outFile)
 	if fileOpenErr != nil {
+		fmt.Println("Error opening outFile = " + outFile)
 		fmt.Println(fileOpenErr)
 		os.Exit(1)
 	}
-
 	inScanner := bufio.NewScanner(inFileOpened)
 	for inScanner.Scan() {
 		line := inScanner.Text()
@@ -133,6 +135,7 @@ func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map
 func scanTagFile(tagSourceFile string, typeVal string) map[string]string {
 	tagFile, fileOpenErr := os.Open(tagSourceFile)
 	if fileOpenErr != nil {
+		fmt.Println("Error opening tagSourceFile = " + tagSourceFile)
 		fmt.Println(fileOpenErr)
 		os.Exit(1)
 	}
@@ -142,6 +145,7 @@ func scanTagFile(tagSourceFile string, typeVal string) map[string]string {
 	if typeVal == "cyclonedx" {
 		cycloneBytes, ioReadErr := ioutil.ReadAll(tagFile)
 		if ioReadErr != nil {
+			fmt.Println("Error opening tagFile = " + tagSourceFile)
 			fmt.Println(ioReadErr)
 			os.Exit(1)
 		}
@@ -175,10 +179,10 @@ func scanTagFile(tagSourceFile string, typeVal string) map[string]string {
 				if !resolvedImage && bomc.(map[string]interface{})["hashes"] != nil {
 					// if purl is not set - use name and hash if present, but only if hashes contain SHA-256 algorithm
 					for _, hashEntry := range bomc.(map[string]interface{})["hashes"].([]interface{}) {
-						alg := hashEntry.(map[string]string)["alg"]
+						alg := hashEntry.(map[string]interface{})["alg"].(string)
 						if 0 == strings.Compare(alg, "SHA-256") {
 							// take name and attach hash
-							fullImageName := stripImageHashTag(contName) + "@sha256:" + hashEntry.(map[string]string)["content"]
+							fullImageName := stripImageHashTag(contName) + "@sha256:" + hashEntry.(map[string]interface{})["content"].(string)
 							parseImageNameIntoMap(fullImageName, tagSourceMap)
 							resolvedImage = true
 							break
@@ -206,7 +210,7 @@ func scanTagFile(tagSourceFile string, typeVal string) map[string]string {
  */
 func parseImageNameIntoMap(imageName string, tagSourceMap map[string]string) {
 	strippedImageName := stripImageHashTag(imageName)
-	tagSourceMap[imageName] = strippedImageName
+	tagSourceMap[strippedImageName] = imageName
 }
 
 func stripImageHashTag(imageName string) string {

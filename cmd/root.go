@@ -472,6 +472,7 @@ var replaceTagsCmd = &cobra.Command{
 		tagSourceMap := scanTagFile(tagSourceFile, typeVal)
 
 		// 2nd - scan definition reference file and identify all used tags (scan by "image:" pattern)
+		fmt.Println("Scanning definition references...")
 		defFile, fileOpenErr := os.Open(definitionReferenceFile)
 		if fileOpenErr != nil {
 			fmt.Println(fileOpenErr)
@@ -485,9 +486,9 @@ var replaceTagsCmd = &cobra.Command{
 		// input files must be utf-8 !!!
 		for defScanner.Scan() {
 			line := defScanner.Text()
-			if strings.Contains(line, "image: ") {
+			if strings.Contains(strings.ToLower(line), "image: ") {
 				// extract actual image
-				imageLineArray := strings.Split(line, "image: ")
+				imageLineArray := strings.Split(strings.ToLower(line), "image: ")
 				image := imageLineArray[1]
 				// remove beginning and ending quotes if present
 				re := regexp.MustCompile("^\"")
@@ -509,7 +510,6 @@ var replaceTagsCmd = &cobra.Command{
 
 		// combine 2 maps and come up with substitution map to apply to source (i.e. to source helm chart)
 		substitutionMap := map[string]string{}
-
 		// traverse defScanMap, map to tagSourceMap and put to substitution map
 		for k, v := range defScanMap {
 			// https://stackoverflow.com/questions/2050391/how-to-check-if-a-map-contains-a-key-in-go
