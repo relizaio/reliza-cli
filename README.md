@@ -16,7 +16,7 @@ This use case requests Version from Reliza Hub for our project. Note that projec
 
 Sample command for semver version schema:
 
-```
+```bash
 docker run --rm relizaio/reliza-go-client    \
     getversion    \
     -i project_or_organization_wide_rw_api_id    \
@@ -26,6 +26,7 @@ docker run --rm relizaio/reliza-go-client    \
 ```
 
 Flags stand for:
+
 - **getversion** - command that denotes we are obtaning next available release version for the branch. Note that if the call succeeds version assignment will be recorded and not given again by Reliza Hub, even if not consumed.
 - **-i** - flag for project api id (required).
 - **-k** - flag for project api key (required).
@@ -33,14 +34,13 @@ Flags stand for:
 - **project** - flag to denote project uuid (optional). Required if organization-wide read-write key is used, ignored if project specific api key is used.
 - **--pin** - flag to denote branch pin (optional for existing branches, required for new branches). If supplied for an existing branch and pin is different from current, it will override current pin.
 
-
 ## 2. Use Case: Send Release Metadata to Reliza Hub
 
 This use case is commonly used in the CI workflow to stream Release metadata to Reliza Hub. As in previous case, API key must be generated for the project on Reliza Hub prior to sending release details.
 
 Sample command to send release details:
 
-```
+```bash
 docker run --rm relizaio/reliza-go-client    \
     addrelease    \
     -i project_or_organization_wide_rw_api_id    \
@@ -61,6 +61,7 @@ docker run --rm relizaio/reliza-go-client    \
 ```
 
 Flags stand for:
+
 - **addrelease** - command that denotes we are sending Release Metadata of a Project to Reliza Hub.
 - **-i** - flag for project api id or organization-wide read-write api id (required).
 - **-k** - flag for project api key or organization-wide read-write api key (required).
@@ -84,16 +85,21 @@ Flags stand for:
 - **version** - flag to denote artifact version if different from release version (if used there must be one publisher flag entry per artifact, optional).
 - **package** - flag to denote artifact package type according to CycloneDX spec: MAVEN, NPM, NUGET, GEM, PYPI, DOCKER (if used there must be one publisher flag entry per artifact, optional).
 - **group** - flag to denote artifact group (if used there must be one group flag entry per artifact, optional).
-- **artdigests** - flag to denote artifact digests (optional). This flag is used to indicate artifact digests. By convention, digests must be prefixed with type followed by colon and then actual digest hash, i.e. *sha256:4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd* - here type is *sha256* and digest is *4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd*. Multiple digests are supported and must be comma separated. I.e.: 
-```
+- **artdigests** - flag to denote artifact digests (optional). This flag is used to indicate artifact digests. By convention, digests must be prefixed with type followed by colon and then actual digest hash, i.e. *sha256:4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd* - here type is *sha256* and digest is *4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd*. Multiple digests are supported and must be comma separated. I.e.:
+
+```bash
 --artdigests sha256:4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd,sha1:fe4165996a41501715ea0662b6a906b55e34a2a1
 ```
-- **tagkey** - flag to denote keys of artifact tags (optional, but every tag key must have corresponding tag value). Multiple tag keys per artifact are supported and must be comma separated. I.e.: 
-```
+
+- **tagkey** - flag to denote keys of artifact tags (optional, but every tag key must have corresponding tag value). Multiple tag keys per artifact are supported and must be comma separated. I.e.:
+
+```bash
 --tagkey key1,key2
 ```
-- **tagval** - flag to denote values of artifact tags (optional, but every tag value must have corresponding tag key). Multiple tag values per artifact are supported and must be comma separated. I.e.: 
-```
+
+- **tagval** - flag to denote values of artifact tags (optional, but every tag value must have corresponding tag key). Multiple tag values per artifact are supported and must be comma separated. I.e.:
+
+```bash
 --tagval val1,val2
 ```
 
@@ -107,7 +113,7 @@ This is particularly useful for monorepos to see if there was a change in sub-pr
 
 Sample command:
 
-```
+```bash
 docker run --rm relizaio/reliza-go-client    \
     checkhash    \
     -i project_api_id    \
@@ -116,11 +122,11 @@ docker run --rm relizaio/reliza-go-client    \
 ```
 
 Flags stand for:
+
 - **checkhash** - command that denotes we are checking artifact hash.
 - **-i** - flag for project api id (required).
 - **-k** - flag for project api key (required).
 - **--hash** - flag to denote actual hash (required). By convention, hash must include hashing algorithm as its first part, i.e. sha256: or sha512:
-
 
 ## 4. Use Case: Send Deployment Metadata From Instance To Reliza Hub
 
@@ -128,7 +134,7 @@ This use case is for sending digests of active deployments from instance to Reli
 
 Sample command:
 
-```
+```bash
 docker run --rm relizaio/reliza-go-client    \
     instdata    \
     -i instance_api_id    \
@@ -139,6 +145,7 @@ docker run --rm relizaio/reliza-go-client    \
 ```
 
 Flags stand for:
+
 - **instdata** - command that denotes we sending digest data from instance.
 - **-i** - flag for instance api id (required).
 - **-k** - flag for instance api key (required).
@@ -146,14 +153,13 @@ Flags stand for:
 - **--namespace** - flag to denote namespace where we are sending images (optional, if not sent "default" namespace is used). Namespaces are useful to separate different products deployed on the same instance.
 - **--sender** - flag to denote unique sender within a single namespace (optional). This is useful if say there are different nodes where each streams only part of application deployment data. In this case such nodes need to use same namespace but different senders so that their data does not stomp on each other.
 
-
 ## 5. Use Case: Request What Releases Must Be Deployed On This Instance From Reliza Hub
 
 This use case is when instance queries Reliza Hub to receive infromation about what release versions and specific artifacts it needs to deploy. This would usually be used by either simple deployment scripts or full-scale CD systems. A sample use is presented in our [playground project script](https://github.com/relizaio/reliza-hub-playground/blob/master/sample-instance-agent-scripts/request_instance_target.sh).
 
 Sample command:
 
-```
+```bash
 docker run --rm relizaio/reliza-go-client    \
     getmyrelease    \
     -i instance_api_id    \
@@ -162,11 +168,11 @@ docker run --rm relizaio/reliza-go-client    \
 ```
 
 Flags stand for:
+
 - **getmyrelease** - command that denotes we are requesting release data for instance from Reliza Hub.
 - **-i** - flag for instance api id (required).
 - **-k** - flag for instance api key (required).
 - **--namespace** - flag to denote namespace for which we are requesting release data (optional, if not sent "default" namespace is used). Namespaces are useful to separate different products deployed on the same instance.
-
 
 ## 6. Use Case: Request Latest Release Per Project Or Product
 
@@ -174,7 +180,7 @@ This use case is when Reliza Hub is queried either by CI or CD environment or by
 
 Sample command:
 
-```
+```bash
 docker run --rm relizaio/reliza-go-client    \
     getlatestrelease    \
     -i api_id    \
@@ -185,6 +191,7 @@ docker run --rm relizaio/reliza-go-client    \
 ```
 
 Flags stand for:
+
 - **getlatestrelease** - command that denotes we are requesting latest release data for Project or Product from Reliza Hub
 - **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
 - **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
@@ -199,7 +206,7 @@ Flags stand for:
 
 Here is a full example how we can use getlatestrelease command leveraging jq to obtain latest docker image with sha256 that we need to use for integration (don't forget to change api_id, api_key, project, branch and env to proper values as needed):
 
-```
+```bash
 rlzclientout=$(docker run --rm relizaio/reliza-go-client    \
     getlatestrelease    \
     -i api_id    \
@@ -212,8 +219,7 @@ rlzclientout=$(docker run --rm relizaio/reliza-go-client    \
     echo $(echo $rlzclientout | jq -r .artifactDetails[0].identifier)@$(echo $rlzclientout | jq -r .artifactDetails[0].digests[] | grep sha256)
 ```
 
-
-## 7. Use Case: Parse Deployment Templates To Inject Correct Artifacts For GitOps
+## 7.1 Use Case: Parse Deployment Templates To Inject Correct Artifacts For GitOps
 
 This use case was designed specifically for GitOps. Imagine that you have GitOps deployment to different environments, i.e. TEST and PRODUCTION but they require different versions of artifacts. Reliza Hub would manage the versions but Reliza Go Client can be leveraged to retrieve this information and create correct deployment files that can later be pushed to GitOps.
 
@@ -223,42 +229,42 @@ Allowed template formatting types:
 
 1. Basic project
 
-```
-image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31%>
-```
+    ```text
+    image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31%>
+    ```
 
-where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com). In this format release branch would be resolved via settings in Reliza Hub UI in project settings -> **What branch to use for which environment?** setting.
+    where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com). In this format release branch would be resolved via settings in Reliza Hub UI in project settings -> **What branch to use for which environment?** setting.
 
 2. Basic project with branch - template formatting may specify branch explicitly as following:
 
-```
-image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31__master%>
-```
+    ```text
+    image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31__master%>
+    ```
 
-where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com) and **master** is our desired branch.
+    where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com) and **master** is our desired branch.
 
 3. Project conditioned on Product
 
-```
-image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31__PRODUCT__f407a320-8c3f-4658-be34-7635a69a8c05%>
-```
+    ```text
+    image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31__PRODUCT__f407a320-8c3f-4658-be34-7635a69a8c05%>
+    ```
 
-where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com), and **f407a320-8c3f-4658-be34-7635a69a8c05** is a product UUID from Reliza Hub which bundles this project we inquire about. In this format release feature set would be resolved via settings in Reliza Hub UI in product settings -> **What feature set to use for which environment?** setting.
+    where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com), and **f407a320-8c3f-4658-be34-7635a69a8c05** is a product UUID from Reliza Hub which bundles this project we inquire about. In this format release feature set would be resolved via settings in Reliza Hub UI in product settings -> **What feature set to use for which environment?** setting.
 
 4. Project conditioned on Product with explicit feature set
 
-```
-image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31__PRODUCT__f407a320-8c3f-4658-be34-7635a69a8c05__Base Feature Set%>
-```
+    ```text
+    image: <%PROJECT__9678805c-c8fd-4199-b682-1d5d2d73ad31__PRODUCT__f407a320-8c3f-4658-be34-7635a69a8c05__Base Feature Set%>
+    ```
 
-where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com), and **f407a320-8c3f-4658-be34-7635a69a8c05** is a product UUID from Reliza Hub which bundles this project we inquire about, and **Base Feature Set** is out desired feature set.
+    where **9678805c-c8fd-4199-b682-1d5d2d73ad31** is a project UUID from [Reliza Hub](https://relizahub.com), and **f407a320-8c3f-4658-be34-7635a69a8c05** is a product UUID from Reliza Hub which bundles this project we inquire about, and **Base Feature Set** is out desired feature set.
 
 Sample command:
 
-```
+```bash
 docker run --rm \
-    -v /deployment/k8s_templates/:/indir 
-    -v /deployment/k8s_production/:/outdir 
+    -v /deployment/k8s_templates/:/indir
+    -v /deployment/k8s_production/:/outdir
     relizaio/reliza-go-client \
     parsetemplate \
     -i api_id \
@@ -266,11 +272,12 @@ docker run --rm \
     --env PRODUCTION
 ```
 
-Note that selectors are generally identical to the **getlatestrelease** command. 
+Note that selectors are generally identical to the **getlatestrelease** command.
 
 Directory mapped to **/indir** (in this case **/deployment/k8s_templates/**) - is a directory containing parseable files with Reliza templates. Similarly, directory mapped to **/outdir** is a directory where output parsed files will be written. Both of those directories must exist.
 
 Flags stand for:
+
 - **parsetemplate** - command that denotes we are going to parse Reliza templates
 - **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
 - **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
@@ -280,6 +287,41 @@ Flags stand for:
 - **--instance** - flag to denote specific instance for which releases should match (optional, if supplied namespace flag is also used and env flag gets overrided by instance's environment).
 - **--namespace** - flag to denote specific namespace within instance, if instance is supplied (optional).
 
+## 7.2 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps
+
+This use case is designed for the case when we have to roll back our deployments to a specific version of artifacts. Reliza Go Client can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
+
+This functionality relies on [Reliza Hub](https://relizahub.com) to export instance or revision specs in [CycloneDX SBOM](https://cyclonedx.org/) JSON format.
+
+Steps to rollback:
+
+1. To obtain revision specs in CycloneDX SBOM JSON format, on [Reliza Hub](https://relizahub.com) go to instances, and click on the download link for the desired revision. Copy and save text opened in the new window as `reliza_rev_x.json`.
+
+2. Use `helm template` command to generate a definition file, save it as `helm_definition_tmpl.yaml`.
+
+3. Run command
+
+    ```text
+    docker run --rm \
+        -v /local/path/to/reliza_rev_x.json:/reliza_rev_x.json \
+        -v /local/path/to/values.yaml:/values.yaml \
+        -v /local/path/to/helm_definition_tmpl.yaml:/helm_definition_tmpl.yaml \
+        -v /local/path/to/output_dir:/output_dir \
+        relizaio/reliza-go-client \
+        replacetags \
+        --tagsource /reliza_rev_x.json \
+        --infile /values.yaml \
+        --defsource /helm_definition_tmpl.yaml \
+        --outfile /output_dir/output_values.yaml
+    ```
+
+Flags stand for:
+
+- **infile** - Input file to parse, such as helm values file or docker compose file.
+- **outfile** - Output file with parsed values.
+- **tagsource** - Source file with tags.
+- **defsource** - Source file for definitions. For helm, should be output of helm template command.
+- **type** - Type of source tags file: cyclonedx (default) or text.
 
 ## 8. Use Case: Programmatic Approvals of Releases on Reliza Hub
 
@@ -287,7 +329,7 @@ This use case is for the case when we have configured an API key in Org settings
 
 Sample command:
 
-```
+```bash
 docker run --rm relizaio/reliza-go-client    \
     approverelease    \
     -i api_id    \
@@ -297,6 +339,7 @@ docker run --rm relizaio/reliza-go-client    \
 ```
 
 Flags stand for:
+
 - **approverelease** - command that denotes that we are approving release programmatically for the specific type
 - **-i** - flag for api id (required).
 - **-k** - flag for api key (required).
