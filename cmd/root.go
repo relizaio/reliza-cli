@@ -21,14 +21,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/go-resty/resty"
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
@@ -86,15 +88,58 @@ var vcsUri string
 var vcsTag string
 var vcsType string
 
+const (
+	defaultConfigFilename = ".reliza"
+	envPrefix             = ""
+	configType            = "env"
+)
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "relizaGoClient",
 	Short: "CLI client for programmatic operations on Reliza Hub",
 	Long:  `This CLI client would allo programmatic actions on Reliza Hub.`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initConfig(cmd)
+	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) {
 	// 	},
+}
+
+var loginCmd = &cobra.Command{
+	Use:   "login",
+	Short: "Persisits API Key Id and API Key Secret",
+	Long:  "This CLI command takes API Key Id and API Key Secret and writes them to a configuration file in home directory",
+	Run: func(cmd *cobra.Command, args []string) {
+
+		home, err := homedir.Dir()
+
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		configPath := filepath.Join(home, defaultConfigFilename+"."+configType)
+		if _, err := os.Stat(configPath); err == nil {
+			// config file already exists, it will be overwritten
+		} else if os.IsNotExist(err) {
+			//create new config file
+			if _, err := os.Create(configPath); err != nil { // perm 0666
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+
+		viper.Set("apikey", apiKey)
+		viper.Set("apikeyid", apiKeyId)
+
+		if err := viper.WriteConfigAs(configPath); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	},
 }
 
 var addreleaseCmd = &cobra.Command{
@@ -531,7 +576,6 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -627,6 +671,7 @@ func init() {
 	replaceTagsCmd.PersistentFlags().StringVar(&definitionReferenceFile, "defsource", "", "Source file for definitions. For helm, should be output of helm template command")
 	replaceTagsCmd.PersistentFlags().StringVar(&typeVal, "type", "cyclonedx", "Type of source tags file: cyclonedx (default) or text")
 
+	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(addreleaseCmd)
 	rootCmd.AddCommand(approveReleaseCmd)
 	rootCmd.AddCommand(checkReleaseByHashCmd)
@@ -665,10 +710,12 @@ func printResponse(err error, resp *resty.Response) {
 }
 
 // initConfig reads in config file and ENV variables if set.
-func initConfig() {
+func initConfig(cmd *cobra.Command) {
+	v := viper.New()
+
 	if cfgFile != "" {
 		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
+		v.SetConfigFile(cfgFile)
 	} else {
 		// Find home directory.
 		home, err := homedir.Dir()
@@ -676,16 +723,40 @@ func initConfig() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
 		// Search config in home directory with name ".relizaGoClient" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".relizaGoClient")
+		v.AddConfigPath(home)
+		v.SetConfigName(defaultConfigFilename)
+	}
+	v.SetEnvPrefix(envPrefix)
+
+	// Attempt to read the config file.
+	if err := v.ReadInConfig(); err != nil {
+		if debug == "true" {
+			fmt.Println(err)
+		}
+	} else {
+		fmt.Println("Using config file:", v.ConfigFileUsed())
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
+	v.AutomaticEnv() // read in environment variables that match
+	bindFlags(cmd, v)
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
+}
+
+// Bind each cobra flag to its associated viper configuration (config file and environment variable)
+func bindFlags(cmd *cobra.Command, v *viper.Viper) {
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		// Environment variables can't have dashes in them, so bind them to their equivalent
+		// keys with underscores, e.g. --favorite-color to STING_FAVORITE_COLOR
+		if strings.Contains(f.Name, "-") {
+			envVarSuffix := strings.ToUpper(strings.ReplaceAll(f.Name, "-", "_"))
+			v.BindEnv(f.Name, fmt.Sprintf("%s_%s", envPrefix, envVarSuffix))
+		}
+
+		// Apply the viper config value to the flag when the flag is not set and viper has a value
+		if !f.Changed && v.IsSet(f.Name) {
+			val := v.Get(f.Name)
+			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+		}
+	})
 }
