@@ -736,7 +736,9 @@ func initConfig(cmd *cobra.Command) {
 			fmt.Println(err)
 		}
 	} else {
-		fmt.Println("Using config file:", v.ConfigFileUsed())
+		if debug == "true" {
+			fmt.Println("Using config file:", v.ConfigFileUsed())
+		}
 	}
 
 	v.AutomaticEnv() // read in environment variables that match
