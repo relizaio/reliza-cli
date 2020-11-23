@@ -348,3 +348,27 @@ Flags stand for:
 - **--releaseversion** - flag to specify release string version with the project flag above (either this flag and project or releaseid must be provided).
 - **--approval** - approval type as per approval matrix on the Organization Settings page in Reliza Hub (required).
 - **--disapprove** - flag to indicate disapproval event instead of approval (optional).
+
+## 9. Use Case: Persist Reliza Hub Credentials In A Config File
+
+This use case is for the case when we want to persist Reliza Hub API Credentials and URL in a config file.
+
+The `login` command saves `API ID`, `API KEY` and `URI` as specified by flags in a config file `.reliza.env` in the home directory for the executing user.
+
+Sample Command:
+
+```bash
+docker run --rm \
+    -v ~:/home/apprunner \
+    relizaio/reliza-go-client \
+    login \
+    -i api_id \
+    -k api_key \
+    -u reliza_hub_uri
+```
+
+Flags stand for:
+
+- **-i** - flag for api id.
+- **-k** - flag for api key.
+- **-u** - flag for reliza hub uri.
