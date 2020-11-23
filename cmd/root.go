@@ -26,10 +26,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-resty/resty"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"gopkg.in/resty.v1"
 
 	"github.com/spf13/viper"
 )
@@ -134,6 +134,7 @@ var loginCmd = &cobra.Command{
 
 		viper.Set("apikey", apiKey)
 		viper.Set("apikeyid", apiKeyId)
+		viper.Set("uri", relizaHubUri)
 
 		if err := viper.WriteConfigAs(configPath); err != nil {
 			fmt.Println(err)

@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/go-resty/resty"
+	"gopkg.in/resty.v1"
 )
 
 func parseCopyTemplate(directory string, outDirectory string, relizaHubUri string, environment string, tagKey string,
