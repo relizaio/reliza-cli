@@ -97,8 +97,8 @@ const (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "relizaGoClient",
-	Short: "CLI client for programmatic operations on Reliza Hub",
-	Long:  `This CLI client would allo programmatic actions on Reliza Hub.`,
+	Short: "CLI client for programmatic actions on Reliza Hub",
+	Long:  `CLI client for programmatic actions on Reliza Hub.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		initConfig(cmd)
 	},
