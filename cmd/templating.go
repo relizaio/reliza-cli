@@ -149,57 +149,71 @@ func scanTagFile(tagSourceFile string, typeVal string) map[string]string {
 			fmt.Println(ioReadErr)
 			os.Exit(1)
 		}
-		var bomJson map[string]interface{}
-		json.Unmarshal(cycloneBytes, &bomJson)
-		// go to components in cyclone dx
-		bomComponents := bomJson["components"].([]interface{})
-		for _, bomc := range bomComponents {
-			// check that type is container
-			if bomc.(map[string]interface{})["type"] == "container" {
+		var bomJSON map[string]interface{}
+		json.Unmarshal(cycloneBytes, &bomJSON)
+		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
 
-				resolvedImage := false
-
-				// name is a mandatory field in cyclonedx spec
-				contName := bomc.(map[string]interface{})["name"].(string)
-				// 1st try to parse purl if present
-
-				if bomc.(map[string]interface{})["purl"] != nil {
-					purl := bomc.(map[string]interface{})["purl"].(string)
-					// sample purl pkg:docker/test-cont@sha256:testsha256hash?repository_url=123.dkr.ecr.us-east-1.amazonaws.com
-					// remove pkg:docker/ thing first - must be there
-					purl = strings.ReplaceAll(purl, "pkg:docker/", "")
-					// check if the image is not on docker hub - split by ?repository_url= if present, otherewise repository is docker hub (ignore)
-					purlImageName := purl
-					if strings.Contains(purl, "?repository_url=") {
-						purlImageName = strings.Split(purl, "?repository_url=")[1] + "/" + strings.Split(purl, "?repository_url=")[0]
-					}
-					parseImageNameIntoMap(purlImageName, tagSourceMap)
-					resolvedImage = true
-				}
-				if !resolvedImage && bomc.(map[string]interface{})["hashes"] != nil {
-					// if purl is not set - use name and hash if present, but only if hashes contain SHA-256 algorithm
-					for _, hashEntry := range bomc.(map[string]interface{})["hashes"].([]interface{}) {
-						alg := hashEntry.(map[string]interface{})["alg"].(string)
-						if 0 == strings.Compare(alg, "SHA-256") {
-							// take name and attach hash
-							fullImageName := stripImageHashTag(contName) + "@sha256:" + hashEntry.(map[string]interface{})["content"].(string)
-							parseImageNameIntoMap(fullImageName, tagSourceMap)
-							resolvedImage = true
-							break
-						}
-					}
-				}
-				if !resolvedImage {
-					// if both purl and hashes are not set - use only name and treat it same as text file case
-					parseImageNameIntoMap(contName, tagSourceMap)
-				}
-			}
-		}
 	} else if typeVal == "text" {
 		tagScanner := bufio.NewScanner(tagFile)
 		for tagScanner.Scan() {
 			line := tagScanner.Text()
 			parseImageNameIntoMap(line, tagSourceMap)
+		}
+	}
+	return tagSourceMap
+}
+
+func extractComponentsFromCycloneJSON(bomJSON map[string]interface{}, tagSourceMap map[string]string) map[string]string {
+	// go to components in cyclone dx
+	var bomComponents []interface{}
+	if components, ok := bomJSON["components"]; ok {
+		bomComponents = components.([]interface{})
+	} else {
+		fmt.Println("Error: CycloneDX BOM componenets are empty!")
+		os.Exit(1)
+	}
+
+	// bomComponents := bomJSON["components"].([]interface{})
+	for _, bomc := range bomComponents {
+		// check that type is container
+		if bomc.(map[string]interface{})["type"] == "container" {
+
+			resolvedImage := false
+
+			// name is a mandatory field in cyclonedx spec
+			contName := bomc.(map[string]interface{})["name"].(string)
+			// 1st try to parse purl if present
+
+			if bomc.(map[string]interface{})["purl"] != nil {
+				purl := bomc.(map[string]interface{})["purl"].(string)
+				// sample purl pkg:docker/test-cont@sha256:testsha256hash?repository_url=123.dkr.ecr.us-east-1.amazonaws.com
+				// remove pkg:docker/ thing first - must be there
+				purl = strings.ReplaceAll(purl, "pkg:docker/", "")
+				// check if the image is not on docker hub - split by ?repository_url= if present, otherewise repository is docker hub (ignore)
+				purlImageName := purl
+				if strings.Contains(purl, "?repository_url=") {
+					purlImageName = strings.Split(purl, "?repository_url=")[1] + "/" + strings.Split(purl, "?repository_url=")[0]
+				}
+				parseImageNameIntoMap(purlImageName, tagSourceMap)
+				resolvedImage = true
+			}
+			if !resolvedImage && bomc.(map[string]interface{})["hashes"] != nil {
+				// if purl is not set - use name and hash if present, but only if hashes contain SHA-256 algorithm
+				for _, hashEntry := range bomc.(map[string]interface{})["hashes"].([]interface{}) {
+					alg := hashEntry.(map[string]interface{})["alg"].(string)
+					if 0 == strings.Compare(alg, "SHA-256") {
+						// take name and attach hash
+						fullImageName := stripImageHashTag(contName) + "@sha256:" + hashEntry.(map[string]interface{})["content"].(string)
+						parseImageNameIntoMap(fullImageName, tagSourceMap)
+						resolvedImage = true
+						break
+					}
+				}
+			}
+			if !resolvedImage {
+				// if both purl and hashes are not set - use only name and treat it same as text file case
+				parseImageNameIntoMap(contName, tagSourceMap)
+			}
 		}
 	}
 	return tagSourceMap
@@ -290,4 +304,51 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 	// 	SetBasicAuth(apiKeyId, apiKey).
 	// 	Get(path)
 
+}
+
+func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey string, instance string, revision string) map[string]string {
+	tagSourceMap := map[string]string{} // 1st - scan tag source file and construct a map of generic tag to actual tag
+	if tagSourceFile != "" {
+		tagSourceMap = scanTagFile(tagSourceFile, typeVal)
+	} else if len(instance) > 0 && len(revision) > 0 {
+		// tagSourceMap = getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision)
+		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision)
+		// fmt.Println("res", tagSourceRes)
+		var bomJSON map[string]interface{}
+		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
+		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
+	} else {
+		fmt.Println("Scan Tags Failed! specify either tagsource or instance and revision")
+		os.Exit(1)
+	}
+	return tagSourceMap
+}
+
+func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instance string, revision string) *resty.Response {
+
+	if len(instance) <= 0 && len(revision) <= 0 {
+		//throw error and exit
+		fmt.Println("instance or revision not specified")
+		os.Exit(1)
+	}
+
+	path := relizaHubUri + "/api/programmatic/v1/instanceRevision/cyclonedxExport/" + instance + "/" + revision
+
+	client := resty.New()
+	resp, err := client.R().
+		SetHeader("User-Agent", "Reliza Go Client").
+		SetHeader("Accept-Encoding", "gzip, deflate").
+		SetBasicAuth(apiKeyId, apiKey).
+		Get(path)
+
+	if resp.StatusCode() != 200 {
+		fmt.Println("Error Response Info:")
+		fmt.Println("Error      :", err)
+		fmt.Println("Status Code:", resp.StatusCode())
+		fmt.Println("Status     :", resp.Status())
+		fmt.Println("Time       :", resp.Time())
+		fmt.Println("Received At:", resp.ReceivedAt())
+		os.Exit(1)
+	}
+	return resp
 }

@@ -73,6 +73,7 @@ var definitionReferenceFile string
 var releaseId string
 var releaseVersion string
 var relizaHubUri string
+var revision string
 var product string
 var project string
 var senderId string
@@ -515,53 +516,57 @@ var replaceTagsCmd = &cobra.Command{
 		// type - typeVal: options - text, cyclonedx
 
 		// 1st - scan tag source file and construct a map of generic tag to actual tag
-		tagSourceMap := scanTagFile(tagSourceFile, typeVal)
+		tagSourceMap := scanTags(tagSourceFile, typeVal, apiKeyId, apiKey, instance, revision)
 
 		// 2nd - scan definition reference file and identify all used tags (scan by "image:" pattern)
-		fmt.Println("Scanning definition references...")
-		defFile, fileOpenErr := os.Open(definitionReferenceFile)
-		if fileOpenErr != nil {
-			fmt.Println(fileOpenErr)
-			os.Exit(1)
-		}
+		substitutionMap := map[string]string{}
+		if definitionReferenceFile != "" {
+			fmt.Println("Scanning definition references...")
+			defFile, fileOpenErr := os.Open(definitionReferenceFile)
+			if fileOpenErr != nil {
+				fmt.Println(fileOpenErr)
+				os.Exit(1)
+			}
 
-		// map to store definition images to their replacements -> will be applied on source files
-		defScanMap := map[string]string{}
+			// map to store definition images to their replacements -> will be applied on source files
+			defScanMap := map[string]string{}
 
-		defScanner := bufio.NewScanner(defFile)
-		// input files must be utf-8 !!!
-		for defScanner.Scan() {
-			line := defScanner.Text()
-			if strings.Contains(strings.ToLower(line), "image: ") {
-				// extract actual image
-				imageLineArray := strings.Split(strings.ToLower(line), "image: ")
-				image := imageLineArray[1]
-				// remove beginning and ending quotes if present
-				re := regexp.MustCompile("^\"")
-				image = re.ReplaceAllLiteralString(image, "")
-				re = regexp.MustCompile("\"$")
-				image = re.ReplaceAllLiteralString(image, "")
-				// parse and add to map
-				if strings.Contains(image, "@") {
-					tagSplit := strings.Split(image, "@")
-					defScanMap[tagSplit[0]] = image
-				} else if strings.Contains(line, ":") {
-					tagSplit := strings.SplitN(image, ":", 2)
-					defScanMap[tagSplit[0]] = image
-				} else {
-					defScanMap[image] = image
+			defScanner := bufio.NewScanner(defFile)
+			// input files must be utf-8 !!!
+			for defScanner.Scan() {
+				line := defScanner.Text()
+				if strings.Contains(strings.ToLower(line), "image: ") {
+					// extract actual image
+					imageLineArray := strings.Split(strings.ToLower(line), "image: ")
+					image := imageLineArray[1]
+					// remove beginning and ending quotes if present
+					re := regexp.MustCompile("^\"")
+					image = re.ReplaceAllLiteralString(image, "")
+					re = regexp.MustCompile("\"$")
+					image = re.ReplaceAllLiteralString(image, "")
+					// parse and add to map
+					if strings.Contains(image, "@") {
+						tagSplit := strings.Split(image, "@")
+						defScanMap[tagSplit[0]] = image
+					} else if strings.Contains(line, ":") {
+						tagSplit := strings.SplitN(image, ":", 2)
+						defScanMap[tagSplit[0]] = image
+					} else {
+						defScanMap[image] = image
+					}
 				}
 			}
-		}
 
-		// combine 2 maps and come up with substitution map to apply to source (i.e. to source helm chart)
-		substitutionMap := map[string]string{}
-		// traverse defScanMap, map to tagSourceMap and put to substitution map
-		for k, v := range defScanMap {
-			// https://stackoverflow.com/questions/2050391/how-to-check-if-a-map-contains-a-key-in-go
-			if tagVal, ok := tagSourceMap[k]; ok {
-				substitutionMap[v] = tagVal
+			// combine 2 maps and come up with substitution map to apply to source (i.e. to source helm chart)
+			// traverse defScanMap, map to tagSourceMap and put to substitution map
+			for k := range defScanMap {
+				// https://stackoverflow.com/questions/2050391/how-to-check-if-a-map-contains-a-key-in-go
+				if tagVal, ok := tagSourceMap[k]; ok {
+					substitutionMap[k] = tagVal
+				}
 			}
+		} else {
+			substitutionMap = tagSourceMap
 		}
 		substituteCopyBasedOnMap(infile, outfile, substitutionMap)
 	},
@@ -668,8 +673,10 @@ func init() {
 	// flags for get tags
 	replaceTagsCmd.PersistentFlags().StringVar(&infile, "infile", "", "Input file to parse, such as helm values file or docker compose file")
 	replaceTagsCmd.PersistentFlags().StringVar(&outfile, "outfile", "", "Output file with parsed values")
-	replaceTagsCmd.PersistentFlags().StringVar(&tagSourceFile, "tagsource", "", "Source file with tags")
-	replaceTagsCmd.PersistentFlags().StringVar(&definitionReferenceFile, "defsource", "", "Source file for definitions. For helm, should be output of helm template command")
+	replaceTagsCmd.PersistentFlags().StringVar(&tagSourceFile, "tagsource", "", "Source file with tags (optional - specify either source file or instance id and revision)")
+	replaceTagsCmd.PersistentFlags().StringVar(&instance, "instance", "", "Instance ID for which to generate tags (optional)")
+	replaceTagsCmd.PersistentFlags().StringVar(&revision, "revision", "", "Instance revision for which to generate tags (optional)")
+	replaceTagsCmd.PersistentFlags().StringVar(&definitionReferenceFile, "defsource", "", "Source file for definitions (optional). For helm, should be output of helm template command")
 	replaceTagsCmd.PersistentFlags().StringVar(&typeVal, "type", "cyclonedx", "Type of source tags file: cyclonedx (default) or text")
 
 	rootCmd.AddCommand(loginCmd)
