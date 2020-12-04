@@ -291,17 +291,17 @@ This use case is designed for the case when we have to roll back our deployments
 
 Sample Command:
 
-    ```text
-    docker run --rm \
-        -v /local/path/to/values.yaml:/values.yaml \
-        -v /local/path/to/output_dir:/output_dir \
-        relizaio/reliza-go-client \
-        replacetags \
-        --instance <instance_uuid> \
-        --revision <revision_number> \
-        --infile /values.yaml \
-        --outfile /output_dir/output_values.yaml
-    ```
+```text
+docker run --rm \
+    -v /local/path/to/values.yaml:/values.yaml \
+    -v /local/path/to/output_dir:/output_dir \
+    relizaio/reliza-go-client \
+    replacetags \
+    --instance <instance_uuid> \
+    --revision <revision_number> \
+    --infile /values.yaml \
+    --outfile /output_dir/output_values.yaml
+```
 
 Flags stand for:
 
