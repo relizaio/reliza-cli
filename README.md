@@ -213,9 +213,7 @@ rlzclientout=$(docker run --rm relizaio/reliza-go-client    \
     -k api_key    \
     --project b4534a29-3309-4074-8a3a-34c92e1a168b    \
     --branch master    \
-    --env TEST    \
-    --tagkey deployable    \
-    --tagval true);    \
+    --env TEST);    \
     echo $(echo $rlzclientout | jq -r .artifactDetails[0].identifier)@$(echo $rlzclientout | jq -r .artifactDetails[0].digests[] | grep sha256)
 ```
 
@@ -291,36 +289,28 @@ Flags stand for:
 
 This use case is designed for the case when we have to roll back our deployments to a specific version of artifacts. Reliza Go Client can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
 
-This functionality relies on [Reliza Hub](https://relizahub.com) to export instance or revision specs in [CycloneDX SBOM](https://cyclonedx.org/) JSON format.
-
-Steps to rollback:
-
-1. To obtain revision specs in CycloneDX SBOM JSON format, on [Reliza Hub](https://relizahub.com) go to instances, and click on the download link for the desired revision. Copy and save text opened in the new window as `reliza_rev_x.json`.
-
-2. Use `helm template` command to generate a definition file, save it as `helm_definition_tmpl.yaml`.
-
-3. Run command
+Sample Command:
 
     ```text
     docker run --rm \
-        -v /local/path/to/reliza_rev_x.json:/reliza_rev_x.json \
         -v /local/path/to/values.yaml:/values.yaml \
-        -v /local/path/to/helm_definition_tmpl.yaml:/helm_definition_tmpl.yaml \
         -v /local/path/to/output_dir:/output_dir \
         relizaio/reliza-go-client \
         replacetags \
-        --tagsource /reliza_rev_x.json \
+        --instance <instance_uuid> \
+        --revision <revision_number> \
         --infile /values.yaml \
-        --defsource /helm_definition_tmpl.yaml \
         --outfile /output_dir/output_values.yaml
     ```
 
 Flags stand for:
 
+- **instance** - UUID of the instance.
+- **revision** - Revision number for the instance.
 - **infile** - Input file to parse, such as helm values file or docker compose file.
 - **outfile** - Output file with parsed values.
-- **tagsource** - Source file with tags.
-- **defsource** - Source file for definitions. For helm, should be output of helm template command.
+- **tagsource** - Source file with tags (optional, to be deprecated in favour of instance and revision flags).
+- **defsource** - Source file for definitions (optional). For helm, should be output of helm template command.
 - **type** - Type of source tags file: cyclonedx (default) or text.
 
 ## 8. Use Case: Programmatic Approvals of Releases on Reliza Hub
