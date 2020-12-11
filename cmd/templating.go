@@ -306,13 +306,13 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 
 }
 
-func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey string, instance string, revision string) map[string]string {
+func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey string, instance string, revision string, instanceURI string) map[string]string {
 	tagSourceMap := map[string]string{} // 1st - scan tag source file and construct a map of generic tag to actual tag
 	if tagSourceFile != "" {
 		tagSourceMap = scanTagFile(tagSourceFile, typeVal)
-	} else if len(instance) > 0 && len(revision) > 0 {
+	} else if (len(instance) > 0 || len(instanceURI) > 0) && len(revision) > 0 {
 		// tagSourceMap = getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision)
-		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision)
+		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision, instanceURI)
 		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
@@ -324,7 +324,7 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 	return tagSourceMap
 }
 
-func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instance string, revision string) *resty.Response {
+func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instance string, revision string, instanceURI string) *resty.Response {
 
 	if len(instance) <= 0 && len(revision) <= 0 {
 		//throw error and exit
@@ -332,7 +332,15 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 		os.Exit(1)
 	}
 
-	path := relizaHubUri + "/api/programmatic/v1/instanceRevision/cyclonedxExport/" + instance + "/" + revision
+	path := relizaHubUri + "/api/programmatic/v1/instanceRevision/cyclonedxExport?revision=" + revision
+
+	if len(instance) > 0 {
+		path += "&uuid=" + instance
+	}
+
+	if len(instanceURI) > 0 {
+		path += "&uri=" + instanceURI
+	}
 
 	client := resty.New()
 	resp, err := client.R().
