@@ -297,7 +297,7 @@ docker run --rm \
     -v /local/path/to/output_dir:/output_dir \
     relizaio/reliza-go-client \
     replacetags \
-    --instance <instance_uuid> \
+    --instanceuri <instance uri> \
     --revision <revision_number> \
     --infile /values.yaml \
     --outfile /output_dir/output_values.yaml
@@ -305,7 +305,8 @@ docker run --rm \
 
 Flags stand for:
 
-- **instance** - UUID of the instance.
+- **instanceuri** - URI of the instance. (Optional)
+- **instance** - UUID of the instance. (Optional, can be used instead of instanceuri flag.)
 - **revision** - Revision number for the instance.
 - **infile** - Input file to parse, such as helm values file or docker compose file.
 - **outfile** - Output file with parsed values.
