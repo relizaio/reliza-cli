@@ -305,13 +305,15 @@ docker run --rm \
 
 Flags stand for:
 
-- **instanceuri** - URI of the instance. (Optional)
-- **instance** - UUID of the instance. (Optional, can be used instead of instanceuri flag.)
-- **revision** - Revision number for the instance.
+- **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
+- **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
+- **instanceuri** - URI of the instance (optional, either instanceuri or instance or tagsource flag must be used).
+- **instance** - UUID of the instanceo (optional, either instanceuri or instance or tagsource flag must be used).
+- **revision** - Revision number for the instance to use as a source for tags.
 - **infile** - Input file to parse, such as helm values file or docker compose file.
 - **outfile** - Output file with parsed values.
-- **tagsource** - Source file with tags (optional, to be deprecated in favour of instance and revision flags).
-- **defsource** - Source file for definitions (optional). For helm, should be output of helm template command.
+- **tagsource** - Source file with tags (optional, either instanceuri or instance or tagsource flag must be used).
+- **defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **type** - Type of source tags file: cyclonedx (default) or text.
 
 ## 8. Use Case: Programmatic Approvals of Releases on Reliza Hub
