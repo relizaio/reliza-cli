@@ -310,7 +310,7 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 	tagSourceMap := map[string]string{} // 1st - scan tag source file and construct a map of generic tag to actual tag
 	if tagSourceFile != "" {
 		tagSourceMap = scanTagFile(tagSourceFile, typeVal)
-	} else if (len(instance) > 0 || len(instanceURI) > 0) && len(revision) > 0 {
+	} else if len(instance) > 0 || len(instanceURI) > 0 {
 		// tagSourceMap = getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision)
 		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision, instanceURI)
 		// fmt.Println("res", tagSourceRes)
@@ -318,7 +318,7 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
 	} else {
-		fmt.Println("Scan Tags Failed! specify either tagsource or instance and revision")
+		fmt.Println("Scan Tags Failed! specify either tagsource or instance")
 		os.Exit(1)
 	}
 	return tagSourceMap
@@ -326,10 +326,14 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 
 func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instance string, revision string, instanceURI string) *resty.Response {
 
-	if len(instance) <= 0 && len(revision) <= 0 {
+	if len(instance) <= 0 && len(instanceURI) <= 0 {
 		//throw error and exit
-		fmt.Println("instance or revision not specified")
+		fmt.Println("instance or instanceURI not specified!")
 		os.Exit(1)
+	}
+
+	if "" == revision {
+		revision = "-1"
 	}
 
 	path := relizaHubUri + "/api/programmatic/v1/instanceRevision/cyclonedxExport?revision=" + revision
@@ -341,7 +345,6 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 	if len(instanceURI) > 0 {
 		path += "&uri=" + instanceURI
 	}
-
 	client := resty.New()
 	resp, err := client.R().
 		SetHeader("User-Agent", "Reliza Go Client").
