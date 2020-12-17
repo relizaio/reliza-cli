@@ -1,10 +1,10 @@
-![Docker Image CI](https://github.com/relizaio/relizaGoClient/workflows/Docker%20Image%20CI/badge.svg?branch=master)
+![Docker Image CI](https://github.com/relizaio/reliza-cli/workflows/Docker%20Image%20CI/badge.svg?branch=master)
 
-# Reliza Go Client
+# Reliza CLI
 
-This tool allows streaming metadata about instances, releases and artifacts to [Reliza Hub at relizahub.com](https://relizahub.com) (currently in public preview mode).
+This tool allows command-line interactions with [Reliza Hub at relizahub.com](https://relizahub.com) (currently in public preview mode). Particularly, Reliza CLI can stream metadata about instances, releases, artifacts, resolve bundles based on Reliza Hub data.
 
-Playground instance is operational at [playground.relizahub.com](https://playground.relizahub.com). Video tutorial about key functionality available on [YouTube](https://www.youtube.com/watch?v=yDlf5fMBGuI).
+Video tutorial about key functionality of Reliza Hub is available on [YouTube](https://www.youtube.com/watch?v=yDlf5fMBGuI).
 
 Community forum and support available at [r/Reliza](https://reddit.com/r/Reliza).
 
@@ -47,7 +47,7 @@ docker run --rm relizaio/reliza-go-client    \
     -k project_or_organization_wide_rw_api_key    \
     -b master    \
     -v 20.02.3    \
-    --vcsuri github.com/relizaio/relizaGoClient    \
+    --vcsuri github.com/relizaio/reliza-cli    \
     --vcstype git    \
     --commit 7bfc5ce7b0da277d139f7993f90761223fa54442    \
     --vcstag 20.02.3    \
@@ -105,7 +105,7 @@ Flags stand for:
 
 Note that multiple artifacts per release are supported. In which case artifact specific flags (artid, arbuildid, artcimeta, arttype, artdigests, tagkey and tagval must be repeated for each artifact).
 
-For sample of how to use workflow in CI, refer to the GitHub Actions build yaml of this project [here](https://github.com/relizaio/relizaGoClient/blob/master/.github/workflows/dockerimage.yml).
+For sample of how to use workflow in CI, refer to the GitHub Actions build yaml of this project [here](https://github.com/relizaio/reliza-cli/blob/master/.github/workflows/dockerimage.yml).
 
 ## 3. Use Case: Check If Artifact Hash Already Present In Some Release
 
@@ -219,7 +219,7 @@ rlzclientout=$(docker run --rm relizaio/reliza-go-client    \
 
 ## 7.1 Use Case: Parse Deployment Templates To Inject Correct Artifacts For GitOps
 
-This use case was designed specifically for GitOps. Imagine that you have GitOps deployment to different environments, i.e. TEST and PRODUCTION but they require different versions of artifacts. Reliza Hub would manage the versions but Reliza Go Client can be leveraged to retrieve this information and create correct deployment files that can later be pushed to GitOps.
+This use case was designed specifically for GitOps. Imagine that you have GitOps deployment to different environments, i.e. TEST and PRODUCTION but they require different versions of artifacts. Reliza Hub would manage the versions but Reliza CLI can be leveraged to retrieve this information and create correct deployment files that can later be pushed to GitOps.
 
 For a real-life use-case please refer to a working script in [deployment project for Classic Mafia Game Card Shuffle](https://github.com/taleodor/mafia-deployment/blob/master/pull_reliza_push_github_production.sh) while working templates can be found [here](https://github.com/taleodor/mafia-deployment/tree/master/k8s_templates).
 
@@ -287,7 +287,7 @@ Flags stand for:
 
 ## 7.2 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps
 
-This use case is designed for the case when we have to roll back our deployments to a specific version of artifacts. Reliza Go Client can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
+This use case is designed for the case when we have to roll back our deployments to a specific version of artifacts. Reliza CLI can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
 
 Sample Command:
 

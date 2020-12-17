@@ -98,7 +98,7 @@ const (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "relizaGoClient",
+	Use:   "reliza-cli",
 	Short: "CLI client for programmatic actions on Reliza Hub",
 	Long:  `CLI client for programmatic actions on Reliza Hub.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
@@ -588,7 +588,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.relizaGoClient.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.reliza-cli.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&relizaHubUri, "uri", "u", "https://app.relizahub.com", "FQDN of Reliza Hub server")
 	rootCmd.PersistentFlags().StringVarP(&apiKey, "apikey", "k", "", "API Key Secret")
 	rootCmd.PersistentFlags().StringVarP(&apiKeyId, "apikeyid", "i", "", "API Key ID")
@@ -733,7 +733,7 @@ func initConfig(cmd *cobra.Command) {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		// Search config in home directory with name ".relizaGoClient" (without extension).
+		// Search config in home directory with name ".reliza-cli" (without extension).
 		v.AddConfigPath(home)
 		v.SetConfigName(defaultConfigFilename)
 	}

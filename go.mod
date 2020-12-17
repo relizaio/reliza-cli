@@ -1,4 +1,4 @@
-module github.com/relizaio/relizaGoClient
+module github.com/relizaio/reliza-cli
 
 go 1.15
 

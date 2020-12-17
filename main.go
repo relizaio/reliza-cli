@@ -16,7 +16,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 */
 package main
 
-import "github.com/relizaio/relizaGoClient/cmd"
+import "github.com/relizaio/reliza-cli/cmd"
 
 func main() {
 	cmd.Execute()
