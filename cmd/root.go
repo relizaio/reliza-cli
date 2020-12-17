@@ -589,7 +589,7 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.relizaGoClient.yaml)")
-	rootCmd.PersistentFlags().StringVarP(&relizaHubUri, "uri", "u", "https://www.relizahub.com", "FQDN of Reliza Hub server")
+	rootCmd.PersistentFlags().StringVarP(&relizaHubUri, "uri", "u", "https://app.relizahub.com", "FQDN of Reliza Hub server")
 	rootCmd.PersistentFlags().StringVarP(&apiKey, "apikey", "k", "", "API Key Secret")
 	rootCmd.PersistentFlags().StringVarP(&apiKeyId, "apikeyid", "i", "", "API Key ID")
 	rootCmd.PersistentFlags().StringVarP(&debug, "debug", "d", "false", "If set to true, print debug details")
