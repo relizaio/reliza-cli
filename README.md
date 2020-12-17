@@ -8,7 +8,7 @@ Video tutorial about key functionality of Reliza Hub is available on [YouTube](h
 
 Community forum and support available at [r/Reliza](https://reddit.com/r/Reliza).
 
-Docker image is available at [relizaio/reliza-go-client](https://hub.docker.com/r/relizaio/reliza-go-client)
+Docker image is available at [relizaio/reliza-cli](https://hub.docker.com/r/relizaio/reliza-cli)
 
 ## 1. Use Case: Get Version Assignment From Reliza Hub
 
@@ -17,7 +17,7 @@ This use case requests Version from Reliza Hub for our project. Note that projec
 Sample command for semver version schema:
 
 ```bash
-docker run --rm relizaio/reliza-go-client    \
+docker run --rm relizaio/reliza-cli    \
     getversion    \
     -i project_or_organization_wide_rw_api_id    \
     -k project_or_organization_wide_rw_api_key    \
@@ -41,7 +41,7 @@ This use case is commonly used in the CI workflow to stream Release metadata to 
 Sample command to send release details:
 
 ```bash
-docker run --rm relizaio/reliza-go-client    \
+docker run --rm relizaio/reliza-cli    \
     addrelease    \
     -i project_or_organization_wide_rw_api_id    \
     -k project_or_organization_wide_rw_api_key    \
@@ -51,7 +51,7 @@ docker run --rm relizaio/reliza-go-client    \
     --vcstype git    \
     --commit 7bfc5ce7b0da277d139f7993f90761223fa54442    \
     --vcstag 20.02.3    \
-    --artid relizaio/reliza-go-client    \
+    --artid relizaio/reliza-cli    \
     --artbuildid 1    \
     --artcimeta Github Actions    \
     --arttype Docker    \
@@ -114,7 +114,7 @@ This is particularly useful for monorepos to see if there was a change in sub-pr
 Sample command:
 
 ```bash
-docker run --rm relizaio/reliza-go-client    \
+docker run --rm relizaio/reliza-cli    \
     checkhash    \
     -i project_api_id    \
     -k project_api_key    \
@@ -135,7 +135,7 @@ This use case is for sending digests of active deployments from instance to Reli
 Sample command:
 
 ```bash
-docker run --rm relizaio/reliza-go-client    \
+docker run --rm relizaio/reliza-cli    \
     instdata    \
     -i instance_api_id    \
     -k instance_api_key    \
@@ -149,7 +149,7 @@ Flags stand for:
 - **instdata** - command that denotes we sending digest data from instance.
 - **-i** - flag for instance api id (required).
 - **-k** - flag for instance api key (required).
-- **--images** - flag which lists sha256 digests of images sent from the instances (required). Images must be white space separated. Note that sending full docker image URIs with digests is also accepted, i.e. it's ok to send images as relizaio/reliza-go-client:latest@sha256:ebe68a0427bf88d748a4cad0a419392c75c867a216b70d4cd9ef68e8031fe7af
+- **--images** - flag which lists sha256 digests of images sent from the instances (required). Images must be white space separated. Note that sending full docker image URIs with digests is also accepted, i.e. it's ok to send images as relizaio/reliza-cli:latest@sha256:ebe68a0427bf88d748a4cad0a419392c75c867a216b70d4cd9ef68e8031fe7af
 - **--namespace** - flag to denote namespace where we are sending images (optional, if not sent "default" namespace is used). Namespaces are useful to separate different products deployed on the same instance.
 - **--sender** - flag to denote unique sender within a single namespace (optional). This is useful if say there are different nodes where each streams only part of application deployment data. In this case such nodes need to use same namespace but different senders so that their data does not stomp on each other.
 
@@ -160,7 +160,7 @@ This use case is when instance queries Reliza Hub to receive infromation about w
 Sample command:
 
 ```bash
-docker run --rm relizaio/reliza-go-client    \
+docker run --rm relizaio/reliza-cli    \
     getmyrelease    \
     -i instance_api_id    \
     -k instance_api_key    \
@@ -181,7 +181,7 @@ This use case is when Reliza Hub is queried either by CI or CD environment or by
 Sample command:
 
 ```bash
-docker run --rm relizaio/reliza-go-client    \
+docker run --rm relizaio/reliza-cli    \
     getlatestrelease    \
     -i api_id    \
     -k api_key    \
@@ -207,7 +207,7 @@ Flags stand for:
 Here is a full example how we can use getlatestrelease command leveraging jq to obtain latest docker image with sha256 that we need to use for integration (don't forget to change api_id, api_key, project, branch and env to proper values as needed):
 
 ```bash
-rlzclientout=$(docker run --rm relizaio/reliza-go-client    \
+rlzclientout=$(docker run --rm relizaio/reliza-cli    \
     getlatestrelease    \
     -i api_id    \
     -k api_key    \
@@ -263,7 +263,7 @@ Sample command:
 docker run --rm \
     -v /deployment/k8s_templates/:/indir
     -v /deployment/k8s_production/:/outdir
-    relizaio/reliza-go-client \
+    relizaio/reliza-cli \
     parsetemplate \
     -i api_id \
     -k api_key \
@@ -295,7 +295,7 @@ Sample Command:
 docker run --rm \
     -v /local/path/to/values.yaml:/values.yaml \
     -v /local/path/to/output_dir:/output_dir \
-    relizaio/reliza-go-client \
+    relizaio/reliza-cli \
     replacetags \
     --instanceuri <instance uri> \
     --revision <revision_number> \
@@ -323,7 +323,7 @@ This use case is for the case when we have configured an API key in Org settings
 Sample command:
 
 ```bash
-docker run --rm relizaio/reliza-go-client    \
+docker run --rm relizaio/reliza-cli    \
     approverelease    \
     -i api_id    \
     -k api_key    \
@@ -353,7 +353,7 @@ Sample Command:
 ```bash
 docker run --rm \
     -v ~:/home/apprunner \
-    relizaio/reliza-go-client \
+    relizaio/reliza-cli \
     login \
     -i api_id \
     -k api_key \
