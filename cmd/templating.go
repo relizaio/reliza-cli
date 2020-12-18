@@ -124,7 +124,10 @@ func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map
 		// check if line contains any key of substitution map
 		for k, v := range substitutionMap {
 			if strings.Contains(line, k) {
-				line = strings.ReplaceAll(line, k, v)
+				// line = strings.ReplaceAll(line, k, v)
+				//split line before image name and concat with substitution map value
+				parts := strings.Split(line, k)
+				line = parts[0] + v
 				break
 			}
 		}
