@@ -48,6 +48,7 @@ var artGroup []string
 var artPackage []string
 var approvalType string
 var branch string
+var bundle string
 var cfgFile string
 var commit string
 var dateActual string
@@ -517,7 +518,7 @@ var replaceTagsCmd = &cobra.Command{
 		// type - typeVal: options - text, cyclonedx
 
 		// 1st - scan tag source file and construct a map of generic tag to actual tag
-		tagSourceMap := scanTags(tagSourceFile, typeVal, apiKeyId, apiKey, instance, revision, instanceURI)
+		tagSourceMap := scanTags(tagSourceFile, typeVal, apiKeyId, apiKey, instance, revision, instanceURI, bundle, version)
 
 		// 2nd - scan definition reference file and identify all used tags (scan by "image:" pattern)
 		substitutionMap := map[string]string{}
@@ -680,6 +681,8 @@ func init() {
 	replaceTagsCmd.PersistentFlags().StringVar(&revision, "revision", "", "Instance revision for which to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&definitionReferenceFile, "defsource", "", "Source file for definitions (optional). For helm, should be output of helm template command")
 	replaceTagsCmd.PersistentFlags().StringVar(&typeVal, "type", "cyclonedx", "Type of source tags file: cyclonedx (default) or text")
+	replaceTagsCmd.PersistentFlags().StringVar(&version, "version", "", "Bundle version for which to generate tags (optional - required when using bundle)")
+	replaceTagsCmd.PersistentFlags().StringVar(&bundle, "bundle", "", "Bundle for which to generate tags (optional)")
 
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(addreleaseCmd)
