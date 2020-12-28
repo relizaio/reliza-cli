@@ -285,7 +285,7 @@ Flags stand for:
 - **--instance** - flag to denote specific instance for which releases should match (optional, if supplied namespace flag is also used and env flag gets overrided by instance's environment).
 - **--namespace** - flag to denote specific namespace within instance, if instance is supplied (optional).
 
-## 7.2 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps
+## 7.2 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Instance And Revision
 
 This use case is designed for the case when we have to roll back our deployments to a specific version of artifacts. Reliza CLI can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
 
@@ -313,6 +313,36 @@ Flags stand for:
 - **infile** - Input file to parse, such as helm values file or docker compose file.
 - **outfile** - Output file with parsed values.
 - **tagsource** - Source file with tags (optional, either instanceuri or instance or tagsource flag must be used).
+- **defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
+- **type** - Type of source tags file: cyclonedx (default) or text.
+
+## 7.3 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle And Version
+
+This use case is designed for the case when we have to deploy a specific version of bundle. Reliza CLI can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
+
+Sample Command:
+
+```text
+docker run --rm \
+    -v /local/path/to/values.yaml:/values.yaml \
+    -v /local/path/to/output_dir:/output_dir \
+    relizaio/reliza-cli \
+    replacetags \
+    --bundle <bundle name> \
+    --version <bundle version> \
+    --infile /values.yaml \
+    --outfile /output_dir/output_values.yaml
+```
+
+Flags stand for:
+
+- **-i** - flag for api id which can be a organization-wide read API (required).
+- **-k** - flag for api key which can be a organization-wide read API (required).
+- **bundle** - Name of the bundle (optional, either bundle name & version or tagsource flag must be used).
+- **version** - Version number for the bundle to use as a source for tags (optional, to be used with bundle flag).
+- **infile** - Input file to parse, such as helm values file or docker compose file.
+- **outfile** - Output file with parsed values.
+- **tagsource** - Source file with tags (optional, either bundle name & version or tagsource flag must be used).
 - **defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **type** - Type of source tags file: cyclonedx (default) or text.
 
