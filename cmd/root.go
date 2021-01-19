@@ -63,6 +63,7 @@ var imageFilePath string
 var imageString string
 var instance string
 var instanceURI string
+var manual bool
 var metadata string
 var modifier string
 var namespace string
@@ -302,7 +303,6 @@ var addreleaseCmd = &cobra.Command{
 
 			body["artifacts"] = artifacts
 		}
-		fmt.Println(body)
 		client := resty.New()
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
@@ -404,7 +404,7 @@ var getVersionCmd = &cobra.Command{
 			fmt.Println("Using Reliza Hub at", relizaHubUri)
 		}
 
-		body := map[string]string{"branch": branch}
+		body := map[string]interface{}{"branch": branch}
 		if len(project) > 0 {
 			body["project"] = project
 		}
@@ -422,6 +422,19 @@ var getVersionCmd = &cobra.Command{
 			body["versionSchema"] = versionSchema
 		}
 
+		if commit != "" {
+			commitMap := map[string]string{"uri": vcsUri, "type": vcsType, "commit": commit}
+			if vcsTag != "" {
+				commitMap["vcsTag"] = vcsTag
+			}
+			if dateActual != "" {
+				commitMap["dateActual"] = dateActual
+			}
+			body["sourceCodeEntry"] = commitMap
+		}
+		if manual {
+			body["status"] = "draft"
+		}
 		client := resty.New()
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
@@ -429,7 +442,7 @@ var getVersionCmd = &cobra.Command{
 			SetHeader("Accept-Encoding", "gzip, deflate").
 			SetBody(body).
 			SetBasicAuth(apiKeyId, apiKey).
-			Post(relizaHubUri + "/api/programmatic/v1/project/getNewVersion")
+			Post(relizaHubUri + "/api/programmatic/v2/project/getNewVersion")
 
 		printResponse(err, resp)
 	},
@@ -648,6 +661,12 @@ func init() {
 	getVersionCmd.PersistentFlags().StringVar(&metadata, "metadata", "", "Version metadata")
 	getVersionCmd.PersistentFlags().StringVar(&modifier, "modifier", "", "Version modifier")
 	getVersionCmd.PersistentFlags().StringVar(&versionSchema, "pin", "", "Version pin if creating new branch")
+	getVersionCmd.PersistentFlags().StringVar(&vcsUri, "vcsuri", "", "URI of VCS repository")
+	getVersionCmd.PersistentFlags().StringVar(&vcsType, "vcstype", "", "Type of VCS repository: git, svn, mercurial")
+	getVersionCmd.PersistentFlags().StringVar(&commit, "commit", "", "Commit id")
+	getVersionCmd.PersistentFlags().StringVar(&vcsTag, "vcstag", "", "VCS Tag")
+	getVersionCmd.PersistentFlags().StringVar(&dateActual, "date", "", "Commit date and time in iso strict format, use git log --date=iso-strict (optional).")
+	getVersionCmd.PersistentFlags().BoolVar(&manual, "manual", false, "(Optional) Set --manual flag to indicate a manual release.")
 
 	// flags for check release by hash command
 	checkReleaseByHashCmd.PersistentFlags().StringVar(&hash, "hash", "", "Hash of artifact to check")

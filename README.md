@@ -25,14 +25,34 @@ docker run --rm relizaio/reliza-cli    \
     --pin 1.2.patch
 ```
 
+Sample command with commit details for a git commit:
+
+```bash
+docker run --rm relizaio/reliza-cli    \
+    getversion    \
+    -i project_or_organization_wide_rw_api_id    \
+    -k project_or_organization_wide_rw_api_key    \
+    -b master    \
+    --vcstype git \
+    --commit $CI_COMMIT_SHA \
+    --vcsuri $CI_PROJECT_URL \
+    --date $(git log -1 --date=iso-strict --pretty='%ad')
+```
+
 Flags stand for:
 
-- **getversion** - command that denotes we are obtaning next available release version for the branch. Note that if the call succeeds version assignment will be recorded and not given again by Reliza Hub, even if not consumed.
+- **getversion** - command that denotes we are obtaning next available release version for the branch. Note that if the call succeeds version assignment will be recorded and not given again by Reliza Hub, even if not consumed. It also creates a release in pending status.
 - **-i** - flag for project api id (required).
 - **-k** - flag for project api key (required).
 - **-b** - flag to denote branch (required). If branch is not recorded yet, Reliza Hub will attempt to create it.
 - **project** - flag to denote project uuid (optional). Required if organization-wide read-write key is used, ignored if project specific api key is used.
 - **--pin** - flag to denote branch pin (optional for existing branches, required for new branches). If supplied for an existing branch and pin is different from current, it will override current pin.
+- **--vcsuri** - flag to denote vcs uri (optional). This flag is needed if we want to set a commit for the release. However, soon it will be needed only if the vcs uri is not yet set for the project.
+- **--vcstype** - flag to denote vcs type (optional). Supported values: git, svn, mercurial. As with vcsuri, this flag is needed if we want to set a commit for the release. However, soon it will be needed only if the vcs uri is not yet set for the project.
+- **--commit** - flag to denote vcs commit id or hash (optional). This is needed to provide source code entry metadata into the release.
+- **--date** - flag to denote date time with timezone when commit was made, iso strict formatting with timezone is required, i.e. for git use git log --date=iso-strict (optional).
+- **--vcstag** - flag to denote vcs tag (optional). This is needed to include vcs tag into commit, if present.
+- **--manual** - flag to indicate a manual release (optional). Sets status as "draft", otherwise "pending" status is used.
 
 ## 2. Use Case: Send Release Metadata to Reliza Hub
 
