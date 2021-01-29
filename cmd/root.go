@@ -338,6 +338,12 @@ var approveReleaseCmd = &cobra.Command{
 		if len(project) > 0 {
 			body["project"] = project
 		}
+		if len(instance) > 0 {
+			body["instance"] = instance
+		}
+		if len(namespace) > 0 {
+			body["namespace"] = namespace
+		}
 
 		client := resty.New()
 		resp, err := client.R().
@@ -639,7 +645,9 @@ func init() {
 	// flags for approve release command
 	approveReleaseCmd.PersistentFlags().StringVar(&releaseId, "releaseid", "", "UUID of release to be approved (either releaseid or releaseversion and project must be set)")
 	approveReleaseCmd.PersistentFlags().StringVar(&releaseVersion, "releaseversion", "", "Version of release to be approved (either releaseid or releaseversion and project must be set)")
-	approveReleaseCmd.PersistentFlags().StringVar(&project, "project", "", "UUID of project or product which release should be approved (either releaseid or releaseversion and project must be set)")
+	approveReleaseCmd.PersistentFlags().StringVar(&project, "project", "", "UUID of project or product which release should be approved (either instance and project or releaseid or releaseversion and project must be set)")
+	approveReleaseCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID or URI of instance for which release should be approved (either instance and project or releaseid or releaseversion and project must be set)")
+	approveReleaseCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace of the instance for which release should be approved (optional, only considered if instance is specified")
 	approveReleaseCmd.PersistentFlags().StringVar(&approvalType, "approval", "", "Name of approval to set")
 	approveReleaseCmd.PersistentFlags().BoolVar(&disapprove, "disapprove", false, "(Optional) Set --disapprove flag to indicate disapproval instead of approval")
 	approveReleaseCmd.MarkPersistentFlagRequired("approval")

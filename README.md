@@ -386,8 +386,10 @@ Flags stand for:
 - **approverelease** - command that denotes that we are approving release programmatically for the specific type
 - **-i** - flag for api id (required).
 - **-k** - flag for api key (required).
-- **--releaseid** - flag to specify release uuid, which can be obtained from the release view or programmatically (either this flag or project id and release version is required).
+- **--releaseid** - flag to specify release uuid, which can be obtained from the release view or programmatically (either this flag or project id and release version or project id and instance are required).
 - **--project** - flag to specify project uuid, which can be obtained from the project settings on Reliza Hub UI (either this flag and release version or releaseid must be provided).
+- **--instance** - flag to specify instance uuid or URI for which release must be approved (either this flag and project or project and release version or releaseid must be provided).
+- **--namespace** - flag to specify namespace of the instance for which release must be approved (optional, only taken in consideration if instance is provided).
 - **--releaseversion** - flag to specify release string version with the project flag above (either this flag and project or releaseid must be provided).
 - **--approval** - approval type as per approval matrix on the Organization Settings page in Reliza Hub (required).
 - **--disapprove** - flag to indicate disapproval event instead of approval (optional).
