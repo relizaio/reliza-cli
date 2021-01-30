@@ -394,7 +394,34 @@ Flags stand for:
 - **--approval** - approval type as per approval matrix on the Organization Settings page in Reliza Hub (required).
 - **--disapprove** - flag to indicate disapproval event instead of approval (optional).
 
-## 9. Use Case: Persist Reliza Hub Credentials In A Config File
+## 9. Use Case: Check if Specific Approval is Needed for a Release on Reliza Hub
+
+This use case is auxillary to the previous use case with programmatic approvals. It checks Reliza Hub if specific approval type is still pending for a release. For example, same approval might have already been given previously, or release may already be rejected - in both of these cases, an approval is not needed any more. Such check may be useful for example, to decide whether to perform a set of automated tests for a release.
+
+Sample command:
+
+```bash
+docker run --rm relizaio/reliza-cli    \
+    isapprovalneeded    \
+    -i api_id    \
+    -k api_key    \
+    --release release_uuid    \
+    --approval approval_type
+```
+
+Flags stand for:
+
+- **isapprovalneeded** - command that denotes that we are programmatically checking if the approval is needed for a particular release
+- **-i** - flag for api id (required).
+- **-k** - flag for api key (required).
+- **--releaseid** - flag to specify release uuid, which can be obtained from the release view or programmatically (either this flag or project id and release version or project id and instance are required).
+- **--project** - flag to specify project uuid, which can be obtained from the project settings on Reliza Hub UI (either this flag and release version or releaseid must be provided).
+- **--instance** - flag to specify instance uuid or URI for which release must be approved (either this flag and project or project and release version or releaseid must be provided).
+- **--namespace** - flag to specify namespace of the instance for which release must be approved (optional, only taken in consideration if instance is provided).
+- **--releaseversion** - flag to specify release string version with the project flag above (either this flag and project or releaseid must be provided).
+- **--approval** - approval type as per approval matrix on the Organization Settings page in Reliza Hub (required).
+
+## 10. Use Case: Persist Reliza Hub Credentials In A Config File
 
 This use case is for the case when we want to persist Reliza Hub API Credentials and URL in a config file.
 
