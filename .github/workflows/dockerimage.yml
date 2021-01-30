@@ -18,7 +18,7 @@ jobs:
         run: echo ${{ secrets.DOCKER_TOKEN }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
       - name: Get Version
         run: |
-          reliza_ver=$(docker run --rm relizaio/reliza-go-client getversion -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b $GITHUB_REF --metadata GitHub)
+          reliza_ver=$(docker run --rm relizaio/reliza-cli getversion -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b $GITHUB_REF --metadata GitHub)
           echo "completed getting ver"
           echo $reliza_ver
           echo "RLZ_VER_JSON=$reliza_ver" >> $GITHUB_ENV
@@ -61,7 +61,7 @@ jobs:
           # debug
           cat reliza_command
           # send data
-          docker run --rm relizaio/reliza-go-client addrelease $(cat reliza_command)
+          docker run --rm relizaio/reliza-cli addrelease $(cat reliza_command)
       - name: Fail build if reliza status is rejected
         run: |
           status_rejected_check=$(grep 'status rejected' reliza_command | wc -l)
