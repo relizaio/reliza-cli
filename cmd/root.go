@@ -358,6 +358,46 @@ var approveReleaseCmd = &cobra.Command{
 	},
 }
 
+var isApprovalNeededCmd = &cobra.Command{
+	Use:   "isapprovalneeded",
+	Short: "Check if a release needs to be approvid using valid API key",
+	Long: `This CLI command would connect to Reliza Hub and check if a specific release needs to be approved.
+			It no longer needs to be approved, if it has been previously approved or rejected.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
+		body := map[string]interface{}{}
+		body["type"] = approvalType
+		if len(releaseId) > 0 {
+			body["uuid"] = releaseId
+		}
+		if len(releaseVersion) > 0 {
+			body["version"] = releaseVersion
+		}
+		if len(project) > 0 {
+			body["project"] = project
+		}
+		if len(instance) > 0 {
+			body["instance"] = instance
+		}
+		if len(namespace) > 0 {
+			body["namespace"] = namespace
+		}
+
+		client := resty.New()
+		resp, err := client.R().
+			SetHeader("Content-Type", "application/json").
+			SetHeader("User-Agent", "Reliza Go Client").
+			SetHeader("Accept-Encoding", "gzip, deflate").
+			SetBody(body).
+			SetBasicAuth(apiKeyId, apiKey).
+			Post(relizaHubUri + "/api/programmatic/v1/release/isApprovalNeeded")
+
+		printResponse(err, resp)
+	},
+}
+
 var instDataCmd = &cobra.Command{
 	Use:   "instdata",
 	Short: "Sends instance data to Reliza Hub",
@@ -652,6 +692,15 @@ func init() {
 	approveReleaseCmd.PersistentFlags().BoolVar(&disapprove, "disapprove", false, "(Optional) Set --disapprove flag to indicate disapproval instead of approval")
 	approveReleaseCmd.MarkPersistentFlagRequired("approval")
 
+	// flags for is approval needed check command
+	isApprovalNeededCmd.PersistentFlags().StringVar(&releaseId, "releaseid", "", "UUID of release to be checked (either releaseid or releaseversion and project must be set)")
+	isApprovalNeededCmd.PersistentFlags().StringVar(&releaseVersion, "releaseversion", "", "Version of release to be checked (either releaseid or releaseversion and project must be set)")
+	isApprovalNeededCmd.PersistentFlags().StringVar(&project, "project", "", "UUID of project or product which release should be checked (either instance and project or releaseid or releaseversion and project must be set)")
+	isApprovalNeededCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID or URI of instance for which release should be checked (either instance and project or releaseid or releaseversion and project must be set)")
+	isApprovalNeededCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace of the instance for which release should be checked (optional, only considered if instance is specified")
+	isApprovalNeededCmd.PersistentFlags().StringVar(&approvalType, "approval", "", "Name of approval type to check")
+	isApprovalNeededCmd.MarkPersistentFlagRequired("approval")
+
 	// flags for instance data command
 	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images.txt", "Path to image file, ignored if --images parameter is supplied")
 	instDataCmd.PersistentFlags().StringVar(&imageString, "images", "", "Whitespace separated images with digests or simply digests, if supplied takes precedence over imagefile")
@@ -721,6 +770,7 @@ func init() {
 	rootCmd.AddCommand(instDataCmd)
 	rootCmd.AddCommand(parseCopyTemplatesCmd)
 	rootCmd.AddCommand(replaceTagsCmd)
+	rootCmd.AddCommand(isApprovalNeededCmd)
 }
 
 func printResponse(err error, resp *resty.Response) {
