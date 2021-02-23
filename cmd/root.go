@@ -67,6 +67,7 @@ var manual bool
 var metadata string
 var modifier string
 var namespace string
+var onlyVersion bool
 var outDirectory string
 var parseDirectory string
 var infile string
@@ -481,6 +482,9 @@ var getVersionCmd = &cobra.Command{
 		if manual {
 			body["status"] = "draft"
 		}
+
+		body["onlyVersion"] = onlyVersion
+
 		client := resty.New()
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
@@ -724,6 +728,7 @@ func init() {
 	getVersionCmd.PersistentFlags().StringVar(&vcsTag, "vcstag", "", "VCS Tag")
 	getVersionCmd.PersistentFlags().StringVar(&dateActual, "date", "", "Commit date and time in iso strict format, use git log --date=iso-strict (optional).")
 	getVersionCmd.PersistentFlags().BoolVar(&manual, "manual", false, "(Optional) Set --manual flag to indicate a manual release.")
+	getVersionCmd.PersistentFlags().BoolVar(&onlyVersion, "onlyversion", false, "(Optional) Set --onlyVersion flag to retrieve next version only and not create a release.")
 
 	// flags for check release by hash command
 	checkReleaseByHashCmd.PersistentFlags().StringVar(&hash, "hash", "", "Hash of artifact to check")

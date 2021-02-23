@@ -39,6 +39,17 @@ docker run --rm relizaio/reliza-cli    \
     --date $(git log -1 --date=iso-strict --pretty='%ad')
 ```
 
+Sample command to obtain only version info and skip creating the release:
+
+```bash
+docker run --rm relizaio/reliza-cli    \
+    getversion    \
+    -i project_or_organization_wide_rw_api_id    \
+    -k project_or_organization_wide_rw_api_key    \
+    -b master    \
+    --onlyversion
+```
+
 Flags stand for:
 
 - **getversion** - command that denotes we are obtaning next available release version for the branch. Note that if the call succeeds version assignment will be recorded and not given again by Reliza Hub, even if not consumed. It also creates a release in pending status.
@@ -53,6 +64,7 @@ Flags stand for:
 - **--date** - flag to denote date time with timezone when commit was made, iso strict formatting with timezone is required, i.e. for git use git log --date=iso-strict (optional).
 - **--vcstag** - flag to denote vcs tag (optional). This is needed to include vcs tag into commit, if present.
 - **--manual** - flag to indicate a manual release (optional). Sets status as "draft", otherwise "pending" status is used.
+- **--onlyversion** - boolean flag to skip creation of the release (optional). Default is false.
 
 ## 2. Use Case: Send Release Metadata to Reliza Hub
 
