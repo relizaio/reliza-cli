@@ -1,0 +1,23 @@
+FROM golang:alpine3.12@sha256:6042b9cfb4eb303f3bdcbfeaba79b45130d170939318de85ac5b9508cb6f0f7e as build-stage
+WORKDIR /build
+ENV CGO_ENABLED=0
+COPY go.mod go.sum ./
+COPY ./internal/imports ./internal/imports
+RUN go build ./internal/imports
+COPY . .
+RUN GOOS=darwin GOARCH=amd64 go build -o ./ ./...; \
+    mv /build/reliza-cli /tmp/reliza-cli-darwin-amd64;
+RUN for GOARCH in 386 amd64 arm; do \
+    GOOS=freebsd GOARCH=$GOARCH go build -o ./ ./...; \
+    mv /build/reliza-cli /tmp/reliza-cli-freebsd-$GOARCH; done;
+RUN for GOARCH in 386 amd64 arm arm64; do \
+    GOOS=linux GOARCH=$GOARCH go build -o ./ ./...; \
+    mv /build/reliza-cli /tmp/reliza-cli-linux-$GOARCH; done;
+RUN for GOARCH in 386 amd64; do \
+    GOOS=openbsd GOARCH=$GOARCH go build -o ./ ./...; \
+    mv /build/reliza-cli /tmp/reliza-cli-openbsd-$GOARCH; done;
+RUN GOOS=solaris GOARCH=amd64 go build -o ./ ./...; \
+    mv /build/reliza-cli /tmp/reliza-cli-solaris-amd64;
+RUN for GOARCH in 386 amd64; do \
+    GOOS=windows GOARCH=$GOARCH go build -o ./ ./...; \
+    mv /build/reliza-cli.exe /tmp/reliza-cli-windows-$GOARCH.exe; done;
