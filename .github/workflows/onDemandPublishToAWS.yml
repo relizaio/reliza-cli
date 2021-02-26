@@ -1,0 +1,32 @@
+on:
+  repository_dispatch:
+    types: [reliza-build-event]
+
+name: Build applications and push to AWS
+
+jobs:
+  build:
+    name: Build and push
+    runs-on: ubuntu-latest
+    #TODO: Version call must be done from Reliza Hub, currently hardcoded
+    env:
+      VERSION: 2021.02.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Build for all different OS and Architecture
+        run: |
+          docker build -f Dockerfile.exec -t reliza-image --build-arg VERSION=$VERSION .
+          docker run -d --name reliza-container --entrypoint sleep reliza-image infinity
+      - name: Push all zip files to AWS
+        run: |
+          docker cp reliza-container://$VERSION ./
+          aws s3 cp --recursive $VERSION s3://reliza-images/reliza-cli-download/$VERSION
+      - name: Stop docker container
+        run: docker stop reliza-container
