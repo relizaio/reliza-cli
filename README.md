@@ -456,3 +456,19 @@ Flags stand for:
 - **-i** - flag for api id.
 - **-k** - flag for api key.
 - **-u** - flag for reliza hub uri.
+
+## Download instructions
+
+Click below links to download cli binary:
+
+macOs: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-darwin-amd64.zip)
+
+FreeBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-freebsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-freebsd-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-freebsd-arm.zip)
+
+Linux: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-linux-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-linux-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-linux-arm.zip) | [Arm64](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-linux-arm64.zip)
+
+OpenBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-openbsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-openbsd-amd64.zip)
+
+Solaris: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-solaris-amd64.zip)
+
+Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-windows-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-windows-amd64.zip)

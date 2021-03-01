@@ -18,3 +18,4 @@ RUN for GOARCH in 386 amd64; do \
     /bin/sh ./build.sh openbsd $GOARCH; done;
 RUN for GOARCH in 386 amd64; do \
     /bin/sh ./build.sh windows $GOARCH .exe; done;
+RUN cd ../$VERSION; sha256sum * > sha256sums.txt
