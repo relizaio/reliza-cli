@@ -6,27 +6,15 @@ COPY ./internal/imports ./internal/imports
 RUN go build ./internal/imports
 COPY . .
 RUN apk add --update zip
-ARG VERSION=2021.01.0
+ARG VERSION=not_versioned
 RUN mkdir /$VERSION
-RUN GOOS=darwin GOARCH=amd64 go build -o ./ ./...; \
-    mv /build/reliza-cli /tmp/reliza-cli; \
-    zip -r -j ../$VERSION/reliza-cli-$VERSION-darwin-amd64.zip ../tmp/reliza-cli;
+RUN /bin/sh ./build.sh darwin amd64
+RUN /bin/sh ./build.sh solaris amd64
 RUN for GOARCH in 386 amd64 arm; do \
-    GOOS=freebsd GOARCH=$GOARCH go build -o ./ ./...; \
-    mv /build/reliza-cli /tmp/reliza-cli; \
-    zip -r -j ../$VERSION/reliza-cli-$VERSION-freebsd-$GOARCH.zip ../tmp/reliza-cli; done;
+    /bin/sh ./build.sh freebsd $GOARCH; done;
 RUN for GOARCH in 386 amd64 arm arm64; do \
-    GOOS=linux GOARCH=$GOARCH go build -o ./ ./...; \
-    mv /build/reliza-cli /tmp/reliza-cli; \
-    zip -r -j ../$VERSION/reliza-cli-$VERSION-linux-$GOARCH.zip ../tmp/reliza-cli; done;
+    /bin/sh ./build.sh linux $GOARCH; done;
 RUN for GOARCH in 386 amd64; do \
-    GOOS=openbsd GOARCH=$GOARCH go build -o ./ ./...; \
-    mv /build/reliza-cli /tmp/reliza-cli; \
-    zip -r -j ../$VERSION/reliza-cli-$VERSION-openbsd-$GOARCH.zip ../tmp/reliza-cli; done;
-RUN GOOS=solaris GOARCH=amd64 go build -o ./ ./...; \
-    mv /build/reliza-cli /tmp/reliza-cli; \
-    zip -r -j ../$VERSION/reliza-cli-$VERSION-solaris-amd64.zip ../tmp/reliza-cli;
+    /bin/sh ./build.sh openbsd $GOARCH; done;
 RUN for GOARCH in 386 amd64; do \
-    GOOS=windows GOARCH=$GOARCH go build -o ./ ./...; \
-    mv /build/reliza-cli.exe /tmp/reliza-cli.exe; \
-    zip -r -j ../$VERSION/reliza-cli-$VERSION-windows-$GOARCH.zip ../tmp/reliza-cli.exe; done;
+    /bin/sh ./build.sh windows $GOARCH .exe; done;
