@@ -8,14 +8,15 @@ COPY . .
 RUN apk add --update zip
 ARG VERSION=not_versioned
 RUN mkdir /$VERSION
-RUN /bin/sh ./build.sh darwin amd64
-RUN /bin/sh ./build.sh solaris amd64
+RUN chmod +x ./build.sh
+RUN ./build.sh darwin amd64
+RUN ./build.sh solaris amd64
 RUN for GOARCH in 386 amd64 arm; do \
-    /bin/sh ./build.sh freebsd $GOARCH; done;
+    ./build.sh freebsd $GOARCH; done;
 RUN for GOARCH in 386 amd64 arm arm64; do \
-    /bin/sh ./build.sh linux $GOARCH; done;
+    ./build.sh linux $GOARCH; done;
 RUN for GOARCH in 386 amd64; do \
-    /bin/sh ./build.sh openbsd $GOARCH; done;
+    ./build.sh openbsd $GOARCH; done;
 RUN for GOARCH in 386 amd64; do \
-    /bin/sh ./build.sh windows $GOARCH .exe; done;
+    ./build.sh windows $GOARCH .exe; done;
 RUN cd ../$VERSION; sha256sum * > sha256sums.txt

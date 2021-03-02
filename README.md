@@ -457,11 +457,15 @@ Flags stand for:
 - **-k** - flag for api key.
 - **-u** - flag for reliza hub uri.
 
-## Download instructions
+## Download Reliza CLI
 
-Click below links to download cli binary:
+Below are the available downloads for the latest version of the Reliza CLI (2021.03.1). Please download the proper package for your operating system and architecture.
 
-macOs: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-darwin-amd64.zip)
+The CLI is distributed as a single binary. Install by unzipping it and moving it to a directory included in your system's PATH.
+
+[SHA256 checksums](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/sha256sums.txt)
+
+macOS: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-darwin-amd64.zip)
 
 FreeBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-freebsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-freebsd-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-freebsd-arm.zip)
 

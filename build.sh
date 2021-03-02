@@ -1,3 +1,5 @@
+#!/bin/sh
+
 GOOS=$1
 GOARCH=$2
 EXE=$3
