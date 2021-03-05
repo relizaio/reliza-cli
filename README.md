@@ -2,13 +2,33 @@
 
 # Reliza CLI
 
-This tool allows command-line interactions with [Reliza Hub at relizahub.com](https://relizahub.com) (currently in public preview mode). Particularly, Reliza CLI can stream metadata about instances, releases, artifacts, resolve bundles based on Reliza Hub data.
+This tool allows for command-line interactions with [Reliza Hub at relizahub.com](https://relizahub.com) (currently in public preview mode). Particularly, Reliza CLI can stream metadata about instances, releases, artifacts, resolve bundles based on Reliza Hub data. Available as either a Docker image or binary.
 
 Video tutorial about key functionality of Reliza Hub is available on [YouTube](https://www.youtube.com/watch?v=yDlf5fMBGuI).
 
-Community forum and support available at [r/Reliza](https://reddit.com/r/Reliza).
+Community forum and support is available at [r/Reliza](https://reddit.com/r/Reliza).
 
 Docker image is available at [relizaio/reliza-cli](https://hub.docker.com/r/relizaio/reliza-cli)
+
+## Download Reliza CLI
+
+Below are the available downloads for the latest version of the Reliza CLI (2021.03.3). Please download the proper package for your operating system and architecture.
+
+The CLI is distributed as a single binary. Install by unzipping it and moving it to a directory included in your system's PATH.
+
+[SHA256 checksums](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/sha256sums.txt)
+
+macOS: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-darwin-amd64.zip)
+
+FreeBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-freebsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-freebsd-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-freebsd-arm.zip)
+
+Linux: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-linux-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-linux-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-linux-arm.zip) | [Arm64](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-linux-arm64.zip)
+
+OpenBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-openbsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-openbsd-amd64.zip)
+
+Solaris: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-solaris-amd64.zip)
+
+Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-windows-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.3/reliza-cli-2021.03.3-windows-amd64.zip)
 
 ## 1. Use Case: Get Version Assignment From Reliza Hub
 
@@ -52,10 +72,10 @@ docker run --rm relizaio/reliza-cli    \
 
 Flags stand for:
 
-- **getversion** - command that denotes we are obtaning next available release version for the branch. Note that if the call succeeds version assignment will be recorded and not given again by Reliza Hub, even if not consumed. It also creates a release in pending status.
+- **getversion** - command that denotes we are obtaining the next available release version for the branch. Note that if the call succeeds, the version assignment will be recorded and will not be given again by Reliza Hub, even if it is not consumed. It will create the release in pending status.
 - **-i** - flag for project api id (required).
 - **-k** - flag for project api key (required).
-- **-b** - flag to denote branch (required). If branch is not recorded yet, Reliza Hub will attempt to create it.
+- **-b** - flag to denote branch (required). If the branch is not recorded yet, Reliza Hub will attempt to create it.
 - **project** - flag to denote project uuid (optional). Required if organization-wide read-write key is used, ignored if project specific api key is used.
 - **--pin** - flag to denote branch pin (optional for existing branches, required for new branches). If supplied for an existing branch and pin is different from current, it will override current pin.
 - **--vcsuri** - flag to denote vcs uri (optional). This flag is needed if we want to set a commit for the release. However, soon it will be needed only if the vcs uri is not yet set for the project.
@@ -109,6 +129,7 @@ Flags stand for:
 - **status** - flag to denote release status (optional). Supply "rejected" for failed releases, otherwise "completed" is used.
 - **artid** - flag to denote artifact identifier (optional). This is required to add artifact metadata into release.
 - **artbuildid** - flag to denote artifact build id (optional). This flag is optional and may be used to indicate build system id of the release (i.e., this could be circleci build number).
+- **artbuilduri** - flag to denote artifact build id (optional). This flag is optional and is used to denote the uri for where the build takes place.
 - **artcimeta** - flag to denote artifact CI metadata (optional). This flag is optional and like artbuildid may be used to indicate build system metadata in free form.
 - **arttype** - flag to denote artifact type (optional). This flag is used to denote artifact type. Types are based on [CycloneDX](https://cyclonedx.org/) spec. Supported values: Docker, File, Image, Font, Library, Application, Framework, OS, Device, Firmware.
 - **datestart** - flag to denote artifact build start date and time, must conform to ISO strict date (in bash, use *date -Iseconds*, if used there must be one datestart flag entry per artifact, optional).
@@ -135,13 +156,13 @@ Flags stand for:
 --tagval val1,val2
 ```
 
-Note that multiple artifacts per release are supported. In which case artifact specific flags (artid, arbuildid, artcimeta, arttype, artdigests, tagkey and tagval must be repeated for each artifact).
+Note that multiple artifacts per release are supported. In which case artifact specific flags (artid, arbuildid, artbuilduri, artcimeta, arttype, artdigests, tagkey and tagval must be repeated for each artifact).
 
 For sample of how to use workflow in CI, refer to the GitHub Actions build yaml of this project [here](https://github.com/relizaio/reliza-cli/blob/master/.github/workflows/dockerimage.yml).
 
 ## 3. Use Case: Check If Artifact Hash Already Present In Some Release
 
-This is particularly useful for monorepos to see if there was a change in sub-project or not. We are using this technique in our sample [playground project](https://github.com/relizaio/reliza-hub-playground). We supply artifact hash to Reliza Hub - and if it's present already, we get release details; if not - we get empty json response {}. Search space is scoped to single project which is defined by API Id and API Key.
+This is particularly useful for monorepos to see if there was a change in sub-project or not. We are using this technique in our sample [playground project](https://github.com/relizaio/reliza-hub-playground). We supply an artifact hash to Reliza Hub - and if it's present already, we get release details; if not - we get an empty json response {}. Search space is scoped to a single project which is defined by API Id and API Key.
 
 Sample command:
 
@@ -236,7 +257,7 @@ Flags stand for:
 - **--instance** - flag to denote specific instance for which release should match (optional, if supplied namespace flag is also used and env flag gets overrided by instance's environment).
 - **--namespace** - flag to denote specific namespace within instance, if instance is supplied (optional).
 
-Here is a full example how we can use getlatestrelease command leveraging jq to obtain latest docker image with sha256 that we need to use for integration (don't forget to change api_id, api_key, project, branch and env to proper values as needed):
+Here is a full example how we can use the getlatestrelease command leveraging jq to obtain the latest docker image with sha256 that we need to use for integration (don't forget to change api_id, api_key, project, branch and env to proper values as needed):
 
 ```bash
 rlzclientout=$(docker run --rm relizaio/reliza-cli    \
@@ -350,7 +371,7 @@ Flags stand for:
 
 ## 7.3 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle And Version
 
-This use case is designed for the case when we have to deploy a specific version of bundle. Reliza CLI can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
+This use case is designed for the case when we have to deploy a specific version of a bundle. Reliza CLI can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
 
 Sample Command:
 
@@ -408,7 +429,7 @@ Flags stand for:
 
 ## 9. Use Case: Check if Specific Approval is Needed for a Release on Reliza Hub
 
-This use case is auxillary to the previous use case with programmatic approvals. It checks Reliza Hub if specific approval type is still pending for a release. For example, same approval might have already been given previously, or release may already be rejected - in both of these cases, an approval is not needed any more. Such check may be useful for example, to decide whether to perform a set of automated tests for a release.
+This use case is auxiliary to the previous use case with programmatic approvals. It checks Reliza Hub if a specific approval type is still pending for a release. For example, some approval might have already been given previously, or the release may have already been rejected - in both of these cases, an approval is not needed any more. Such check may be useful for example, to decide whether to perform a set of automated tests for a release.
 
 Sample command:
 
@@ -456,23 +477,3 @@ Flags stand for:
 - **-i** - flag for api id.
 - **-k** - flag for api key.
 - **-u** - flag for reliza hub uri.
-
-## Download Reliza CLI
-
-Below are the available downloads for the latest version of the Reliza CLI (2021.03.1). Please download the proper package for your operating system and architecture.
-
-The CLI is distributed as a single binary. Install by unzipping it and moving it to a directory included in your system's PATH.
-
-[SHA256 checksums](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/sha256sums.txt)
-
-macOS: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-darwin-amd64.zip)
-
-FreeBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-freebsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-freebsd-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-freebsd-arm.zip)
-
-Linux: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-linux-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-linux-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-linux-arm.zip) | [Arm64](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-linux-arm64.zip)
-
-OpenBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-openbsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-openbsd-amd64.zip)
-
-Solaris: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-solaris-amd64.zip)
-
-Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-windows-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.03.1/reliza-cli-2021.03.1-windows-amd64.zip)

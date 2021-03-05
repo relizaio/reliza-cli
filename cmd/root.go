@@ -38,6 +38,7 @@ var action string
 var apiKeyId string
 var apiKey string
 var artBuildId []string
+var artBuildUri []string
 var artCiMeta []string
 var artDigests []string
 var artId []string
@@ -192,6 +193,15 @@ var addreleaseCmd = &cobra.Command{
 			} else if len(artBuildId) > 0 {
 				for i, abid := range artBuildId {
 					artifacts[i]["buildId"] = abid
+				}
+			}
+			
+			if len(artBuildUri) > 0 && len(artBuildUri) != len(artId) {
+				fmt.Println("number of --artbuildUri flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artBuildUri) > 0 {
+				for i, aburi := range artBuildUri {
+					artifacts[i]["buildUri"] = aburi
 				}
 			}
 
@@ -672,6 +682,7 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringVar(&dateActual, "date", "", "Commit date and time in iso strict format, use git log --date=iso-strict (optional).")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artId, "artid", []string{}, "Artifact ID (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artBuildId, "artbuildid", []string{}, "Artifact Build ID (multiple allowed)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&artBuildUri, "artbuilduri", []string{}, "Artifact Build URI (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artCiMeta, "artcimeta", []string{}, "Artifact CI Meta (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artType, "arttype", []string{}, "Artifact Type (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artDigests, "artdigests", []string{}, "Artifact Digests (multiple allowed, separate several digests for one artifact with commas)")
