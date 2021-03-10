@@ -129,7 +129,7 @@ Flags stand for:
 - **status** - flag to denote release status (optional). Supply "rejected" for failed releases, otherwise "completed" is used.
 - **artid** - flag to denote artifact identifier (optional). This is required to add artifact metadata into release.
 - **artbuildid** - flag to denote artifact build id (optional). This flag is optional and may be used to indicate build system id of the release (i.e., this could be circleci build number).
-- **artbuilduri** - flag to denote artifact build id (optional). This flag is optional and is used to denote the uri for where the build takes place.
+- **artbuilduri** - flag to denote artifact build URI (optional). This flag is optional and is used to denote the uri of the build job in the CI system.
 - **artcimeta** - flag to denote artifact CI metadata (optional). This flag is optional and like artbuildid may be used to indicate build system metadata in free form.
 - **arttype** - flag to denote artifact type (optional). This flag is used to denote artifact type. Types are based on [CycloneDX](https://cyclonedx.org/) spec. Supported values: Docker, File, Image, Font, Library, Application, Framework, OS, Device, Firmware.
 - **datestart** - flag to denote artifact build start date and time, must conform to ISO strict date (in bash, use *date -Iseconds*, if used there must be one datestart flag entry per artifact, optional).
