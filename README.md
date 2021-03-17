@@ -129,7 +129,7 @@ Flags stand for:
 - **status** - flag to denote release status (optional). Supply "rejected" for failed releases, otherwise "completed" is used.
 - **artid** - flag to denote artifact identifier (optional). This is required to add artifact metadata into release.
 - **artbuildid** - flag to denote artifact build id (optional). This flag is optional and may be used to indicate build system id of the release (i.e., this could be circleci build number).
-- **artbuilduri** - flag to denote artifact build uri (optional). This flag is optional and is used to denote the uri of the build job in the CI system.
+- **artbuilduri** - flag to denote artifact build uri (optional). This flag is optional and is used to denote the uri for where the build takes place.
 - **artcimeta** - flag to denote artifact CI metadata (optional). This flag is optional and like artbuildid may be used to indicate build system metadata in free form.
 - **arttype** - flag to denote artifact type (optional). This flag is used to denote artifact type. Types are based on [CycloneDX](https://cyclonedx.org/) spec. Supported values: Docker, File, Image, Font, Library, Application, Framework, OS, Device, Firmware.
 - **datestart** - flag to denote artifact build start date and time, must conform to ISO strict date (in bash, use *date -Iseconds*, if used there must be one datestart flag entry per artifact, optional).
@@ -334,9 +334,11 @@ Flags stand for:
 - **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
 - **--env** - flag to denote environment to which release approvals should match. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION. If not supplied, latest release will be returned regardless of approvals (optional).
 - **--tagkey** - flag to denote tag key to use as a selector for artifact (optional, if provided tagval flag must also be supplied). Note that currently only single tag is supported.
-- **--tagkey** - flag to denote tag value to use as a selector for artifact (optional, if provided tagkey flag must also be supplied).
+- **--tagval** - flag to denote tag value to use as a selector for artifact (optional, if provided tagkey flag must also be supplied).
 - **--instance** - flag to denote specific instance for which releases should match (optional, if supplied namespace flag is also used and env flag gets overrided by instance's environment).
 - **--namespace** - flag to denote specific namespace within instance, if instance is supplied (optional).
+- **--indirectory** - input directory when using executable cli instead of docker, must use entire path (required if using executable)
+- **--outdirectory** - output directory when using executable cli instead of docker, must use entire path (required if using executable)
 
 ## 7.2 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Instance And Revision
 
@@ -360,13 +362,13 @@ Flags stand for:
 
 - **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
 - **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
-- **instanceuri** - URI of the instance (optional, either instanceuri or instance or tagsource flag must be used).
-- **instance** - UUID of the instanceo (optional, either instanceuri or instance or tagsource flag must be used).
-- **revision** - Revision number for the instance to use as a source for tags (optional, if not specified latest revision will be assumed).
-- **infile** - Input file to parse, such as helm values file or docker compose file.
-- **outfile** - Output file with parsed values.
-- **tagsource** - Source file with tags (optional, either instanceuri or instance or tagsource flag must be used).
-- **defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
+- **--instanceuri** - URI of the instance (optional, either instanceuri or instance or tagsource flag must be used).
+- **--instance** - UUID of the instanceo (optional, either instanceuri or instance or tagsource flag must be used).
+- **--revision** - Revision number for the instance to use as a source for tags (optional, if not specified latest revision will be assumed).
+- **--infile** - Input file to parse, such as helm values file or docker compose file.
+- **--outfile** - Output file with parsed values.
+- **--tagsource** - Source file with tags (optional, either instanceuri or instance or tagsource flag must be used).
+- **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **type** - Type of source tags file: cyclonedx (default) or text.
 
 ## 7.3 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle And Version
@@ -391,13 +393,13 @@ Flags stand for:
 
 - **-i** - flag for api id which can be a organization-wide read API (required).
 - **-k** - flag for api key which can be a organization-wide read API (required).
-- **bundle** - Name of the bundle (optional, either bundle name & version or tagsource flag must be used).
-- **version** - Version number for the bundle to use as a source for tags (optional, to be used with bundle flag).
-- **infile** - Input file to parse, such as helm values file or docker compose file.
-- **outfile** - Output file with parsed values.
-- **tagsource** - Source file with tags (optional, either bundle name & version or tagsource flag must be used).
-- **defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
-- **type** - Type of source tags file: cyclonedx (default) or text.
+- **--bundle** - Name of the bundle (optional, either bundle name & version or tagsource flag must be used).
+- **--version** - Version number for the bundle to use as a source for tags (optional, to be used with bundle flag).
+- **--infile** - Input file to parse, such as helm values file or docker compose file.
+- **--outfile** - Output file with parsed values.
+- **--tagsource** - Source file with tags (optional, either bundle name & version or tagsource flag must be used).
+- **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
+- **--type** - Type of source tags file: cyclonedx (default) or text.
 
 ## 8. Use Case: Programmatic Approvals of Releases on Reliza Hub
 
