@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -99,6 +100,14 @@ const (
 	envPrefix             = ""
 	configType            = "env"
 )
+
+type ErrorBody struct {
+	Timestamp string
+	Status    int
+	Error     string
+	Message   string
+	Path      string
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -195,7 +204,7 @@ var addreleaseCmd = &cobra.Command{
 					artifacts[i]["buildId"] = abid
 				}
 			}
-			
+
 			if len(artBuildUri) > 0 && len(artBuildUri) != len(artId) {
 				fmt.Println("number of --artbuildUri flags must be either zero or match number of --artid flags")
 				os.Exit(2)
@@ -807,6 +816,12 @@ func printResponse(err error, resp *resty.Response) {
 	if resp.StatusCode() != 200 {
 		fmt.Println("Error Response Info:")
 		fmt.Println("Error      :", err)
+		var jsonError ErrorBody
+		errJson := json.Unmarshal(resp.Body(), &jsonError)
+		if errJson != nil {
+			fmt.Println("Error when decoding error json data: ", errJson)
+		}
+		fmt.Println("Error Message:", jsonError.Message)
 		fmt.Println("Status Code:", resp.StatusCode())
 		fmt.Println("Status     :", resp.Status())
 		fmt.Println("Time       :", resp.Time())
