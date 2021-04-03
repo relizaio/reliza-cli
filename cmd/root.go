@@ -63,6 +63,7 @@ var environment string
 var hash string
 var imageFilePath string
 var imageString string
+var imageStyle string
 var instance string
 var instanceURI string
 var manual bool
@@ -430,6 +431,7 @@ var instDataCmd = &cobra.Command{
 		body := map[string]interface{}{}
 		// if imageString (--images flag) is supplied, image File path is ignored
 		if imageString != "" {
+			// only non-k8s images supported
 			body["images"] = strings.Fields(imageString)
 		} else {
 			imageBytes, err := ioutil.ReadFile(imageFilePath)
@@ -438,7 +440,19 @@ var instDataCmd = &cobra.Command{
 				fmt.Print(err)
 				os.Exit(1)
 			}
-			body["images"] = strings.Fields(string(imageBytes))
+			if imageStyle == "k8s" {
+				var k8sjson []map[string]interface{}
+				errJson := json.Unmarshal(imageBytes, &k8sjson)
+				if errJson != nil {
+					fmt.Println("Error unmarshalling k8s images")
+					fmt.Println(errJson)
+					os.Exit(1)
+				}
+				body["type"] = "k8s"
+				body["images"] = k8sjson
+			} else {
+				body["images"] = strings.Fields(string(imageBytes))
+			}
 		}
 		body["timeSent"] = time.Now().String()
 		if len(namespace) > 0 {
@@ -448,6 +462,7 @@ var instDataCmd = &cobra.Command{
 			body["senderId"] = senderId
 		}
 		client := resty.New()
+		fmt.Println(body)
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
 			SetHeader("User-Agent", "Reliza Go Client").
@@ -726,8 +741,9 @@ func init() {
 	isApprovalNeededCmd.MarkPersistentFlagRequired("approval")
 
 	// flags for instance data command
-	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images.txt", "Path to image file, ignored if --images parameter is supplied")
+	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images", "Path to image file, ignored if --images parameter is supplied")
 	instDataCmd.PersistentFlags().StringVar(&imageString, "images", "", "Whitespace separated images with digests or simply digests, if supplied takes precedence over imagefile")
+	instDataCmd.PersistentFlags().StringVar(&imageStyle, "imagestyle", "", "Image format style (optional); set to 'k8s' for k8s style formatting, otherwise default string array of digests is assumed")
 	instDataCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "Namespace to submit instance data to")
 	instDataCmd.PersistentFlags().StringVar(&senderId, "sender", "default", "Namespace to submit instance data to")
 
