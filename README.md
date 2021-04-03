@@ -205,8 +205,8 @@ Flags stand for:
 - **-i** - flag for instance api id (required).
 - **-k** - flag for instance api key (required).
 - **--images** - flag which lists sha256 digests of images sent from the instances (optional, either images string or image file must be provided). Images must be white space separated. Note that sending full docker image URIs with digests is also accepted, i.e. it's ok to send images as relizaio/reliza-cli:latest@sha256:ebe68a0427bf88d748a4cad0a419392c75c867a216b70d4cd9ef68e8031fe7af
-- **-imagefile** - flag which sets absolute path to the file with image string or image k8s json (optional, either images string or image file must be provided). Default value: */resources/images*. Use *kubectl get po -o json | jq "[{namespace:.items[].metadata.namespace, pod:.items[].metadata.name, status:.items[].status.containerStatuses[]}]"* to obtain k8s json.
-- **-imagestyle** - flag which sets image format to k8s json if set to "k8s" (optional).
+- **--imagefile** - flag which sets absolute path to the file with image string or image k8s json (optional, either images string or image file must be provided). Default value: */resources/images*. Use *kubectl get po -o json | jq "[{namespace:.items[].metadata.namespace, pod:.items[].metadata.name, status:.items[].status.containerStatuses[]}]"* to obtain k8s json.
+- **--imagestyle** - flag which sets image format to k8s json if set to "k8s" (optional).
 - **--namespace** - flag to denote namespace where we are sending images (optional, if not sent "default" namespace is used). Namespaces are useful to separate different products deployed on the same instance.
 - **--sender** - flag to denote unique sender within a single namespace (optional). This is useful if say there are different nodes where each streams only part of application deployment data. In this case such nodes need to use same namespace but different senders so that their data does not stomp on each other.
 
