@@ -83,6 +83,8 @@ Flags stand for:
 - **--commit** - flag to denote vcs commit id or hash (optional). This is needed to provide source code entry metadata into the release.
 - **--date** - flag to denote date time with timezone when commit was made, iso strict formatting with timezone is required, i.e. for git use git log --date=iso-strict (optional).
 - **--vcstag** - flag to denote vcs tag (optional). This is needed to include vcs tag into commit, if present.
+- **--metadata** - flag to set version metadata (optional). This may be semver metadata or custom version schema metadata.
+- **--modifier** - flag to set version modifier (optional). This may be semver modifier or custom version schema metadata.
 - **--manual** - flag to indicate a manual release (optional). Sets status as "draft", otherwise "pending" status is used.
 - **--onlyversion** - boolean flag to skip creation of the release (optional). Default is false.
 
