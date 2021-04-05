@@ -309,7 +309,7 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 
 }
 
-func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey string, instance string, revision string, instanceURI string, bundle string, version string) map[string]string {
+func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey string, instance string, revision string, instanceURI string, bundle string, version string, environment string) map[string]string {
 	tagSourceMap := map[string]string{} // 1st - scan tag source file and construct a map of generic tag to actual tag
 	if tagSourceFile != "" {
 		tagSourceMap = scanTagFile(tagSourceFile, typeVal)
@@ -322,6 +322,12 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
 	} else if len(bundle) > 0 && len(version) > 0 {
 		cycloneBytes := getBundleVersionCycloneDxExportV1(apiKeyId, apiKey, bundle, version)
+		// fmt.Println("res", tagSourceRes)
+		var bomJSON map[string]interface{}
+		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
+		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
+	} else if len(environment) > 0 {
+		cycloneBytes := getEnvironmentCycloneDxExportV1(apiKeyId, apiKey, environment)
 		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
@@ -387,6 +393,34 @@ func getBundleVersionCycloneDxExportV1(apiKeyId string, apiKey string, bundle st
 
 	path := relizaHubUri + "/api/programmatic/v1/productRelease/exportAsBom?bundle_name=" + bundle + "&bundle_version=" + version
 
+	client := resty.New()
+	resp, err := client.R().
+		SetHeader("User-Agent", "Reliza Go Client").
+		SetHeader("Accept-Encoding", "gzip, deflate").
+		SetBasicAuth(apiKeyId, apiKey).
+		Get(path)
+
+	if resp.StatusCode() != 200 {
+		fmt.Println("Error Response Info:")
+		fmt.Println("Error      :", err)
+		fmt.Println("Status Code:", resp.StatusCode())
+		fmt.Println("Status     :", resp.Status())
+		fmt.Println("Time       :", resp.Time())
+		fmt.Println("Received At:", resp.ReceivedAt())
+		os.Exit(1)
+	}
+	return resp
+}
+
+func getEnvironmentCycloneDxExportV1(apiKeyId string, apiKey string, environment string) *resty.Response {
+
+	if len(environment) <= 0 {
+		//throw error and exit
+		fmt.Println("environment not specified!")
+		os.Exit(1)
+	}
+
+	path := relizaHubUri + "/api/programmatic/v1/environmentRelease/exportAsBom?environment=" + environment
 	client := resty.New()
 	resp, err := client.R().
 		SetHeader("User-Agent", "Reliza Go Client").

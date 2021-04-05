@@ -615,7 +615,7 @@ var replaceTagsCmd = &cobra.Command{
 		// type - typeVal: options - text, cyclonedx
 
 		// 1st - scan tag source file and construct a map of generic tag to actual tag
-		tagSourceMap := scanTags(tagSourceFile, typeVal, apiKeyId, apiKey, instance, revision, instanceURI, bundle, version)
+		tagSourceMap := scanTags(tagSourceFile, typeVal, apiKeyId, apiKey, instance, revision, instanceURI, bundle, version, environment)
 
 		// 2nd - scan definition reference file and identify all used tags (scan by "image:" pattern)
 		substitutionMap := map[string]string{}
@@ -793,6 +793,7 @@ func init() {
 	replaceTagsCmd.PersistentFlags().StringVar(&infile, "infile", "", "Input file to parse, such as helm values file or docker compose file")
 	replaceTagsCmd.PersistentFlags().StringVar(&outfile, "outfile", "", "Output file with parsed values")
 	replaceTagsCmd.PersistentFlags().StringVar(&tagSourceFile, "tagsource", "", "Source file with tags (optional - specify either source file or instance id and revision)")
+	replaceTagsCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment for hich to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&instance, "instance", "", "Instance ID for which to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "Instance ID for which to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&revision, "revision", "", "Instance revision for which to generate tags (optional)")

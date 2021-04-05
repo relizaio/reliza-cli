@@ -405,6 +405,32 @@ Flags stand for:
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **--type** - Type of source tags file: cyclonedx (default) or text.
 
+## 7.4 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Environment
+
+This use case is designed for the case when we have to deploy to a specific environment. Reliza CLI can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
+
+Sample Command:
+
+```text
+docker run --rm \
+    -v /local/path/to/values.yaml:/values.yaml \
+    -v /local/path/to/output_dir:/output_dir \
+    relizaio/reliza-cli \
+    replacetags \
+    --env <environment name> \
+    --infile /values.yaml \
+    --outfile /output_dir/output_values.yaml
+```
+
+Flags stand for:
+
+- **-i** - flag for api id which can be a organization-wide read API (required).
+- **-k** - flag for api key which can be a organization-wide read API (required).
+- **env** - flag to denote the environment to which we wish to deploy. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION.
+- **infile** - Input file to parse, such as helm values file or docker compose file.
+- **outfile** - Output file with parsed values.
+- **defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
+
 ## 8. Use Case: Programmatic Approvals of Releases on Reliza Hub
 
 This use case is for the case when we have configured an API key in Org settings which is allowed to perform programmatic approvals in releases.
