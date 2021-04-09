@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -391,7 +392,7 @@ func getBundleVersionCycloneDxExportV1(apiKeyId string, apiKey string, bundle st
 	// 	revision = "-1"
 	// }
 
-	path := relizaHubUri + "/api/programmatic/v1/productRelease/exportAsBom?bundle_name=" + bundle + "&bundle_version=" + version
+	path := relizaHubUri + "/api/programmatic/v1/productRelease/exportAsBom?bundle_name=" + url.QueryEscape(bundle) + "&bundle_version=" + url.QueryEscape(version)
 
 	client := resty.New()
 	resp, err := client.R().
@@ -420,7 +421,7 @@ func getEnvironmentCycloneDxExportV1(apiKeyId string, apiKey string, environment
 		os.Exit(1)
 	}
 
-	path := relizaHubUri + "/api/programmatic/v1/environmentRelease/exportAsBom?environment=" + environment
+	path := relizaHubUri + "/api/programmatic/v1/environmentRelease/exportAsBom?environment=" + url.QueryEscape(environment)
 	client := resty.New()
 	resp, err := client.R().
 		SetHeader("User-Agent", "Reliza Go Client").
