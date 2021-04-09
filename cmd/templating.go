@@ -128,7 +128,15 @@ func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map
 				// line = strings.ReplaceAll(line, k, v)
 				//split line before image name and concat with substitution map value
 				parts := strings.Split(line, k)
-				line = parts[0] + v
+
+				// remove beginning quotes if present
+				startLine := parts[0]
+				re := regexp.MustCompile("\"$")
+				startLine = re.ReplaceAllLiteralString(startLine, "")
+				re = regexp.MustCompile("'$")
+				startLine = re.ReplaceAllLiteralString(startLine, "")
+
+				line = startLine + v
 				break
 			}
 		}

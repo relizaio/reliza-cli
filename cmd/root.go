@@ -643,6 +643,10 @@ var replaceTagsCmd = &cobra.Command{
 					image = re.ReplaceAllLiteralString(image, "")
 					re = regexp.MustCompile("\"$")
 					image = re.ReplaceAllLiteralString(image, "")
+					re = regexp.MustCompile("^'")
+					image = re.ReplaceAllLiteralString(image, "")
+					re = regexp.MustCompile("'$")
+					image = re.ReplaceAllLiteralString(image, "")
 					// parse and add to map
 					if strings.Contains(image, "@") {
 						tagSplit := strings.Split(image, "@")
