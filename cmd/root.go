@@ -776,7 +776,7 @@ func init() {
 	// flags for latest project or product release
 	getLatestReleaseCmd.PersistentFlags().StringVar(&project, "project", "", "Project or Product UUID from Reliza Hub of project or product from which to obtain latest release")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&product, "product", "", "Product UUID from Reliza Hub to condition project release to this product bundle (optional)")
-	getLatestReleaseCmd.PersistentFlags().StringVar(&branch, "branch", "", "Name of branch or Feature Set from Reliza Hub for which latest release is requested, if not supplied UI mapping is used (optional)")
+	getLatestReleaseCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "", "Name of branch or Feature Set from Reliza Hub for which latest release is requested, if not supplied UI mapping is used (optional)")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment to obtain approvals details from (optional)")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&instance, "instance", "", "Instance ID for which to check release (optional)")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace within instance for which to check release, only matters if instance is supplied (optional)")
