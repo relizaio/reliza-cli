@@ -9,8 +9,6 @@ jobs:
     name: Build and push
     runs-on: ubuntu-latest
     #TODO: Version call must be done from Reliza Hub, currently hardcoded
-    env:
-      # VERSION: 2021.04.8
     steps:
       - name: Checkout
         uses: actions/checkout@v2
