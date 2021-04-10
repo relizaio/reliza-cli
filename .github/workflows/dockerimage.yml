@@ -18,7 +18,7 @@ jobs:
         run: echo ${{ secrets.DOCKER_TOKEN }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
       - name: Get Version
         run: |
-          reliza_ver=$(docker run --rm relizaio/reliza-cli getversion -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b $GITHUB_REF --metadata GitHub)
+          reliza_ver=$(docker run --rm relizaio/reliza-cli getversion -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b $GITHUB_REF)
           echo "completed getting ver"
           echo $reliza_ver
           echo "RLZ_VER_JSON=$reliza_ver" >> $GITHUB_ENV
