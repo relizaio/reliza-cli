@@ -124,10 +124,34 @@ func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map
 		line := inScanner.Text()
 		// check if line contains any key of substitution map
 		for k, v := range substitutionMap {
+			// have a version stripping docker.io and docker.io/library if it's present
+			// for this establish base image text
+			baseImageText := ""
+
 			if strings.Contains(line, k+":") || strings.Contains(line, k+"@") || strings.HasSuffix(line, k) {
-				// line = strings.ReplaceAll(line, k, v)
+				baseImageText = k
+			}
+
+			if len(baseImageText) < 1 {
+				// try stripping docker.io
+				contText := strings.Replace(k, "docker.io/", "", 1)
+				if strings.Contains(line, contText+":") || strings.Contains(line, contText+"@") || strings.HasSuffix(line, contText) {
+					baseImageText = contText
+				}
+			}
+
+			if len(baseImageText) < 1 {
+				// try stripping docker.io/library
+				contText := strings.Replace(k, "docker.io/library/", "", 1)
+				if strings.Contains(line, contText+":") || strings.Contains(line, contText+"@") || strings.HasSuffix(line, contText) {
+					baseImageText = contText
+				}
+			}
+
+			if len(baseImageText) > 0 && !strings.HasSuffix(line, ":") {
+				// found a match - do substitution
 				//split line before image name and concat with substitution map value
-				parts := strings.Split(line, k)
+				parts := strings.Split(line, baseImageText)
 
 				// remove beginning quotes if present
 				startLine := parts[0]
