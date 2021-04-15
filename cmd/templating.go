@@ -143,7 +143,8 @@ func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map
 			if len(baseImageText) < 1 {
 				// try stripping docker.io/library
 				contText := strings.Replace(k, "docker.io/library/", "", 1)
-				if strings.Contains(line, contText+":") || strings.Contains(line, contText+"@") || strings.HasSuffix(line, contText) {
+				// note that exact match is too loose here, so instead we only look for image: pattern
+				if strings.Contains(line, contText+":") || strings.Contains(line, contText+"@") || strings.Contains(strings.ToLower(line), "image: "+contText) || strings.Contains(strings.ToLower(line), "image:"+contText) {
 					baseImageText = contText
 				}
 			}
