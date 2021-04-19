@@ -515,7 +515,7 @@ Flags stand for:
 
 This use case is to match a list of images with digests, in example on local Docker enviornment to a bundle version on Reliza Hub. Works with User or Organization-Wide API-keys.
 
-Sample command:
+Sample dockerized command:
 
 ```bash
 docker run --rm relizaio/reliza-cli    \
@@ -523,6 +523,13 @@ docker run --rm relizaio/reliza-cli    \
     -i api_id    \
     -k api_key    \
     --images "sha256:c10779b369c6f2638e4c7483a3ab06f13b3f57497154b092c87e1b15088027a5 sha256:e6c2bcd817beeb94f05eaca2ca2fce5c9a24dc29bde89fbf839b652824304703"
+```
+
+Sample flow to use for matching local docker images to a bundle release:
+
+```bash
+images=$(docker ps --no-trunc | awk 'NR>2 {print $2}' | tr "\n" " ")
+reliza-cli matchbundle --images "$images"
 ```
 
 Flags stand for:
