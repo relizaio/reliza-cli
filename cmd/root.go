@@ -475,6 +475,60 @@ var instDataCmd = &cobra.Command{
 	},
 }
 
+var matchBundleCmd = &cobra.Command{
+	Use:   "matchbundle",
+	Short: "Match images to bundle version",
+	Long:  `This CLI command would stream list of images with sha256 digests to Reliza Hub and attempt to match it to product release`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
+
+		body := map[string]interface{}{}
+		// if imageString (--images flag) is supplied, image File path is ignored
+		if imageString != "" {
+			// only non-k8s images supported
+			body["images"] = strings.Fields(imageString)
+		} else {
+			imageBytes, err := ioutil.ReadFile(imageFilePath)
+			if err != nil {
+				fmt.Println("Error when reading images file")
+				fmt.Print(err)
+				os.Exit(1)
+			}
+			if imageStyle == "k8s" {
+				var k8sjson []map[string]interface{}
+				errJson := json.Unmarshal(imageBytes, &k8sjson)
+				if errJson != nil {
+					fmt.Println("Error unmarshalling k8s images")
+					fmt.Println(errJson)
+					os.Exit(1)
+				}
+				body["type"] = "k8s"
+				body["images"] = k8sjson
+			} else {
+				body["images"] = strings.Fields(string(imageBytes))
+			}
+		}
+		body["timeSent"] = time.Now().String()
+		if len(namespace) > 0 {
+			body["namespace"] = namespace
+		}
+
+		client := resty.New()
+		fmt.Println(body)
+		resp, err := client.R().
+			SetHeader("Content-Type", "application/json").
+			SetHeader("User-Agent", "Reliza Go Client").
+			SetHeader("Accept-Encoding", "gzip, deflate").
+			SetBody(body).
+			SetBasicAuth(apiKeyId, apiKey).
+			Put(relizaHubUri + "/api/programmatic/v1/release/matchToProductRelease")
+
+		printResponse(err, resp)
+	},
+}
+
 var getVersionCmd = &cobra.Command{
 	Use:   "getversion",
 	Short: "Get next version for branch for a particular project",
@@ -751,6 +805,11 @@ func init() {
 	instDataCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "Namespace to submit instance data to")
 	instDataCmd.PersistentFlags().StringVar(&senderId, "sender", "default", "Namespace to submit instance data to")
 
+	// flags for match bundle command
+	matchBundleCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images", "Path to image file, ignored if --images parameter is supplied")
+	matchBundleCmd.PersistentFlags().StringVar(&imageString, "images", "", "Whitespace separated images with digests or simply digests, if supplied takes precedence over imagefile")
+	matchBundleCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "Namespace (Optional, exists for compatibility with instance data command).")
+
 	// flags for getmyrelease command
 	getMyReleaseCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace to submit instance data to")
 
@@ -814,6 +873,7 @@ func init() {
 	rootCmd.AddCommand(getMyReleaseCmd)
 	rootCmd.AddCommand(getVersionCmd)
 	rootCmd.AddCommand(instDataCmd)
+	rootCmd.AddCommand(matchBundleCmd)
 	rootCmd.AddCommand(parseCopyTemplatesCmd)
 	rootCmd.AddCommand(replaceTagsCmd)
 	rootCmd.AddCommand(isApprovalNeededCmd)

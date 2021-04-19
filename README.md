@@ -509,3 +509,27 @@ Flags stand for:
 - **-i** - flag for api id.
 - **-k** - flag for api key.
 - **-u** - flag for reliza hub uri.
+
+
+## 11. Use Case: Match list of images with digests to a bundle version on Reliza Hub
+
+This use case is to match a list of images with digests, in example on local Docker enviornment to a bundle version on Reliza Hub. Works with User or Organization-Wide API-keys.
+
+Sample command:
+
+```bash
+docker run --rm relizaio/reliza-cli    \
+    matchbundle    \
+    -i api_id    \
+    -k api_key    \
+    --images "sha256:c10779b369c6f2638e4c7483a3ab06f13b3f57497154b092c87e1b15088027a5 sha256:e6c2bcd817beeb94f05eaca2ca2fce5c9a24dc29bde89fbf839b652824304703"
+```
+
+Flags stand for:
+
+- **matchbundle** - command that denotes we are trying to match list of images to a bundle release.
+- **-i** - flag for api id (either User, or Organization, or Organization Read-Write, can be obtained via Reliza Hub, required).
+- **-k** - flag for api key (either User, or Organization, or Organization Read-Write, can be obtained via Reliza Hub, required).
+- **--images** - flag which lists images with sha256 digests or only digests of images sent from the instances (optional, either images string or image file must be provided). Images must be white space separated. Note that sending full docker image URIs with digests is also accepted, i.e. it's ok to send images as relizaio/reliza-cli:latest@sha256:ebe68a0427bf88d748a4cad0a419392c75c867a216b70d4cd9ef68e8031fe7af
+- **--imagefile** - flag which sets absolute path to the file with image string or image k8s json (optional, either images string or image file must be provided). Default value: */resources/images*.
+- **--namespace** - flag to denote namespace where we are sending images (optional, unused, present for compatibility with instance data command, which uses simialr underlying logic).
