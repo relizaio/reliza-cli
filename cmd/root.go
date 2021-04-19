@@ -462,7 +462,9 @@ var instDataCmd = &cobra.Command{
 			body["senderId"] = senderId
 		}
 		client := resty.New()
-		fmt.Println(body)
+		if debug == "true" {
+			fmt.Println(body)
+		}
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
 			SetHeader("User-Agent", "Reliza Go Client").
@@ -516,7 +518,9 @@ var matchBundleCmd = &cobra.Command{
 		}
 
 		client := resty.New()
-		fmt.Println(body)
+		if debug == "true" {
+			fmt.Println(body)
+		}
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
 			SetHeader("User-Agent", "Reliza Go Client").
