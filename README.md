@@ -254,7 +254,7 @@ Flags stand for:
 - **getlatestrelease** - command that denotes we are requesting latest release data for Project or Product from Reliza Hub
 - **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
 - **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
-- **--project** - flag to denote UUID of specific Project or Product, UUID must be obtained from [Reliza Hub](https://relizahub.com) (required).
+- **--project** - flag to denote UUID of specific Project or Product, UUID must be obtained from [Reliza Hub](https://relizahub.com) (optional if project api key is used, otherwise required).
 - **--product** - flag to denote UUID of Product which packages Project or Product for which we inquiry about its version via --project flag, UUID must be obtained from [Reliza Hub](https://relizahub.com) (optional).
 - **--branch** - flag to denote required branch of chosen Project or Product (optional, if not supplied settings from Reliza Hub UI are used).
 - **--env** - flag to denote environment to which release approvals should match. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION. If not supplied, latest release will be returned regardless of approvals (optional).
