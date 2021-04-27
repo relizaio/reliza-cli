@@ -354,10 +354,10 @@ var addreleaseCmd = &cobra.Command{
 							commitMap["vcsTag"] = vcsTag
 						}
 						if vcsUri != "" {
-							commitMap["vcsUri"] = vcsUri
+							commitMap["uri"] = vcsUri
 						}
 						if vcsType != "" {
-							commitMap["vcsType"] = vcsType
+							commitMap["type"] = vcsType
 						}
 						body["sourceCodeEntry"] = commitMap
 					}
