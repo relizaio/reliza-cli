@@ -14,6 +14,8 @@ jobs:
         run: echo "BUILD_START=$(date -Iseconds)" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Login to Docker Registry
         run: echo ${{ secrets.DOCKER_TOKEN }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
       - name: Get Version
@@ -69,7 +71,6 @@ jobs:
           fi
           echo -n "--datestart $BUILD_START " >> reliza_command
           echo -n "--dateend $(date -Iseconds) " >> reliza_command
-          
           # debug
           cat reliza_command
           # send data
