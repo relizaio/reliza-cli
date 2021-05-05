@@ -127,6 +127,26 @@ var rootCmd = &cobra.Command{
 	// 	},
 }
 
+var printversionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Prints current version of the CLI",
+	Long:  `Prints current version of the CLI`,
+	Run: func(cmd *cobra.Command, args []string) {
+		jsonProperties, err := os.Open("properties.json")
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		defer jsonProperties.Close()
+		byteValue, _ := ioutil.ReadAll(jsonProperties)
+		var properties map[string]interface{}
+		json.Unmarshal([]byte(byteValue), &properties)
+
+		fmt.Println(properties["version"])
+	},
+}
+
 var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Persisits API Key Id and API Key Secret",
@@ -917,6 +937,7 @@ func init() {
 	replaceTagsCmd.PersistentFlags().StringVar(&bundle, "bundle", "", "Bundle for which to generate tags (optional)")
 
 	rootCmd.AddCommand(loginCmd)
+	rootCmd.AddCommand(printversionCmd)
 	rootCmd.AddCommand(addreleaseCmd)
 	rootCmd.AddCommand(approveReleaseCmd)
 	rootCmd.AddCommand(checkReleaseByHashCmd)

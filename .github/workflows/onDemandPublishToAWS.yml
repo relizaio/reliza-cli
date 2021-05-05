@@ -22,6 +22,8 @@ jobs:
           reliza_ver=$(docker run --rm relizaio/reliza-cli getlatestrelease -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b master --project ${{ secrets.RELIZA_HUB_PROJECT_ID }} --env UAT | jq -r ".version")
           echo $reliza_ver
           echo "VERSION=$reliza_ver" >> $GITHUB_ENV
+      - name: Update version in properties.json
+        run: echo "$(jq .version=\"${VERSION}\" properties.json)" > properties.json
       - name: Build for all different OS and Architecture
         run: |
           docker build -f Dockerfile.exec -t reliza-image --build-arg VERSION=$VERSION .
