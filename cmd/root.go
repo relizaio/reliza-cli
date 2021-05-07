@@ -132,18 +132,7 @@ var printversionCmd = &cobra.Command{
 	Short: "Prints current version of the CLI",
 	Long:  `Prints current version of the CLI`,
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonProperties, err := os.Open("properties.json")
-
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		defer jsonProperties.Close()
-		byteValue, _ := ioutil.ReadAll(jsonProperties)
-		var properties map[string]interface{}
-		json.Unmarshal([]byte(byteValue), &properties)
-
-		fmt.Println(properties["version"])
+		fmt.Println("reliza-cli version " + Version)
 	},
 }
 
