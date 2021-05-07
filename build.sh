@@ -2,6 +2,13 @@
 
 GOOS=$1
 GOARCH=$2
-EXE=$3
 GOOS=$GOOS GOARCH=$GOARCH go build -o ./ ./...
-zip -r -j ../$VERSION/reliza-cli-$VERSION-$GOOS-$GOARCH.zip ./reliza-cli$EXE
+
+if [[ "$GOOS" = "windows" ]]
+then
+    BIN_FILE="reliza-cli.exe"
+else
+    BIN_FILE="reliza-cli"
+fi
+
+zip -r -j ../$VERSION/reliza-cli-$VERSION-$GOOS-$GOARCH.zip ./$BIN_FILE
