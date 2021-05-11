@@ -542,3 +542,17 @@ Flags stand for:
 - **--images** - flag which lists images with sha256 digests or only digests of images sent from the instances (optional, either images string or image file must be provided). Images must be white space separated. Note that sending full docker image URIs with digests is also accepted, i.e. it's ok to send images as relizaio/reliza-cli:latest@sha256:ebe68a0427bf88d748a4cad0a419392c75c867a216b70d4cd9ef68e8031fe7af
 - **--imagefile** - flag which sets absolute path to the file with image string or image k8s json (optional, either images string or image file must be provided). Default value: */resources/images*.
 - **--namespace** - flag to denote namespace where we are sending images (optional, unused, present for compatibility with instance data command, which uses simialr underlying logic).
+
+## Adding dependencies to project
+
+Dependencies are handled using go modules and imports file is automatically generated. If importing a github repository use this command first:
+
+```bash
+go get github.com/xxxxxx/xxxxxx
+```
+
+You then should be able to add what you need as an import to your files. Once they've been imported call this command to generate the imports file:
+
+```bash
+go generate ./internal/imports
+```
