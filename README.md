@@ -235,7 +235,7 @@ Flags stand for:
 
 ## 6. Use Case: Request Latest Release Per Project Or Product
 
-This use case is when Reliza Hub is queried either by CI or CD environment or by integration instance to check latest release version available per specific Project or Product.
+This use case is when Reliza Hub is queried either by CI or CD environment or by integration instance to check latest release version available per specific Project or Product. Only releases with *COMPLETE* status may be returned.
 
 Sample command:
 
