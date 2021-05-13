@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"bufio"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -28,6 +29,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/machinebox/graphql"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -632,17 +634,31 @@ var getVersionCmd = &cobra.Command{
 
 		body["onlyVersion"] = onlyVersion
 
-		client := resty.New()
-		resp, err := client.R().
-			SetHeader("Content-Type", "application/json").
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBody(body).
-			SetBasicAuth(apiKeyId, apiKey).
-			Post(relizaHubUri + "/api/programmatic/v2/project/getNewVersion")
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			mutation ($getNewVersionInput: getNewVersionInput) {
+				getNewVersion(project:$getNewVersionInput)
+			}
+		`)
+		req.Var("getNewVersionInput", body)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
+		req.Header.Add("Authorization", "Basic "+basicAuth(apiKeyId, apiKey))
 
-		printResponse(err, resp)
+		var respData interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		jsonBody, _ := json.Marshal(respData)
+		fmt.Println(string(jsonBody))
 	},
+}
+
+func basicAuth(username, password string) string {
+	auth := username + ":" + password
+	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
 var checkReleaseByHashCmd = &cobra.Command{
