@@ -644,21 +644,20 @@ var getVersionCmd = &cobra.Command{
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("User-Agent", "Reliza Go Client")
 		req.Header.Set("Accept-Encoding", "gzip, deflate")
-		req.Header.Add("Authorization", "Basic "+basicAuth(apiKeyId, apiKey))
 
-		var respData interface{}
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
+
+		var respData map[string]interface{}
 		if err := client.Run(context.Background(), req, &respData); err != nil {
 			fmt.Println("Error:", err)
 		}
 
-		jsonBody, _ := json.Marshal(respData)
+		jsonBody, _ := json.Marshal(respData["getNewVersion"])
 		fmt.Println(string(jsonBody))
 	},
-}
-
-func basicAuth(username, password string) string {
-	auth := username + ":" + password
-	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
 var checkReleaseByHashCmd = &cobra.Command{
