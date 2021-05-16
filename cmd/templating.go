@@ -347,9 +347,8 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 	tagSourceMap := map[string]string{} // 1st - scan tag source file and construct a map of generic tag to actual tag
 	if tagSourceFile != "" {
 		tagSourceMap = scanTagFile(tagSourceFile, typeVal)
-	} else if len(instance) > 0 || len(instanceURI) > 0 {
-		// tagSourceMap = getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision)
-		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision, instanceURI)
+	} else if len(environment) > 0 {
+		cycloneBytes := getEnvironmentCycloneDxExportV1(apiKeyId, apiKey, environment)
 		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
@@ -360,8 +359,9 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
-	} else if len(environment) > 0 {
-		cycloneBytes := getEnvironmentCycloneDxExportV1(apiKeyId, apiKey, environment)
+	} else if len(instance) > 0 || len(instanceURI) > 0 || strings.HasPrefix(apiKeyId, "INSTANCE__") {
+		// tagSourceMap = getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision)
+		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision, instanceURI)
 		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
@@ -375,7 +375,7 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 
 func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instance string, revision string, instanceURI string) *resty.Response {
 
-	if len(instance) <= 0 && len(instanceURI) <= 0 {
+	if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") {
 		//throw error and exit
 		fmt.Println("instance or instanceURI not specified!")
 		os.Exit(1)
