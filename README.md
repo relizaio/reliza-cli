@@ -370,7 +370,7 @@ Flags stand for:
 - **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
 - **--instanceuri** - URI of the instance (optional, either instanceuri or instance or tagsource flag must be used).
 - **--instance** - UUID of the instanceo (optional, either instanceuri or instance or tagsource flag must be used).
-- **--revision** - Revision number for the instance to use as a source for tags (optional, if not specified latest revision will be assumed).
+- **--revision** - Revision number for the instance to use as a source for tags (optional, if not specified tags will be resolved by environment to which the instance belongs).
 - **--infile** - Input file to parse, such as helm values file or docker compose file.
 - **--outfile** - Output file with parsed values.
 - **--tagsource** - Source file with tags (optional, either instanceuri or instance or tagsource flag must be used).
