@@ -377,20 +377,112 @@ var addreleaseCmd = &cobra.Command{
 			body["commits"] = commitsInBody
 		}
 
-		//		fmt.Println(body)
 		jsonBody, _ := json.Marshal(body)
 		fmt.Println(string(jsonBody))
 
-		client := resty.New()
-		resp, err := client.R().
-			SetHeader("Content-Type", "application/json").
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBody(body).
-			SetBasicAuth(apiKeyId, apiKey).
-			Post(relizaHubUri + "/api/programmatic/v1/release/create")
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			mutation ($releaseInputProg: ReleaseInputProg) {
+				addReleaseProg(release:$releaseInputProg) {
+					createdDate
+					org
+					artifacts
+					artifactDetails {
+						uuid
+						identifier
+						buildId
+						buildUri
+						cicdMeta
+						digests
+						artifactType {
+							name
+						}
+						tags
+					}
+					orgDetails {
+						uuid
+						name
+					}
+					parentReleases {
+						release
+						namespace
+						properties
+					}
+					timing {
+						event
+						lifecycle
+						dateFrom
+						dateTo
+						event
+						duration
+						instanceUuid
+						environment
+					}
+					type
+					status
+					uuid
+					version
+					notes
+					endpoint
+					sourceCodeEntry
+					sourceCodeEntryDetails {
+						uuid
+						commit
+						commitMessage
+						dateActual
+						vcsRepository {
+							uri
+						}
+						vcsBranch
+						vcsTag
+					}
+					commitsDetails {
+						uuid
+						commit
+						commitMessage
+						dateActual
+					}
+					branch
+					branchDetails {
+						uuid
+						name
+					}
+					approvals
+					projectDetails {
+						uuid
+						name
+						type
+					}
+					inBundles {
+						uuid
+						version
+						projectDetails {
+							name
+						}
+						branchDetails {
+							name
+						}
+					}
+				}
+			}`,
+		)
+		req.Var("releaseInputProg", body)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
 
-		printResponse(err, resp)
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
+
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		jsonResponse, _ := json.Marshal(respData["addReleaseProg"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
@@ -655,8 +747,8 @@ var getVersionCmd = &cobra.Command{
 			fmt.Println("Error:", err)
 		}
 
-		jsonBody, _ := json.Marshal(respData["getNewVersion"])
-		fmt.Println(string(jsonBody))
+		jsonResponse, _ := json.Marshal(respData["getNewVersion"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
