@@ -636,11 +636,11 @@ var getVersionCmd = &cobra.Command{
 
 		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
-			mutation ($getNewVersionInput: getNewVersionInput) {
-				getNewVersion(project:$getNewVersionInput)
+			mutation ($GetNewVersionInput: GetNewVersionInput) {
+				getNewVersion(project:$GetNewVersionInput)
 			}
 		`)
-		req.Var("getNewVersionInput", body)
+		req.Var("GetNewVersionInput", body)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("User-Agent", "Reliza Go Client")
 		req.Header.Set("Accept-Encoding", "gzip, deflate")
