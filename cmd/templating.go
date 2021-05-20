@@ -144,7 +144,9 @@ func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map
 				// try stripping docker.io/library
 				contText := strings.Replace(k, "docker.io/library/", "", 1)
 				// note that exact match is too loose here, so instead we only look for image: pattern
-				if strings.Contains(line, contText+":") || strings.Contains(line, contText+"@") || strings.Contains(strings.ToLower(line), "image: "+contText) || strings.Contains(strings.ToLower(line), "image:"+contText) {
+				if !strings.Contains(line, "//"+contText) &&
+					(strings.Contains(line, contText+":") || strings.Contains(line, contText+"@") || strings.Contains(strings.ToLower(line), "image: "+contText) ||
+						strings.Contains(strings.ToLower(line), "image:"+contText)) {
 					baseImageText = contText
 				}
 			}
