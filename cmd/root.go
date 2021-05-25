@@ -610,19 +610,34 @@ var instDataCmd = &cobra.Command{
 		if len(senderId) > 0 {
 			body["senderId"] = senderId
 		}
-		client := resty.New()
+
 		if debug == "true" {
 			fmt.Println(body)
 		}
-		resp, err := client.R().
-			SetHeader("Content-Type", "application/json").
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBody(body).
-			SetBasicAuth(apiKeyId, apiKey).
-			Put(relizaHubUri + "/api/programmatic/v1/instance/sendAgentData")
 
-		printResponse(err, resp)
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			mutation ($InstanceDataInput: InstanceDataInput) {
+				instData(instance:$InstanceDataInput)
+			}
+		`)
+		req.Var("InstanceDataInput", body)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
+
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
+
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		jsonResponse, _ := json.Marshal(respData["instData"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
@@ -728,11 +743,11 @@ var getVersionCmd = &cobra.Command{
 
 		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
-			mutation ($getNewVersionInput: getNewVersionInput) {
-				getNewVersion(project:$getNewVersionInput)
+			mutation ($GetNewVersionInput: GetNewVersionInput) {
+				getNewVersion(project:$GetNewVersionInput)
 			}
 		`)
-		req.Var("getNewVersionInput", body)
+		req.Var("GetNewVersionInput", body)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("User-Agent", "Reliza Go Client")
 		req.Header.Set("Accept-Encoding", "gzip, deflate")
