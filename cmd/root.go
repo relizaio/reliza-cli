@@ -778,18 +778,29 @@ var checkReleaseByHashCmd = &cobra.Command{
 			fmt.Println("Using Reliza Hub at", relizaHubUri)
 		}
 
-		body := map[string]string{"hash": hash}
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			query ($hash: String!) {
+				getReleaseByHash(hash: $hash)
+			}
+		`)
+		req.Var("hash", hash)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
 
-		client := resty.New()
-		resp, err := client.R().
-			SetHeader("Content-Type", "application/json").
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBody(body).
-			SetBasicAuth(apiKeyId, apiKey).
-			Post(relizaHubUri + "/api/programmatic/v1/release/getByHash")
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
 
-		printResponse(err, resp)
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		jsonResponse, _ := json.Marshal(respData["getReleaseByHash"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
