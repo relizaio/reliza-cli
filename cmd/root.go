@@ -115,6 +115,111 @@ type ErrorBody struct {
 	Path      string
 }
 
+const RELEASE_GQL_DATA = `
+	uuid
+	createdType
+	lastUpdatedBy
+	createdDate
+	version
+	status
+	org
+	project
+	branch
+	parentReleases {
+		timeSent
+		release
+		artifact
+		type
+		namespace
+		properties
+		state
+		replicas {
+			id
+			state
+		}
+	}
+	optionalReleases {
+		timeSent
+		release
+		artifact
+		type
+		namespace
+		properties
+		state
+		replicas {
+			id
+			state
+		}
+	}
+	sourceCodeEntry
+	artifacts
+	type
+	notes
+	approvals
+	timing {
+		event
+		lifecycle
+		dateFrom
+		dateTo
+		event
+		duration
+		instanceUuid
+		environment
+	}
+	endpoint
+	commits
+`
+
+const FULL_RELEASE_GQL_DATA = RELEASE_GQL_DATA + `
+	sourceCodeEntryDetails {
+		uuid
+		branchUuid
+		vcsUuid
+		vcsBranch
+		commit
+		commits
+		commitMessage
+		vcsTag
+		notes
+		org
+		dateActual
+	}
+	vcsRepository {
+		uuid
+		name
+		org
+		uri
+		type
+	}
+	artifactDetails {
+		uuid
+		identifier
+		org
+		branch
+		buildId
+		buildUri
+		cicdMeta
+		digests
+		isInternal
+		artifactType {
+			name
+			aliases
+		}
+		notes
+		tags
+		startDate
+		endDate
+		buildDuration
+		packageType
+		version
+		publisher
+		group
+		dependencies
+	}
+	projectName
+	namespace
+`
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "reliza-cli",
@@ -383,87 +488,7 @@ var addreleaseCmd = &cobra.Command{
 		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
 			mutation ($releaseInputProg: ReleaseInputProg) {
-				addReleaseProg(release:$releaseInputProg) {
-					createdDate
-					org
-					artifacts
-					artifactDetails {
-						uuid
-						identifier
-						buildId
-						buildUri
-						cicdMeta
-						digests
-						artifactType {
-							name
-						}
-						tags
-					}
-					orgDetails {
-						uuid
-						name
-					}
-					parentReleases {
-						release
-						namespace
-						properties
-					}
-					timing {
-						event
-						lifecycle
-						dateFrom
-						dateTo
-						event
-						duration
-						instanceUuid
-						environment
-					}
-					type
-					status
-					uuid
-					version
-					notes
-					endpoint
-					sourceCodeEntry
-					sourceCodeEntryDetails {
-						uuid
-						commit
-						commitMessage
-						dateActual
-						vcsRepository {
-							uri
-						}
-						vcsBranch
-						vcsTag
-					}
-					commitsDetails {
-						uuid
-						commit
-						commitMessage
-						dateActual
-					}
-					branch
-					branchDetails {
-						uuid
-						name
-					}
-					approvals
-					projectDetails {
-						uuid
-						name
-						type
-					}
-					inBundles {
-						uuid
-						version
-						projectDetails {
-							name
-						}
-						branchDetails {
-							name
-						}
-					}
-				}
+				addReleaseProg(release:$releaseInputProg) {` + RELEASE_GQL_DATA + `}
 			}`,
 		)
 		req.Var("releaseInputProg", body)
@@ -781,7 +806,7 @@ var checkReleaseByHashCmd = &cobra.Command{
 		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
 			query ($hash: String!) {
-				getReleaseByHash(hash: $hash)
+				getReleaseByHash(hash: $hash) {` + RELEASE_GQL_DATA + `}
 			}
 		`)
 		req.Var("hash", hash)
@@ -821,19 +846,29 @@ var getMyReleaseCmd = &cobra.Command{
 			It would connect to Reliza Hub which would return release and artifacts versions that should be used on this instance.
 			Instance would be identified by the API key that is used`,
 	Run: func(cmd *cobra.Command, args []string) {
-		path := relizaHubUri + "/api/programmatic/v1/instance/getMyFollowReleases"
-		if len(namespace) > 0 {
-			path += "?namespace=" + namespace
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			query ($namespace: String) {
+				getMyRelease(namespace: $namespace) {` + FULL_RELEASE_GQL_DATA + `}
+			}
+		`)
+		req.Var("namespace", namespace)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
+
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
 		}
 
-		client := resty.New()
-		resp, err := client.R().
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBasicAuth(apiKeyId, apiKey).
-			Get(path)
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+		}
 
-		printResponse(err, resp)
+		jsonResponse, _ := json.Marshal(respData["getMyRelease"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
