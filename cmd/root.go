@@ -290,7 +290,7 @@ var addreleaseCmd = &cobra.Command{
 
 		body := map[string]interface{}{"branch": branch, "version": version}
 		if len(status) > 0 {
-			body["status"] = status
+			body["status"] = strings.ToUpper(status)
 		}
 		if len(endpoint) > 0 {
 			body["endpoint"] = endpoint
@@ -393,7 +393,7 @@ var addreleaseCmd = &cobra.Command{
 				os.Exit(2)
 			} else if len(artPackage) > 0 {
 				for i, ap := range artPackage {
-					artifacts[i]["packageType"] = ap
+					artifacts[i]["packageType"] = strings.ToUpper(ap)
 				}
 			}
 
