@@ -57,7 +57,7 @@ var bundle string
 var cfgFile string
 var commit string
 var commitMessage string
-var commits string // base64-encoded list of commits obtained with: git log -2 --date=iso-strict --pretty='%H|||%ad|||%s' | base64 -w 0
+var commits string // base64-encoded list of commits obtained with: git log $LATEST_COMMIT..$CURRENT_COMMIT --date=iso-strict --pretty='%H|||%ad|||%s' | base64 -w 0
 var dateActual string
 var dateStart []string
 var dateEnd []string
@@ -114,6 +114,111 @@ type ErrorBody struct {
 	Message   string
 	Path      string
 }
+
+const RELEASE_GQL_DATA = `
+	uuid
+	createdType
+	lastUpdatedBy
+	createdDate
+	version
+	status
+	org
+	project
+	branch
+	parentReleases {
+		timeSent
+		release
+		artifact
+		type
+		namespace
+		properties
+		state
+		replicas {
+			id
+			state
+		}
+	}
+	optionalReleases {
+		timeSent
+		release
+		artifact
+		type
+		namespace
+		properties
+		state
+		replicas {
+			id
+			state
+		}
+	}
+	sourceCodeEntry
+	artifacts
+	type
+	notes
+	approvals
+	timing {
+		event
+		lifecycle
+		dateFrom
+		dateTo
+		event
+		duration
+		instanceUuid
+		environment
+	}
+	endpoint
+	commits
+`
+
+const FULL_RELEASE_GQL_DATA = RELEASE_GQL_DATA + `
+	sourceCodeEntryDetails {
+		uuid
+		branchUuid
+		vcsUuid
+		vcsBranch
+		commit
+		commits
+		commitMessage
+		vcsTag
+		notes
+		org
+		dateActual
+	}
+	vcsRepository {
+		uuid
+		name
+		org
+		uri
+		type
+	}
+	artifactDetails {
+		uuid
+		identifier
+		org
+		branch
+		buildId
+		buildUri
+		cicdMeta
+		digests
+		isInternal
+		artifactType {
+			name
+			aliases
+		}
+		notes
+		tags
+		dateFrom
+		dateTo
+		buildDuration
+		packageType
+		version
+		publisher
+		group
+		dependencies
+	}
+	projectName
+	namespace
+`
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -185,7 +290,7 @@ var addreleaseCmd = &cobra.Command{
 
 		body := map[string]interface{}{"branch": branch, "version": version}
 		if len(status) > 0 {
-			body["status"] = status
+			body["status"] = strings.ToUpper(status)
 		}
 		if len(endpoint) > 0 {
 			body["endpoint"] = endpoint
@@ -288,7 +393,7 @@ var addreleaseCmd = &cobra.Command{
 				os.Exit(2)
 			} else if len(artPackage) > 0 {
 				for i, ap := range artPackage {
-					artifacts[i]["packageType"] = ap
+					artifacts[i]["packageType"] = strings.ToUpper(ap)
 				}
 			}
 
@@ -377,20 +482,33 @@ var addreleaseCmd = &cobra.Command{
 			body["commits"] = commitsInBody
 		}
 
-		//		fmt.Println(body)
+		// 		fmt.Println(body)
 		jsonBody, _ := json.Marshal(body)
 		fmt.Println(string(jsonBody))
 
-		client := resty.New()
-		resp, err := client.R().
-			SetHeader("Content-Type", "application/json").
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBody(body).
-			SetBasicAuth(apiKeyId, apiKey).
-			Post(relizaHubUri + "/api/programmatic/v1/release/create")
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			mutation ($releaseInputProg: ReleaseInputProg) {
+				addReleaseProg(release:$releaseInputProg) {` + RELEASE_GQL_DATA + `}
+			}`,
+		)
+		req.Var("releaseInputProg", body)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
 
-		printResponse(err, resp)
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
+
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		jsonResponse, _ := json.Marshal(respData["addReleaseProg"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
@@ -518,19 +636,34 @@ var instDataCmd = &cobra.Command{
 		if len(senderId) > 0 {
 			body["senderId"] = senderId
 		}
-		client := resty.New()
+
 		if debug == "true" {
 			fmt.Println(body)
 		}
-		resp, err := client.R().
-			SetHeader("Content-Type", "application/json").
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBody(body).
-			SetBasicAuth(apiKeyId, apiKey).
-			Put(relizaHubUri + "/api/programmatic/v1/instance/sendAgentData")
 
-		printResponse(err, resp)
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			mutation ($InstanceDataInput: InstanceDataInput) {
+				instData(instance:$InstanceDataInput)
+			}
+		`)
+		req.Var("InstanceDataInput", body)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
+
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
+
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		jsonResponse, _ := json.Marshal(respData["instData"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
@@ -655,8 +788,8 @@ var getVersionCmd = &cobra.Command{
 			fmt.Println("Error:", err)
 		}
 
-		jsonBody, _ := json.Marshal(respData["getNewVersion"])
-		fmt.Println(string(jsonBody))
+		jsonResponse, _ := json.Marshal(respData["getNewVersion"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
@@ -671,18 +804,29 @@ var checkReleaseByHashCmd = &cobra.Command{
 			fmt.Println("Using Reliza Hub at", relizaHubUri)
 		}
 
-		body := map[string]string{"hash": hash}
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			query ($hash: String!) {
+				getReleaseByHash(hash: $hash) {` + RELEASE_GQL_DATA + `}
+			}
+		`)
+		req.Var("hash", hash)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
 
-		client := resty.New()
-		resp, err := client.R().
-			SetHeader("Content-Type", "application/json").
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBody(body).
-			SetBasicAuth(apiKeyId, apiKey).
-			Post(relizaHubUri + "/api/programmatic/v1/release/getByHash")
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
 
-		printResponse(err, resp)
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		jsonResponse, _ := json.Marshal(respData["getReleaseByHash"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
@@ -703,19 +847,29 @@ var getMyReleaseCmd = &cobra.Command{
 			It would connect to Reliza Hub which would return release and artifacts versions that should be used on this instance.
 			Instance would be identified by the API key that is used`,
 	Run: func(cmd *cobra.Command, args []string) {
-		path := relizaHubUri + "/api/programmatic/v1/instance/getMyFollowReleases"
-		if len(namespace) > 0 {
-			path += "?namespace=" + namespace
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			query ($namespace: String) {
+				getMyRelease(namespace: $namespace) {` + FULL_RELEASE_GQL_DATA + `}
+			}
+		`)
+		req.Var("namespace", namespace)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
+
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
 		}
 
-		client := resty.New()
-		resp, err := client.R().
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBasicAuth(apiKeyId, apiKey).
-			Get(path)
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+		}
 
-		printResponse(err, resp)
+		jsonResponse, _ := json.Marshal(respData["getMyRelease"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
