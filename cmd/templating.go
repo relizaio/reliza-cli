@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"bufio"
+	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,6 +12,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/machinebox/graphql"
 	"gopkg.in/resty.v1"
 )
 
@@ -76,7 +79,7 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 
 				// parse body json
 				var bodyJson map[string]interface{}
-				json.Unmarshal(body(), &bodyJson)
+				json.Unmarshal(body, &bodyJson)
 				// assume only one artifact - should be configured by tags - later add type selector - TODO
 				// for now only use first digest - TODO
 				var pickedArtifact string
@@ -277,12 +280,11 @@ func stripImageHashTag(imageName string) string {
 }
 
 func getLatestReleaseFunc(debug string, relizaHubUri string, project string, product string, branch string, environment string,
-	tagKey string, tagVal string, apiKeyId string, apiKey string, instance string, namespace string) func() []byte {
+	tagKey string, tagVal string, apiKeyId string, apiKey string, instance string, namespace string) []byte {
 	if debug == "true" {
 		fmt.Println("Using Reliza Hub at", relizaHubUri)
 	}
 
-	path := relizaHubUri + "/api/programmatic/v1/release/getLatestProjectRelease"
 	body := map[string]string{"project": project}
 	if len(environment) > 0 {
 		body["environment"] = environment
@@ -308,17 +310,30 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 		body["namespace"] = namespace
 	}
 
-	client := resty.New()
-	resp, err := client.R().
-		SetHeader("Content-Type", "application/json").
-		SetHeader("User-Agent", "Reliza Go Client").
-		SetHeader("Accept-Encoding", "gzip, deflate").
-		SetBody(body).
-		SetBasicAuth(apiKeyId, apiKey).
-		Post(path)
+	client := graphql.NewClient(relizaHubUri + "/graphql")
+	req := graphql.NewRequest(`
+		query ($GetLatestReleaseInput: GetLatestReleaseInput) {
+			getLatestRelease(release:$GetLatestReleaseInput) {` + FULL_RELEASE_GQL_DATA + `}
+		}`,
+	)
+	req.Var("GetLatestReleaseInput", body)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "Reliza Go Client")
+	req.Header.Set("Accept-Encoding", "gzip, deflate")
 
-	printResponse(err, resp)
-	return resp.Body
+	if len(apiKeyId) > 0 && len(apiKey) > 0 {
+		auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+		req.Header.Add("Authorization", "Basic "+auth)
+	}
+
+	var respData map[string]interface{}
+	if err := client.Run(context.Background(), req, &respData); err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	jsonResponse, _ := json.Marshal(respData["getLatestRelease"])
+	fmt.Println(string(jsonResponse))
+	return jsonResponse
 
 	// path := relizaHubUri + "/api/programmatic/v1/release/getLatestProjectRelease/" + project + "/" + branch
 	// if len(environment) > 0 {

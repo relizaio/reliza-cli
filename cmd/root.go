@@ -207,8 +207,8 @@ const FULL_RELEASE_GQL_DATA = RELEASE_GQL_DATA + `
 		}
 		notes
 		tags
-		startDate
-		endDate
+		dateFrom
+		dateTo
 		buildDuration
 		packageType
 		version
