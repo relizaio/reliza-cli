@@ -329,6 +329,7 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 	var respData map[string]interface{}
 	if err := client.Run(context.Background(), req, &respData); err != nil {
 		fmt.Println("Error:", err)
+		os.Exit(1)
 	}
 
 	jsonResponse, _ := json.Marshal(respData["getLatestRelease"])

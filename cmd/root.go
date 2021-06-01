@@ -504,6 +504,7 @@ var addreleaseCmd = &cobra.Command{
 		var respData map[string]interface{}
 		if err := client.Run(context.Background(), req, &respData); err != nil {
 			fmt.Println("Error:", err)
+			os.Exit(1)
 		}
 
 		jsonResponse, _ := json.Marshal(respData["addReleaseProg"])
@@ -659,6 +660,7 @@ var instDataCmd = &cobra.Command{
 		var respData map[string]interface{}
 		if err := client.Run(context.Background(), req, &respData); err != nil {
 			fmt.Println("Error:", err)
+			os.Exit(1)
 		}
 
 		jsonResponse, _ := json.Marshal(respData["instData"])
@@ -785,6 +787,7 @@ var getVersionCmd = &cobra.Command{
 		var respData map[string]interface{}
 		if err := client.Run(context.Background(), req, &respData); err != nil {
 			fmt.Println("Error:", err)
+			os.Exit(1)
 		}
 
 		jsonResponse, _ := json.Marshal(respData["getNewVersion"])
@@ -822,6 +825,7 @@ var checkReleaseByHashCmd = &cobra.Command{
 		var respData map[string]interface{}
 		if err := client.Run(context.Background(), req, &respData); err != nil {
 			fmt.Println("Error:", err)
+			os.Exit(1)
 		}
 
 		jsonResponse, _ := json.Marshal(respData["getReleaseByHash"])
@@ -865,6 +869,7 @@ var getMyReleaseCmd = &cobra.Command{
 		var respData map[string]interface{}
 		if err := client.Run(context.Background(), req, &respData); err != nil {
 			fmt.Println("Error:", err)
+			os.Exit(1)
 		}
 
 		jsonResponse, _ := json.Marshal(respData["getMyRelease"])
