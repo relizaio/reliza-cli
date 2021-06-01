@@ -130,7 +130,7 @@ Flags stand for:
 - **commits** - flag to provide base64-encoded list of commits in the format *git log --date=iso-strict --pretty='%H|||%ad|||%s' | base64 -w 0* (optional). If *commit* flag is not set, top commit will be used as commit bound to release.
 - **date** - flag to denote date time with timezone when commit was made, iso strict formatting with timezone is required, i.e. for git use git log --date=iso-strict (optional).
 - **vcstag** - flag to denote vcs tag (optional). This is needed to include vcs tag into commit, if present.
-- **status** - flag to denote release status (optional). Supply "rejected" for failed releases, otherwise "completed" is used.
+- **status** - flag to denote release status (optional). Supply "rejected" for failed releases, otherwise "complete" is used.
 - **artid** - flag to denote artifact identifier (optional). This is required to add artifact metadata into release.
 - **artbuildid** - flag to denote artifact build id (optional). This flag is optional and may be used to indicate build system id of the release (i.e., this could be circleci build number).
 - **artbuilduri** - flag to denote artifact build uri (optional). This flag is optional and is used to denote the uri for where the build takes place.
