@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	"gopkg.in/resty.v1"
 )
@@ -119,6 +120,16 @@ func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map
 		fmt.Println(fileOpenErr)
 		os.Exit(1)
 	}
+
+	// Before copying data from input-file, add some provenance to top of file (unless --no-provenance option is true)
+	// Get current datetime (RFC3339 format) and current version of reliza-cli
+	currentDateTimeFormatted := time.Now().UTC().Format(time.RFC3339)
+	relizaCliCurrentVersion := Version // This is not really getting updated atm??
+	outFileOpened.WriteString("# Tags replaced with Reliza CLI version " + relizaCliCurrentVersion + " on " + currentDateTimeFormatted + "\n")
+	// Second line: where tags come from, either: (bundle+version) or (tagsource file) or (instanceuri+revision(optional)) or (instance)
+	//outFileOpened.WriteString("# Second line: indicate where replacement tags came from..." + "\n")
+
+	// Copy data from input-file to output-file, with tags replaced according to substitution map.
 	inScanner := bufio.NewScanner(inFileOpened)
 	for inScanner.Scan() {
 		line := inScanner.Text()
