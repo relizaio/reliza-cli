@@ -121,14 +121,6 @@ func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map
 		os.Exit(1)
 	}
 
-	// Before copying data from input-file, add some provenance to top of file (unless --no-provenance option is true)
-	// Get current datetime (RFC3339 format) and current version of reliza-cli
-	currentDateTimeFormatted := time.Now().UTC().Format(time.RFC3339)
-	relizaCliCurrentVersion := Version // This is not really getting updated atm??
-	outFileOpened.WriteString("# Tags replaced with Reliza CLI version " + relizaCliCurrentVersion + " on " + currentDateTimeFormatted + "\n")
-	// Second line: where tags come from, either: (bundle+version) or (tagsource file) or (instanceuri+revision(optional)) or (instance)
-	//outFileOpened.WriteString("# Second line: indicate where replacement tags came from..." + "\n")
-
 	// Copy data from input-file to output-file, with tags replaced according to substitution map.
 	inScanner := bufio.NewScanner(inFileOpened)
 	for inScanner.Scan() {
@@ -179,6 +171,70 @@ func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map
 			}
 		}
 		outFileOpened.WriteString(line + "\n")
+	}
+}
+
+/*
+	This function adds some extra info in the form of comments to the top of the outfile
+	specified (adds two lines to exisiting content, does not overwrite). The first line
+	notes the version of reliza-cli that ran the command to generate the outfile, as
+	well as the date the file was generated. The second line contains info about where
+	the replaced tags were sourced from.
+*/
+func addProvenanceToReplaceTagsOutfile(outfile string, tagSourceFile string, environment string, instance string, instanceURI string, revision string, definitionReferenceFile string, typeVal string, version string, bundle string) {
+	// Read outfile, store in string, then clear outfile
+	outFileOpened, fileOpenErr := os.Open(outfile)
+	if fileOpenErr != nil {
+		fmt.Println("Error opening outFile = " + outfile)
+		fmt.Println(fileOpenErr)
+		os.Exit(1)
+	}
+	// Store generated outfile in temp variable
+	// Either need to store lines with '\n' character or else add it when putting lines back into file
+	var outFileLines []string
+	inScanner := bufio.NewScanner(outFileOpened)
+	for inScanner.Scan() {
+		line := inScanner.Text()
+		outFileLines = append(outFileLines, line)
+	}
+	// Close file and check for errors
+	fmt.Println("closing outfile after storing lines...")
+	fileCloseErr := outFileOpened.Close()
+	if fileCloseErr != nil {
+		//fmt.Fprintf(os.Stderr, "error closing outfile: %v\n", fileCloseErr)
+		fmt.Println("Error closing outFile = " + outfile)
+		fmt.Println(fileCloseErr)
+		os.Exit(1)
+	}
+	// Reopen file, but this type creating a new file to replace the old outfile
+	outFileCreated, fileCreateErr := os.Create(outfile)
+	if fileCreateErr != nil {
+		fmt.Println("Error opening outFile = " + outfile)
+		fmt.Println(fileCreateErr)
+		os.Exit(1)
+	}
+	// Add provenance in first two lines of new file
+
+	// A some provenance to top of file (current reliza-cli version and current datetime)
+	currentDateTimeFormatted := time.Now().UTC().Format(time.RFC3339)
+	relizaCliCurrentVersion := Version // This is not really getting updated atm??
+	outFileCreated.WriteString("# Tags replaced with Reliza CLI version " + relizaCliCurrentVersion + " on " + currentDateTimeFormatted + "\n")
+	// Second line: where tags come from, either: (bundle+version) or (tagsource file) or (instanceuri+revision(optional)) or (instance)
+	//outFileOpened.WriteString("# Second line: indicate where replacement tags came from..." + "\n")
+
+	// Add back the rest of the outfile
+	for _, line := range outFileLines {
+		outFileCreated.WriteString(line + "\n")
+	}
+
+	// Close file and check for errors
+	fmt.Println("closing outfile after finishing adding provenance...")
+	fileCreatedCloseErr := outFileCreated.Close()
+	if fileCreatedCloseErr != nil {
+		//fmt.Fprintf(os.Stderr, "error closing outfile: %v\n", fileCloseErr)
+		fmt.Println("Error closing outfile = " + outfile)
+		fmt.Println(fileCloseErr)
+		os.Exit(1)
 	}
 }
 

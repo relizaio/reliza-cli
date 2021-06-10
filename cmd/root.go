@@ -959,6 +959,8 @@ var replaceTagsCmd = &cobra.Command{
 			substitutionMap = tagSourceMap
 		}
 		substituteCopyBasedOnMap(infile, outfile, substitutionMap)
+		// check for argument --no-provenance
+		addProvenanceToReplaceTagsOutfile(outfile, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
 	},
 }
 
