@@ -7,13 +7,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/url"
 	"os"
 	"regexp"
 	"strings"
 
 	"github.com/machinebox/graphql"
-	"gopkg.in/resty.v1"
 )
 
 func parseCopyTemplate(directory string, outDirectory string, relizaHubUri string, environment string, tagKey string,
@@ -205,11 +203,12 @@ func scanTagFile(tagSourceFile string, typeVal string) map[string]string {
 
 func extractComponentsFromCycloneJSON(bomJSON map[string]interface{}, tagSourceMap map[string]string) map[string]string {
 	// go to components in cyclone dx
+
 	var bomComponents []interface{}
 	if components, ok := bomJSON["components"]; ok {
 		bomComponents = components.([]interface{})
 	} else {
-		fmt.Println("Error: CycloneDX BOM componenets are empty!")
+		fmt.Println("Error: CycloneDX BOM components are empty!")
 		os.Exit(1)
 	}
 
@@ -367,20 +366,20 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 		cycloneBytes := getEnvironmentCycloneDxExportV1(apiKeyId, apiKey, environment)
 		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
-		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
+		json.Unmarshal(cycloneBytes, &bomJSON)
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
 	} else if len(bundle) > 0 && len(version) > 0 {
 		cycloneBytes := getBundleVersionCycloneDxExportV1(apiKeyId, apiKey, bundle, version)
 		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
-		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
+		json.Unmarshal(cycloneBytes, &bomJSON)
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
 	} else if len(instance) > 0 || len(instanceURI) > 0 || strings.HasPrefix(apiKeyId, "INSTANCE__") {
 		// tagSourceMap = getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision)
 		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision, instanceURI)
 		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
-		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
+		json.Unmarshal(cycloneBytes, &bomJSON)
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
 	} else {
 		fmt.Println("Scan Tags Failed! specify either tagsource or instance or bundle and version")
@@ -389,7 +388,7 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 	return tagSourceMap
 }
 
-func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instance string, revision string, instanceURI string) *resty.Response {
+func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instance string, revision string, instanceURI string) []byte {
 
 	if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") {
 		//throw error and exit
@@ -401,35 +400,34 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 		revision = "-1"
 	}
 
-	path := relizaHubUri + "/api/programmatic/v1/instanceRevision/cyclonedxExport?revision=" + revision
+	client := graphql.NewClient(relizaHubUri + "/graphql")
+	req := graphql.NewRequest(`
+		query ($instanceUuid: ID, $instanceUri: String, $revision: Int!) {
+			getInstanceRevisionCycloneDxExport(instanceUuid: $instanceUuid, instanceUri: $instanceUri, revision: $revision)
+		}
+	`)
+	req.Var("instanceUuid", instance)
+	req.Var("instanceUri", instanceURI)
+	req.Var("revision", revision)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "Reliza Go Client")
+	req.Header.Set("Accept-Encoding", "gzip, deflate")
 
-	if len(instance) > 0 {
-		path += "&uuid=" + instance
+	if len(apiKeyId) > 0 && len(apiKey) > 0 {
+		auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+		req.Header.Add("Authorization", "Basic "+auth)
 	}
 
-	if len(instanceURI) > 0 {
-		path += "&uri=" + instanceURI
-	}
-	client := resty.New()
-	resp, err := client.R().
-		SetHeader("User-Agent", "Reliza Go Client").
-		SetHeader("Accept-Encoding", "gzip, deflate").
-		SetBasicAuth(apiKeyId, apiKey).
-		Get(path)
-
-	if resp.StatusCode() != 200 {
-		fmt.Println("Error Response Info:")
-		fmt.Println("Error      :", err)
-		fmt.Println("Status Code:", resp.StatusCode())
-		fmt.Println("Status     :", resp.Status())
-		fmt.Println("Time       :", resp.Time())
-		fmt.Println("Received At:", resp.ReceivedAt())
+	var respData map[string]string
+	if err := client.Run(context.Background(), req, &respData); err != nil {
+		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
-	return resp
+
+	return []byte(respData["getInstanceRevisionCycloneDxExport"])
 }
 
-func getBundleVersionCycloneDxExportV1(apiKeyId string, apiKey string, bundle string, version string) *resty.Response {
+func getBundleVersionCycloneDxExportV1(apiKeyId string, apiKey string, bundle string, version string) []byte {
 
 	if len(bundle) <= 0 && len(version) <= 0 {
 		//throw error and exit
@@ -437,32 +435,33 @@ func getBundleVersionCycloneDxExportV1(apiKeyId string, apiKey string, bundle st
 		os.Exit(1)
 	}
 
-	// if "" == revision {
-	// 	revision = "-1"
-	// }
+	client := graphql.NewClient(relizaHubUri + "/graphql")
+	req := graphql.NewRequest(`
+		query ($bundleName: String!, $bundleVersion: String!) {
+			exportAsBomProg(bundleName: $bundleName, bundleVersion: $bundleVersion)
+		}
+	`)
+	req.Var("bundleName", bundle)
+	req.Var("bundleVersion", version)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "Reliza Go Client")
+	req.Header.Set("Accept-Encoding", "gzip, deflate")
 
-	path := relizaHubUri + "/api/programmatic/v1/productRelease/exportAsBom?bundle_name=" + url.QueryEscape(bundle) + "&bundle_version=" + url.QueryEscape(version)
+	if len(apiKeyId) > 0 && len(apiKey) > 0 {
+		auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+		req.Header.Add("Authorization", "Basic "+auth)
+	}
 
-	client := resty.New()
-	resp, err := client.R().
-		SetHeader("User-Agent", "Reliza Go Client").
-		SetHeader("Accept-Encoding", "gzip, deflate").
-		SetBasicAuth(apiKeyId, apiKey).
-		Get(path)
-
-	if resp.StatusCode() != 200 {
-		fmt.Println("Error Response Info:")
-		fmt.Println("Error      :", err)
-		fmt.Println("Status Code:", resp.StatusCode())
-		fmt.Println("Status     :", resp.Status())
-		fmt.Println("Time       :", resp.Time())
-		fmt.Println("Received At:", resp.ReceivedAt())
+	var respData map[string]string
+	if err := client.Run(context.Background(), req, &respData); err != nil {
+		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
-	return resp
+
+	return []byte(respData["exportAsBomProg"])
 }
 
-func getEnvironmentCycloneDxExportV1(apiKeyId string, apiKey string, environment string) *resty.Response {
+func getEnvironmentCycloneDxExportV1(apiKeyId string, apiKey string, environment string) []byte {
 
 	if len(environment) <= 0 {
 		//throw error and exit
@@ -470,22 +469,27 @@ func getEnvironmentCycloneDxExportV1(apiKeyId string, apiKey string, environment
 		os.Exit(1)
 	}
 
-	path := relizaHubUri + "/api/programmatic/v1/environmentRelease/exportAsBom?environment=" + url.QueryEscape(environment)
-	client := resty.New()
-	resp, err := client.R().
-		SetHeader("User-Agent", "Reliza Go Client").
-		SetHeader("Accept-Encoding", "gzip, deflate").
-		SetBasicAuth(apiKeyId, apiKey).
-		Get(path)
+	client := graphql.NewClient(relizaHubUri + "/graphql")
+	req := graphql.NewRequest(`
+		query ($environment: EnvironmentType!) {
+			exportAsBomProgByEnv(environment: $environment)
+		}
+	`)
+	req.Var("environment", environment)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "Reliza Go Client")
+	req.Header.Set("Accept-Encoding", "gzip, deflate")
 
-	if resp.StatusCode() != 200 {
-		fmt.Println("Error Response Info:")
-		fmt.Println("Error      :", err)
-		fmt.Println("Status Code:", resp.StatusCode())
-		fmt.Println("Status     :", resp.Status())
-		fmt.Println("Time       :", resp.Time())
-		fmt.Println("Received At:", resp.ReceivedAt())
+	if len(apiKeyId) > 0 && len(apiKey) > 0 {
+		auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+		req.Header.Add("Authorization", "Basic "+auth)
+	}
+
+	var respData map[string]string
+	if err := client.Run(context.Background(), req, &respData); err != nil {
+		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
-	return resp
+
+	return []byte(respData["exportAsBomProgByEnv"])
 }
