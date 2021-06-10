@@ -198,7 +198,6 @@ func addProvenanceToReplaceTagsOutfile(outfile string, tagSourceFile string, env
 		outFileLines = append(outFileLines, line)
 	}
 	// Close file and check for errors
-	fmt.Println("closing outfile after storing lines...")
 	fileCloseErr := outFileOpened.Close()
 	if fileCloseErr != nil {
 		//fmt.Fprintf(os.Stderr, "error closing outfile: %v\n", fileCloseErr)
@@ -213,7 +212,6 @@ func addProvenanceToReplaceTagsOutfile(outfile string, tagSourceFile string, env
 		fmt.Println(fileCreateErr)
 		os.Exit(1)
 	}
-	// Add provenance in first two lines of new file
 
 	// A some provenance to top of file (current reliza-cli version and current datetime)
 	currentDateTimeFormatted := time.Now().UTC().Format(time.RFC3339)
@@ -228,7 +226,6 @@ func addProvenanceToReplaceTagsOutfile(outfile string, tagSourceFile string, env
 	}
 
 	// Close file and check for errors
-	fmt.Println("closing outfile after finishing adding provenance...")
 	fileCreatedCloseErr := outFileCreated.Close()
 	if fileCreatedCloseErr != nil {
 		//fmt.Fprintf(os.Stderr, "error closing outfile: %v\n", fileCloseErr)

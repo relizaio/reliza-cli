@@ -82,6 +82,7 @@ var infile string
 var outfile string
 var tagSourceFile string
 var definitionReferenceFile string
+var provenance bool // add provenance (default), or do not add provenance
 var releaseId string
 var releaseVersion string
 var relizaHubUri string
@@ -960,7 +961,9 @@ var replaceTagsCmd = &cobra.Command{
 		}
 		substituteCopyBasedOnMap(infile, outfile, substitutionMap)
 		// check for argument --no-provenance
-		addProvenanceToReplaceTagsOutfile(outfile, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
+		if provenance == true {
+			addProvenanceToReplaceTagsOutfile(outfile, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
+		}
 	},
 }
 
@@ -1092,7 +1095,7 @@ func init() {
 	replaceTagsCmd.PersistentFlags().StringVar(&infile, "infile", "", "Input file to parse, such as helm values file or docker compose file")
 	replaceTagsCmd.PersistentFlags().StringVar(&outfile, "outfile", "", "Output file with parsed values")
 	replaceTagsCmd.PersistentFlags().StringVar(&tagSourceFile, "tagsource", "", "Source file with tags (optional - specify either source file or instance id and revision)")
-	replaceTagsCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment for hich to generate tags (optional)")
+	replaceTagsCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment for which to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&instance, "instance", "", "Instance ID for which to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "Instance ID for which to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&revision, "revision", "", "Instance revision for which to generate tags (optional)")
@@ -1100,6 +1103,7 @@ func init() {
 	replaceTagsCmd.PersistentFlags().StringVar(&typeVal, "type", "cyclonedx", "Type of source tags file: cyclonedx (default) or text")
 	replaceTagsCmd.PersistentFlags().StringVar(&version, "version", "", "Bundle version for which to generate tags (optional - required when using bundle)")
 	replaceTagsCmd.PersistentFlags().StringVar(&bundle, "bundle", "", "Bundle for which to generate tags (optional)")
+	replaceTagsCmd.PersistentFlags().BoolVar(&provenance, "provenance", true, "Set --provenance flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional)")
 
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(printversionCmd)
