@@ -541,16 +541,30 @@ var approveReleaseCmd = &cobra.Command{
 			body["namespace"] = namespace
 		}
 
-		client := resty.New()
-		resp, err := client.R().
-			SetHeader("Content-Type", "application/json").
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBody(body).
-			SetBasicAuth(apiKeyId, apiKey).
-			Put(relizaHubUri + "/api/programmatic/v1/release/approve")
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			mutation ($ApproveReleaseInput: ApproveReleaseInput) {
+				approveReleaseProg(release:$ApproveReleaseInput) {` + RELEASE_GQL_DATA + `}
+			}
+		`)
+		req.Var("ApproveReleaseInput", body)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
 
-		printResponse(err, resp)
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
+
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+			os.Exit(1)
+		}
+
+		jsonResponse, _ := json.Marshal(respData["approveReleaseProg"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
@@ -581,16 +595,30 @@ var isApprovalNeededCmd = &cobra.Command{
 			body["namespace"] = namespace
 		}
 
-		client := resty.New()
-		resp, err := client.R().
-			SetHeader("Content-Type", "application/json").
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBody(body).
-			SetBasicAuth(apiKeyId, apiKey).
-			Post(relizaHubUri + "/api/programmatic/v1/release/isApprovalNeeded")
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			query ($IsApprovalNeededInput: IsApprovalNeededInput) {
+				isApprovalNeeded(release:$IsApprovalNeededInput)
+			}
+		`)
+		req.Var("IsApprovalNeededInput", body)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
 
-		printResponse(err, resp)
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
+
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+			os.Exit(1)
+		}
+
+		jsonResponse, _ := json.Marshal(respData["isApprovalNeeded"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
@@ -708,19 +736,34 @@ var matchBundleCmd = &cobra.Command{
 			body["namespace"] = namespace
 		}
 
-		client := resty.New()
 		if debug == "true" {
 			fmt.Println(body)
 		}
-		resp, err := client.R().
-			SetHeader("Content-Type", "application/json").
-			SetHeader("User-Agent", "Reliza Go Client").
-			SetHeader("Accept-Encoding", "gzip, deflate").
-			SetBody(body).
-			SetBasicAuth(apiKeyId, apiKey).
-			Put(relizaHubUri + "/api/programmatic/v1/release/matchToProductRelease")
 
-		printResponse(err, resp)
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			mutation ($InstanceDataInput: InstanceDataInput) {
+				matchToProductRelease(release:$InstanceDataInput)
+			}
+		`)
+		req.Var("InstanceDataInput", body)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
+
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
+
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+			os.Exit(1)
+		}
+
+		jsonResponse, _ := json.Marshal(respData["matchToProductRelease"])
+		fmt.Println(string(jsonResponse))
 	},
 }
 
