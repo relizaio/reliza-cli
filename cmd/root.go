@@ -962,7 +962,7 @@ var replaceTagsCmd = &cobra.Command{
 		substituteCopyBasedOnMap(infile, outfile, substitutionMap)
 		// check for argument --no-provenance
 		if provenance == true {
-			addProvenanceToReplaceTagsOutfile(outfile, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
+			addProvenanceToReplaceTagsOutfile(outfile, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
 		}
 	},
 }
@@ -1096,8 +1096,8 @@ func init() {
 	replaceTagsCmd.PersistentFlags().StringVar(&outfile, "outfile", "", "Output file with parsed values")
 	replaceTagsCmd.PersistentFlags().StringVar(&tagSourceFile, "tagsource", "", "Source file with tags (optional - specify either source file or instance id and revision)")
 	replaceTagsCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment for which to generate tags (optional)")
-	replaceTagsCmd.PersistentFlags().StringVar(&instance, "instance", "", "Instance ID for which to generate tags (optional)")
-	replaceTagsCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "Instance ID for which to generate tags (optional)")
+	replaceTagsCmd.PersistentFlags().StringVar(&instance, "instance", "", "Instance UUID for which to generate tags (optional)")
+	replaceTagsCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "Instance URI for which to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&revision, "revision", "", "Instance revision for which to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&definitionReferenceFile, "defsource", "", "Source file for definitions (optional). For helm, should be output of helm template command")
 	replaceTagsCmd.PersistentFlags().StringVar(&typeVal, "type", "cyclonedx", "Type of source tags file: cyclonedx (default) or text")

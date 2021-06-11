@@ -181,7 +181,7 @@ func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map
 	well as the date the file was generated. The second line contains info about where
 	the replaced tags were sourced from.
 */
-func addProvenanceToReplaceTagsOutfile(outfile string, tagSourceFile string, environment string, instance string, instanceURI string, revision string, definitionReferenceFile string, typeVal string, version string, bundle string) {
+func addProvenanceToReplaceTagsOutfile(outfile string, apiKeyId string, apiKey string, tagSourceFile string, environment string, instance string, instanceURI string, revision string, definitionReferenceFile string, typeVal string, version string, bundle string) {
 	// Read outfile, store in string, then clear outfile
 	outFileOpened, fileOpenErr := os.Open(outfile)
 	if fileOpenErr != nil {
@@ -213,12 +213,55 @@ func addProvenanceToReplaceTagsOutfile(outfile string, tagSourceFile string, env
 		os.Exit(1)
 	}
 
-	// A some provenance to top of file (current reliza-cli version and current datetime)
+	// Add some provenance to top of file (as comments)
+	var provenanceLine1 string
+	var provenanceLine2 string
+
+	// First line: current reliza-cli version and current datetime
 	currentDateTimeFormatted := time.Now().UTC().Format(time.RFC3339)
 	relizaCliCurrentVersion := Version // This is not really getting updated atm??
-	outFileCreated.WriteString("# Tags replaced with Reliza CLI version " + relizaCliCurrentVersion + " on " + currentDateTimeFormatted + "\n")
-	// Second line: where tags come from, either: (bundle+version) or (tagsource file) or (instanceuri+revision(optional)) or (instance)
-	//outFileOpened.WriteString("# Second line: indicate where replacement tags came from..." + "\n")
+	provenanceLine1 = "# Tags replaced with Reliza CLI version " + relizaCliCurrentVersion + " on " + currentDateTimeFormatted
+
+	// Second line: where tags come from, either:
+	// (tagsource file) or (environment) or (bundle+version)
+	// or (instance+revision) or (instanceuri+revision) , revision is optional, otherwise uses latest revision
+	// or (apiKeyId suffix, if using apiKeyId+apiKey pair from instance)
+	if tagSourceFile != "" {
+		provenanceLine2 = "# According to tag source file " + tagSourceFile
+	} else if len(environment) > 0 {
+		//provenanceLine2 = "# According to the latest approved images in environment " + environment + " for instance " + "XXX"
+		provenanceLine2 = "# According to the latest approved images in  " + environment + " environment."
+	} else if len(bundle) > 0 && len(version) > 0 {
+		provenanceLine2 = "# According to bundle " + bundle + " version " + version
+	} else if len(instance) > 0 {
+		if len(revision) > 0 {
+			provenanceLine2 = "# According to revision " + revision + " of the instance " + instance
+		} else {
+			// no revision specified, using latest
+			provenanceLine2 = "# According to latest approved images for the instance " + instance
+		}
+	} else if len(instanceURI) > 0 {
+		if len(revision) > 0 {
+			provenanceLine2 = "# According to revision " + revision + " of the instance at " + instanceURI
+		} else {
+			// no revision specified, using latest
+			provenanceLine2 = "# According to latest approved images for the instance at " + instanceURI
+		}
+	} else if strings.HasPrefix(apiKeyId, "INSTANCE__") { // Unessecary
+		instUUIDFromAPIKeyId := apiKeyId[10:37] // remove first 10 chars
+		if len(revision) > 0 {
+			provenanceLine2 = "# According to revision " + revision + " of the instance " + instUUIDFromAPIKeyId
+		} else {
+			// no revision specified, using latest
+			provenanceLine2 = "# According to latest approved images for the instance " + instUUIDFromAPIKeyId
+		}
+	} else {
+		// should have at least one of those things
+		provenanceLine2 = "missing replacetags input"
+	}
+
+	outFileCreated.WriteString(provenanceLine1 + "\n")
+	outFileCreated.WriteString(provenanceLine2 + "\n")
 
 	// Add back the rest of the outfile
 	for _, line := range outFileLines {
@@ -418,6 +461,7 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
+		fmt.Println(string(cycloneBytes.Body()))
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
 	} else if len(bundle) > 0 && len(version) > 0 {
 		cycloneBytes := getBundleVersionCycloneDxExportV1(apiKeyId, apiKey, bundle, version)
