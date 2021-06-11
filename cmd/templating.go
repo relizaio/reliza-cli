@@ -461,7 +461,6 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes.Body(), &bomJSON)
-		fmt.Println(string(cycloneBytes.Body()))
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
 	} else if len(bundle) > 0 && len(version) > 0 {
 		cycloneBytes := getBundleVersionCycloneDxExportV1(apiKeyId, apiKey, bundle, version)
