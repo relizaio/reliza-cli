@@ -158,14 +158,13 @@ const RELEASE_GQL_DATA = `
 	notes
 	approvals
 	timing {
-		event
 		lifecycle
 		dateFrom
 		dateTo
+		environment
+		instance
 		event
 		duration
-		instanceUuid
-		environment
 	}
 	endpoint
 	commits
