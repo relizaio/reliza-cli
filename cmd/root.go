@@ -806,7 +806,7 @@ var getVersionCmd = &cobra.Command{
 			body["sourceCodeEntry"] = commitMap
 		}
 		if manual {
-			body["status"] = "draft"
+			body["status"] = "DRAFT"
 		}
 
 		body["onlyVersion"] = onlyVersion
