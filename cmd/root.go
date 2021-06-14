@@ -162,7 +162,7 @@ const RELEASE_GQL_DATA = `
 		dateFrom
 		dateTo
 		environment
-		instance
+		instanceUuid
 		event
 		duration
 	}
