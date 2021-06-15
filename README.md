@@ -375,7 +375,8 @@ Flags stand for:
 - **--outfile** - Output file with parsed values.
 - **--tagsource** - Source file with tags (optional, either instanceuri or instance or tagsource flag must be used).
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
-- **type** - Type of source tags file: cyclonedx (default) or text.
+- **--type** - Type of source tags file: cyclonedx (default) or text.
+- **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
 
 ## 7.3 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle And Version
 
@@ -406,6 +407,7 @@ Flags stand for:
 - **--tagsource** - Source file with tags (optional, either bundle name & version or tagsource flag must be used).
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **--type** - Type of source tags file: cyclonedx (default) or text.
+- **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
 
 ## 7.4 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Environment
 
@@ -432,6 +434,7 @@ Flags stand for:
 - **infile** - Input file to parse, such as helm values file or docker compose file.
 - **outfile** - Output file with parsed values.
 - **defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
+- **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
 
 ## 8. Use Case: Programmatic Approvals of Releases on Reliza Hub
 
