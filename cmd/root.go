@@ -958,10 +958,38 @@ var replaceTagsCmd = &cobra.Command{
 		} else {
 			substitutionMap = tagSourceMap
 		}
-		substituteCopyBasedOnMap(infile, outfile, substitutionMap)
+
+		// Create outFile to write to, if outfile not specified, write to stdout
+		var outFileOpened *os.File
+		var outFileOpenedError error
+		if len(outfile) > 0 {
+			fmt.Println("Opening output file...")
+			outFileOpened, outFileOpenedError = os.Create(outfile)
+			if outFileOpenedError != nil {
+				fmt.Println("Error opening outfile: " + outfile)
+				fmt.Println(outFileOpenedError)
+				os.Exit(1)
+			}
+		}
+
+		// need to add provenance first, beacuse can only write to stdout sequentially
 		// check for argument --no-provenance, if true, add provenance to file
 		if provenance == true {
-			addProvenanceToReplaceTagsOutfile(outfile, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
+			addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
+		}
+
+		// Parse infile and write to outfile with replace tags (or stdout if no outfile)
+		substituteCopyBasedOnMap(infile, outFileOpened, substitutionMap)
+
+		// Remeber to close outfile when done, and check for errors
+		if outFileOpened != nil {
+			fmt.Println("Closing output file...")
+			outFileCloseError := outFileOpened.Close()
+			if outFileCloseError != nil {
+				fmt.Println("Error closing outfile: " + outfile)
+				fmt.Println(outFileCloseError)
+				os.Exit(1)
+			}
 		}
 	},
 }

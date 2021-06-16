@@ -103,20 +103,20 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 	}
 }
 
-func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map[string]string) {
-	fmt.Println("Opening in file...")
+/*
+	This function takes as input a inFile name, outFile file pointer, and substitutionMap
+	containing the mapping of tags to be replaced. The contents of the inFile will be copied
+	to the outFile, with the tags replaced according to the substitution map.
+
+	The inFile and substututionMap are required, but if the outFile file pointer has no value,
+	then the parsed copy of the inFile with the replaced tags will be written to stdout.
+*/
+func substituteCopyBasedOnMap(inFile string, outFileOpened *os.File, substitutionMap map[string]string) {
+	//fmt.Println("Opening in file...")
 	// open read file
 	inFileOpened, fileOpenErr := os.Open(inFile)
 	if fileOpenErr != nil {
-		fmt.Println("Error opening inFile = " + inFile)
-		fmt.Println(fileOpenErr)
-		os.Exit(1)
-	}
-	fmt.Println("Opening output file...")
-	// open write file
-	outFileOpened, fileOpenErr := os.Create(outFile)
-	if fileOpenErr != nil {
-		fmt.Println("Error opening outFile = " + outFile)
+		fmt.Println("Error opening inFile: " + inFile)
 		fmt.Println(fileOpenErr)
 		os.Exit(1)
 	}
@@ -170,50 +170,27 @@ func substituteCopyBasedOnMap(inFile string, outFile string, substitutionMap map
 				break
 			}
 		}
-		outFileOpened.WriteString(line + "\n")
+		// Write line with replaced tags to outfile if outfile is indiciated,
+		// otherwise write to stdout.
+		if outFileOpened != nil {
+			outFileOpened.WriteString(line + "\n")
+		} else {
+			fmt.Print(line + "\n")
+		}
 	}
 }
 
 /*
-	This function adds some extra info in the form of comments to the top of the outfile
-	specified (adds two lines to exisiting content, does not overwrite). The first line
-	notes the version of reliza-cli that ran the command to generate the outfile, as
-	well as the date the file was generated. The second line contains info about where
-	the replaced tags were sourced from.
-*/
-func addProvenanceToReplaceTagsOutfile(outfile string, apiKeyId string, apiKey string, tagSourceFile string, environment string, instance string, instanceURI string, revision string, definitionReferenceFile string, typeVal string, version string, bundle string) {
-	// Read outfile, store in string, then clear outfile
-	outFileOpened, fileOpenErr := os.Open(outfile)
-	if fileOpenErr != nil {
-		fmt.Println("Error opening outFile = " + outfile)
-		fmt.Println(fileOpenErr)
-		os.Exit(1)
-	}
-	// Store generated outfile in temp variable
-	// Either need to store lines with '\n' character or else add it when putting lines back into file
-	var outFileLines []string
-	inScanner := bufio.NewScanner(outFileOpened)
-	for inScanner.Scan() {
-		line := inScanner.Text()
-		outFileLines = append(outFileLines, line)
-	}
-	// Close file and check for errors
-	fileCloseErr := outFileOpened.Close()
-	if fileCloseErr != nil {
-		//fmt.Fprintf(os.Stderr, "error closing outfile: %v\n", fileCloseErr)
-		fmt.Println("Error closing outFile = " + outfile)
-		fmt.Println(fileCloseErr)
-		os.Exit(1)
-	}
-	// Reopen file, but this type creating a new file to replace the old outfile
-	outFileCreated, fileCreateErr := os.Create(outfile)
-	if fileCreateErr != nil {
-		fmt.Println("Error opening outFile = " + outfile)
-		fmt.Println(fileCreateErr)
-		os.Exit(1)
-	}
+	This function addds some extra meta data info as comments to the top of the outfile
+	that is created by the replacetags command. If no outfile is specified, the data
+	will instead be written directly the stdout.
 
-	// Add some provenance to top of file (as comments)
+	The first line notes the version of reliza-cli that ran the command to generate the outfile, as
+	well as the date the file was generated.
+	The second line contains info about where the replaced tags were sourced from.
+*/
+func addProvenanceToReplaceTagsOutput(outFileOpened *os.File, apiKeyId string, apiKey string, tagSourceFile string, environment string, instance string, instanceURI string, revision string, definitionReferenceFile string, typeVal string, version string, bundle string) {
+	// Add some provenance to output (as comments)
 	var provenanceLine1 string
 	var provenanceLine2 string
 
@@ -260,21 +237,14 @@ func addProvenanceToReplaceTagsOutfile(outfile string, apiKeyId string, apiKey s
 		provenanceLine2 = "missing replacetags input"
 	}
 
-	outFileCreated.WriteString(provenanceLine1 + "\n")
-	outFileCreated.WriteString(provenanceLine2 + "\n")
-
-	// Add back the rest of the outfile
-	for _, line := range outFileLines {
-		outFileCreated.WriteString(line + "\n")
-	}
-
-	// Close file and check for errors
-	fileCreatedCloseErr := outFileCreated.Close()
-	if fileCreatedCloseErr != nil {
-		//fmt.Fprintf(os.Stderr, "error closing outfile: %v\n", fileCloseErr)
-		fmt.Println("Error closing outfile = " + outfile)
-		fmt.Println(fileCloseErr)
-		os.Exit(1)
+	// Write provenance data to outfile (or stdout if no outfile)
+	if outFileOpened != nil {
+		outFileOpened.WriteString(provenanceLine1 + "\n")
+		outFileOpened.WriteString(provenanceLine2 + "\n")
+	} else {
+		// If no outfile specified, write to stdout
+		fmt.Print(provenanceLine1 + "\n")
+		fmt.Print(provenanceLine2 + "\n")
 	}
 }
 
