@@ -80,6 +80,8 @@ var outDirectory string
 var parseDirectory string
 var infile string
 var outfile string
+var indir string
+var outdir string
 var tagSourceFile string
 var definitionReferenceFile string
 var provenance bool // add provenance (default), or do not add provenance
@@ -959,37 +961,151 @@ var replaceTagsCmd = &cobra.Command{
 			substitutionMap = tagSourceMap
 		}
 
-		// Create outFile to write to, if outfile not specified, write to stdout
-		var outFileOpened *os.File
-		var outFileOpenedError error
-		if len(outfile) > 0 {
-			fmt.Println("Opening output file...")
-			outFileOpened, outFileOpenedError = os.Create(outfile)
-			if outFileOpenedError != nil {
-				fmt.Println("Error opening outfile: " + outfile)
-				fmt.Println(outFileOpenedError)
+		// Check if input is infile or indir (operating on directory or file?)
+		if len(infile) > 0 && len(indir) == 0 {
+			// Make sure infile is a file and not a directory
+			fileInfo, err := os.Stat(infile)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			} else if fileInfo.IsDir() {
+				fmt.Println("Error: infile must be a path to a file, not a directory!")
 				os.Exit(1)
 			}
-		}
-
-		// need to add provenance first, beacuse can only write to stdout sequentially
-		// check for argument --no-provenance, if true, add provenance to file
-		if provenance == true {
-			addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
-		}
-
-		// Parse infile and write to outfile with replace tags (or stdout if no outfile)
-		substituteCopyBasedOnMap(infile, outFileOpened, substitutionMap)
-
-		// Remeber to close outfile when done, and check for errors
-		if outFileOpened != nil {
-			fmt.Println("Closing output file...")
-			outFileCloseError := outFileOpened.Close()
-			if outFileCloseError != nil {
-				fmt.Println("Error closing outfile: " + outfile)
-				fmt.Println(outFileCloseError)
+			// Open infile if not directory:
+			var inFileOpened *os.File
+			var inFileOpenedError error
+			inFileOpened, inFileOpenedError = os.Open(infile)
+			if inFileOpenedError != nil {
+				fmt.Println("Error opening infile: " + infile)
+				fmt.Println(inFileOpenedError)
 				os.Exit(1)
 			}
+
+			// Create outFile to write to, if outfile not specified, write to stdout
+			var outFileOpened *os.File
+			var outFileOpenedError error
+			if len(outfile) > 0 {
+				//fmt.Println("Opening output file...")
+				outFileOpened, outFileOpenedError = os.Create(outfile)
+				if outFileOpenedError != nil {
+					fmt.Println("Error opening outfile: " + outfile)
+					fmt.Println(outFileOpenedError)
+					os.Exit(1)
+				}
+			}
+
+			// need to add provenance first, beacuse can only write to stdout sequentially
+			// check for argument --no-provenance, if true, add provenance to file
+			if provenance == true {
+				addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
+			}
+
+			// Parse infile and write to outfile with replace tags (or stdout if no outfile)
+			substituteCopyBasedOnMap(inFileOpened, outFileOpened, substitutionMap)
+
+			// Remeber to close outfile+infile when done, and check for errors
+			//fmt.Println("Closing output file...")
+			if outFileOpened != nil { // outfile might not exist if writing to stdout
+				outFileCloseError := outFileOpened.Close()
+				if outFileCloseError != nil {
+					fmt.Println("Error closing outfile: " + outfile)
+					fmt.Println(outFileCloseError)
+					os.Exit(1)
+				}
+			}
+			// Close infile
+			inFileCloseError := inFileOpened.Close()
+			if inFileCloseError != nil {
+				fmt.Println("Error closing infile: " + infile)
+				fmt.Println(inFileCloseError)
+				os.Exit(1)
+			}
+			// No infile input present, operate on indir instead.
+		} else if len(infile) == 0 && len(indir) > 0 {
+			// If parsing files from input directory, an output directory path should be provided, not an output file path.
+			if len(outfile) > 0 {
+				fmt.Println("Warning: please only provide '--outdir' flag (no '--outfile') when using '--indir' as input instead of '--infile'.")
+			}
+			// Check that outdir has value. Cannot write to stdout when parsing multiple files from a directory.
+			if len(outdir) == 0 {
+				fmt.Println("Error: '--outdir' is empty. Must supply a path to an output directory when using --indir flag.")
+				os.Exit(1)
+			}
+			// Check that indir and out dir end in '/' or '\'
+			if string(outdir[len(outdir)-1:]) != "\\" && string(outdir[len(outdir)-1:]) != "/" {
+				outdir = outdir + "\\"
+			}
+			if string(indir[len(indir)-1:]) != "\\" && string(indir[len(indir)-1:]) != "/" {
+				indir = indir + "\\"
+			}
+			// check that outdir is a real directory (no stdout output for indir)
+			dirInfo, err := os.Stat(outdir)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			} else if !dirInfo.IsDir() {
+				fmt.Println("Error: outdir must be a path to a valid directory!")
+				os.Exit(1)
+			}
+			// Open
+			var fileNames []string
+			files, err := os.ReadDir(indir)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			// Get slice of names of each file in indir
+			for _, f := range files {
+				//fmt.Println(f.Name())
+				fileNames = append(fileNames, f.Name())
+			}
+
+			// replacetags based on substitutionMap for each file in directory
+			for _, fileName := range fileNames {
+				// Generate path of next output file (same as input file name, but in outdir)
+				outFilePath := outdir + fileName
+				// Create outFile to write to inside outdir
+				var outFileOpened *os.File
+				var err error
+				outFileOpened, err = os.Create(outFilePath)
+				if err != nil {
+					fmt.Println("Error opening outfile: " + outFilePath)
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				// open infile
+				var inFileOpened *os.File
+				inFileOpened, err = os.Open(indir + fileName)
+				if err != nil {
+					fmt.Println("Error opening infile: " + indir + fileName)
+					fmt.Println(err)
+					os.Exit(1)
+				}
+
+				// check for argument --no-provenance, if true, add provenance to file
+				if provenance == true {
+					addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
+				}
+
+				// Parse infile and write to outfile with replace tags (or stdout if no outfile)
+				substituteCopyBasedOnMap(inFileOpened, outFileOpened, substitutionMap)
+
+				// Remeber to close outfile when done, and check for errors
+				if outFileOpened != nil {
+					outFileCloseError := outFileOpened.Close()
+					if outFileCloseError != nil {
+						fmt.Println("Error closing outfile: " + outfile)
+						fmt.Println(outFileCloseError)
+						os.Exit(1)
+					}
+				}
+			}
+
+		} else {
+			// either infile and indir provided (too many inputs), or neither provided
+			fmt.Println("Error: Must supply either infile or indir (but not both)!")
+			os.Exit(1)
 		}
 	},
 }
@@ -1119,8 +1235,11 @@ func init() {
 	parseCopyTemplatesCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace within instance for which to check release (optional)")
 
 	// flags for get tags
+	// Now that replacetags is replacing parseCopyTemplateCmd functionality, does replacetags need 'namespace', 'tagKey' or 'tagVal' flags?
 	replaceTagsCmd.PersistentFlags().StringVar(&infile, "infile", "", "Input file to parse, such as helm values file or docker compose file")
 	replaceTagsCmd.PersistentFlags().StringVar(&outfile, "outfile", "", "Output file with parsed values")
+	replaceTagsCmd.PersistentFlags().StringVar(&indir, "indir", "", "Path to directory of input files to parse (either infile or indir is required)")
+	replaceTagsCmd.PersistentFlags().StringVar(&outdir, "outdir", "", "Path to directory of output files (required if indir is used)")
 	replaceTagsCmd.PersistentFlags().StringVar(&tagSourceFile, "tagsource", "", "Source file with tags (optional - specify either source file or instance id and revision)")
 	replaceTagsCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment for which to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&instance, "instance", "", "Instance UUID for which to generate tags (optional)")

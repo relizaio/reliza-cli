@@ -104,23 +104,14 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 }
 
 /*
-	This function takes as input a inFile name, outFile file pointer, and substitutionMap
+	This function takes as input a inFile file pointer, outFile file pointer, and substitutionMap
 	containing the mapping of tags to be replaced. The contents of the inFile will be copied
 	to the outFile, with the tags replaced according to the substitution map.
 
 	The inFile and substututionMap are required, but if the outFile file pointer has no value,
 	then the parsed copy of the inFile with the replaced tags will be written to stdout.
 */
-func substituteCopyBasedOnMap(inFile string, outFileOpened *os.File, substitutionMap map[string]string) {
-	//fmt.Println("Opening in file...")
-	// open read file
-	inFileOpened, fileOpenErr := os.Open(inFile)
-	if fileOpenErr != nil {
-		fmt.Println("Error opening inFile: " + inFile)
-		fmt.Println(fileOpenErr)
-		os.Exit(1)
-	}
-
+func substituteCopyBasedOnMap(inFileOpened *os.File, outFileOpened *os.File, substitutionMap map[string]string) {
 	// Copy data from input-file to output-file, with tags replaced according to substitution map.
 	inScanner := bufio.NewScanner(inFileOpened)
 	for inScanner.Scan() {
