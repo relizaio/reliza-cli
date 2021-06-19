@@ -12,23 +12,23 @@ Docker image is available at [relizaio/reliza-cli](https://hub.docker.com/r/reli
 
 ## Download Reliza CLI
 
-Below are the available downloads for the latest version of the Reliza CLI (2021.06.7). Please download the proper package for your operating system and architecture.
+Below are the available downloads for the latest version of the Reliza CLI (2021.06.12). Please download the proper package for your operating system and architecture.
 
 The CLI is distributed as a single binary. Install by unzipping it and moving it to a directory included in your system's PATH.
 
-[SHA256 checksums](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/sha256sums.txt)
+[SHA256 checksums](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/sha256sums.txt)
 
-macOS: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-darwin-amd64.zip)
+macOS: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-darwin-amd64.zip)
 
-FreeBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-freebsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-freebsd-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-freebsd-arm.zip)
+FreeBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-freebsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-freebsd-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-freebsd-arm.zip)
 
-Linux: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-linux-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-linux-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-linux-arm.zip) | [Arm64](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-linux-arm64.zip)
+Linux: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-linux-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-linux-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-linux-arm.zip) | [Arm64](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-linux-arm64.zip)
 
-OpenBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-openbsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-openbsd-amd64.zip)
+OpenBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-openbsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-openbsd-amd64.zip)
 
-Solaris: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-solaris-amd64.zip)
+Solaris: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-solaris-amd64.zip)
 
-Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-windows-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.7/reliza-cli-2021.06.7-windows-amd64.zip)
+Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-windows-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-windows-amd64.zip)
 
 ## 1. Use Case: Get Version Assignment From Reliza Hub
 
