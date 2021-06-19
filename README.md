@@ -278,6 +278,8 @@ rlzclientout=$(docker run --rm relizaio/reliza-cli    \
 
 ## 7.1 Use Case: Parse Deployment Templates To Inject Correct Artifacts For GitOps
 
+*DEPRECATED:* Note, this functionality is now deprecated and replacetags should be used instead where possible (section 7.2 and below).
+
 This use case was designed specifically for GitOps. Imagine that you have GitOps deployment to different environments, i.e. TEST and PRODUCTION but they require different versions of artifacts. Reliza Hub would manage the versions but Reliza CLI can be leveraged to retrieve this information and create correct deployment files that can later be pushed to GitOps.
 
 For a real-life use-case please refer to a working script in [deployment project for Classic Mafia Game Card Shuffle](https://github.com/taleodor/mafia-deployment/blob/master/pull_reliza_push_github_production.sh) while working templates can be found [here](https://github.com/taleodor/mafia-deployment/tree/master/k8s_templates).
@@ -372,7 +374,7 @@ Flags stand for:
 - **--instance** - UUID of the instanceo (optional, either instanceuri or instance or tagsource flag must be used).
 - **--revision** - Revision number for the instance to use as a source for tags (optional, if not specified tags will be resolved by environment to which the instance belongs).
 - **--infile** - Input file to parse, such as helm values file or docker compose file.
-- **--outfile** - Output file with parsed values.
+- **--outfile** - Output file with parsed values (optional, if not supplied - outputs to stdout).
 - **--tagsource** - Source file with tags (optional, either instanceuri or instance or tagsource flag must be used).
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **--type** - Type of source tags file: cyclonedx (default) or text.
@@ -403,7 +405,7 @@ Flags stand for:
 - **--bundle** - Name of the bundle (optional, either bundle name & version or tagsource flag must be used).
 - **--version** - Version number for the bundle to use as a source for tags (optional, to be used with bundle flag).
 - **--infile** - Input file to parse, such as helm values file or docker compose file.
-- **--outfile** - Output file with parsed values.
+- **--outfile** - Output file with parsed values (optional, if not supplied - outputs to stdout).
 - **--tagsource** - Source file with tags (optional, either bundle name & version or tagsource flag must be used).
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **--type** - Type of source tags file: cyclonedx (default) or text.
@@ -432,7 +434,7 @@ Flags stand for:
 - **-k** - flag for api key which can be a organization-wide read API (required).
 - **env** - flag to denote the environment to which we wish to deploy. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION.
 - **infile** - Input file to parse, such as helm values file or docker compose file.
-- **outfile** - Output file with parsed values.
+- **outfile** - Output file with parsed values (optional, if not supplied - outputs to stdout).
 - **defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
 
