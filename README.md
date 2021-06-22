@@ -6,6 +6,8 @@ This tool allows for command-line interactions with [Reliza Hub at relizahub.com
 
 Video tutorial about key functionality of Reliza Hub is available on [YouTube](https://www.youtube.com/watch?v=yDlf5fMBGuI).
 
+Argo CD GitOps Integration using Kustomize [tutorial](https://itnext.io/building-kubernetes-cicd-pipeline-with-github-actions-argocd-and-reliza-hub-e7120b9be870).
+
 Community forum and support is available at [r/Reliza](https://reddit.com/r/Reliza).
 
 Docker image is available at [relizaio/reliza-cli](https://hub.docker.com/r/relizaio/reliza-cli)
