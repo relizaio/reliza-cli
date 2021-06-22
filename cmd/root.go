@@ -1105,7 +1105,6 @@ var replaceTagsCmd = &cobra.Command{
 		} else {
 			// either infile and indir provided (too many inputs), or neither provided
 			fmt.Println("Error: Must supply either infile or indir (but not both)!")
-			os.Exit(1)
 		}
 	},
 }
