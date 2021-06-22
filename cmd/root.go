@@ -1050,7 +1050,7 @@ var replaceTagsCmd = &cobra.Command{
 			}
 			// Open
 			var fileNames []string
-			files, err := os.ReadDir(indir)
+			files, err := ioutil.ReadDir(indir)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
