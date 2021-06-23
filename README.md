@@ -377,6 +377,8 @@ Flags stand for:
 - **--revision** - Revision number for the instance to use as a source for tags (optional, if not specified tags will be resolved by environment to which the instance belongs).
 - **--infile** - Input file to parse, such as helm values file or docker compose file.
 - **--outfile** - Output file with parsed values (optional, if not supplied - outputs to stdout).
+- **--indirectory** - Path to directory of input files to parse (either infile or indirectory is required)
+- **--outdirectory** - Path to directory of output files (required if indirectory is used)
 - **--tagsource** - Source file with tags (optional, either instanceuri or instance or tagsource flag must be used).
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **--type** - Type of source tags file: cyclonedx (default) or text.
@@ -408,6 +410,8 @@ Flags stand for:
 - **--version** - Version number for the bundle to use as a source for tags (optional, to be used with bundle flag).
 - **--infile** - Input file to parse, such as helm values file or docker compose file.
 - **--outfile** - Output file with parsed values (optional, if not supplied - outputs to stdout).
+- **--indirectory** - Path to directory of input files to parse (either infile or indirectory is required)
+- **--outdirectory** - Path to directory of output files (required if indirectory is used)
 - **--tagsource** - Source file with tags (optional, either bundle name & version or tagsource flag must be used).
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **--type** - Type of source tags file: cyclonedx (default) or text.
@@ -434,44 +438,12 @@ Flags stand for:
 
 - **-i** - flag for api id which can be a organization-wide read API (required).
 - **-k** - flag for api key which can be a organization-wide read API (required).
-- **env** - flag to denote the environment to which we wish to deploy. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION.
-- **infile** - Input file to parse, such as helm values file or docker compose file.
-- **outfile** - Output file with parsed values (optional, if not supplied - outputs to stdout).
-- **defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
-- **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
-
-## 7.5 Use Case: Replace Tags On Directory Containing Deployment Templates To Inject Correct Artifacts For GitOps
-
-This use case is designed for the case when we want to replace tags on a set of templates from a directory. This can be combined with use cases 7.2, 7.3 and 7.4 to inject correct artifacts for GitOps from different sources. For use cases 7.2, 7.3 and 7.4 this can be accomplished by instead providing the *indirectory* and *outdirectory* parameters instead of *infile* and *outfile*.
-
-Sample Command:
-
-```text
-docker run --rm \
-    -v /local/path/to/templates/directory/:/indir \
-    -v /local/path/to/output_directory:/outdir \
-    relizaio/reliza-cli \
-    replacetags \
-    --instanceuri <instance uri> \
-    --revision <revision_number> \
-    --indirectory /indir \
-    --outdirectory /outdir
-```
-
-Flags stand for:
-
-- **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
-- **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
-- **--instanceuri** - URI of the instance (optional, either instanceuri or instance or tagsource flag must be used).
-- **--instance** - UUID of the instanceo (optional, either instanceuri or instance or tagsource flag must be used).
-- **--revision** - Revision number for the instance to use as a source for tags (optional, if not specified tags will be resolved by environment to which the instance belongs).
+- **--env** - flag to denote the environment to which we wish to deploy. Environment can be one of: DEV, BUILD, TEST, SIT, UAT, PAT, STAGING, PRODUCTION.
 - **--infile** - Input file to parse, such as helm values file or docker compose file.
-- **--outfile** - Output file with parsed values.
+- **--outfile** - Output file with parsed values (optional, if not supplied - outputs to stdout).
 - **--indirectory** - Path to directory of input files to parse (either infile or indirectory is required)
 - **--outdirectory** - Path to directory of output files (required if indirectory is used)
-- **--tagsource** - Source file with tags (optional, either instanceuri or instance or tagsource flag must be used).
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
-- **--type** - Type of source tags file: cyclonedx (default) or text.
 - **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
 
 ## 8. Use Case: Programmatic Approvals of Releases on Reliza Hub
