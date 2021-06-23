@@ -65,10 +65,12 @@ var debug string
 var disapprove bool // approve (default) or disapprove
 var endpoint string
 var environment string
+var featureBranchVersioning string
 var hash string
 var imageFilePath string
 var imageString string
 var imageStyle string
+var includeApi bool
 var instance string
 var instanceURI string
 var manual bool
@@ -90,6 +92,8 @@ var relizaHubUri string
 var revision string
 var product string
 var project string
+var projectName string
+var projectType string
 var senderId string
 var status string
 var tagKey string
@@ -99,9 +103,11 @@ var tagValArr []string
 var typeVal string
 var version string
 var versionSchema string
-var vcsUri string
+var vcsName string
 var vcsTag string
 var vcsType string
+var vcsUri string
+var vcsUuid string
 
 const (
 	defaultConfigFilename = ".reliza"
@@ -219,6 +225,30 @@ const FULL_RELEASE_GQL_DATA = RELEASE_GQL_DATA + `
 	}
 	projectName
 	namespace
+`
+
+const PROJECT_GQL_DATA = `
+	uuid
+	name
+	org
+	type
+	versionSchema
+	vcsRepository
+	featureBranchVersioning
+	integrations {
+		projectIntegrationUuid
+		type
+		active
+		instance
+		vcsUuid:
+		eventTypes
+		parameters
+	}
+	envBranchMap
+	repositoryEnabled
+	status
+	apiKeyId
+	apiKey
 `
 
 // rootCmd represents the base command when called without any subcommands
@@ -726,6 +756,69 @@ var matchBundleCmd = &cobra.Command{
 	},
 }
 
+var createProjectCmd = &cobra.Command{
+	Use:   "createproject",
+	Short: "Create new project",
+	Long:  `This CLI command would connect to Reliza Hub which would create a new project `,
+	Run: func(cmd *cobra.Command, args []string) {
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
+
+		body := map[string]interface{}{"name": projectName}
+		if len(projectType) > 0 {
+			body["type"] = strings.ToUpper(projectType)
+		}
+		if len(versionSchema) > 0 {
+			body["versionSchema"] = versionSchema
+		}
+		if len(featureBranchVersioning) > 0 {
+			body["featureBranchVersioning"] = featureBranchVersioning
+		}
+		if len(vcsUuid) > 0 {
+			body["vcsRepositoryUuid"] = vcsUuid
+		}
+
+		if len(vcsUri) > 0 {
+			vcsRepository := map[string]string{"uri": vcsUri}
+			if len(vcsName) > 0 {
+				vcsRepository["name"] = vcsName
+			}
+			if len(vcsType) > 0 {
+				vcsRepository["type"] = vcsType
+			}
+			body["vcsRepository"] = vcsRepository
+		}
+
+		body["includeApi"] = includeApi
+
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			mutation ($CreateProjectInput: CreateProjectInput) {
+				createProjectProg(project:$CreateProjectInput) {` + PROJECT_GQL_DATA + `}
+			}
+		`)
+		req.Var("CreateProjectInput", body)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
+
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
+
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+			os.Exit(1)
+		}
+
+		jsonResponse, _ := json.Marshal(respData["createProjectProg"])
+		fmt.Println(string(jsonResponse))
+	},
+}
+
 var getVersionCmd = &cobra.Command{
 	Use:   "getversion",
 	Short: "Get next version for branch for a particular project",
@@ -1194,6 +1287,19 @@ func init() {
 	// flags for getmyrelease command
 	getMyReleaseCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace to submit instance data to")
 
+	// flags for createproject command
+	createProjectCmd.PersistentFlags().StringVarP(&projectName, "name", "", "", "Name of project to create")
+	createProjectCmd.MarkPersistentFlagRequired("name")
+	createProjectCmd.PersistentFlags().StringVarP(&projectType, "type", "", "", "Create either a project or product")
+	createProjectCmd.MarkPersistentFlagRequired("type")
+	createProjectCmd.PersistentFlags().StringVar(&versionSchema, "versionschema", "", "Version schema")
+	createProjectCmd.PersistentFlags().StringVar(&featureBranchVersioning, "featurebranchversioning", "", "Feature branch version schema")
+	createProjectCmd.PersistentFlags().StringVar(&vcsUuid, "vcsuuid", "", "Vcs repository UUID")
+	createProjectCmd.PersistentFlags().StringVar(&vcsUri, "vcsuri", "", "Vcs repository URI")
+	createProjectCmd.PersistentFlags().StringVar(&vcsName, "vcsname", "", "Name of vcs repository")
+	createProjectCmd.PersistentFlags().StringVar(&vcsType, "vcstype", "", "Type of vcs")
+	createProjectCmd.PersistentFlags().BoolVar(&includeApi, "includeapi", false, "(Optional) Set --includeapi flag to create and return a new api key and id during command")
+
 	// flags for get version command
 	getVersionCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "", "Name of VCS Branch used")
 	getVersionCmd.MarkPersistentFlagRequired("branch")
@@ -1256,6 +1362,7 @@ func init() {
 	rootCmd.AddCommand(checkReleaseByHashCmd)
 	rootCmd.AddCommand(getLatestReleaseCmd)
 	rootCmd.AddCommand(getMyReleaseCmd)
+	rootCmd.AddCommand(createProjectCmd)
 	rootCmd.AddCommand(getVersionCmd)
 	rootCmd.AddCommand(instDataCmd)
 	rootCmd.AddCommand(matchBundleCmd)
