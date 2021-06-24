@@ -768,6 +768,9 @@ var createProjectCmd = &cobra.Command{
 		body := map[string]interface{}{"name": projectName}
 		if len(projectType) > 0 {
 			body["type"] = strings.ToUpper(projectType)
+			if strings.ToUpper(projectType) == "BUNDLE" {
+				body["type"] = "PRODUCT"
+			}
 		}
 		if len(versionSchema) > 0 {
 			body["versionSchema"] = versionSchema
@@ -1288,17 +1291,17 @@ func init() {
 	getMyReleaseCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace to submit instance data to")
 
 	// flags for createproject command
-	createProjectCmd.PersistentFlags().StringVarP(&projectName, "name", "", "", "Name of project to create")
+	createProjectCmd.PersistentFlags().StringVar(&projectName, "name", "", "Name of project to create")
 	createProjectCmd.MarkPersistentFlagRequired("name")
-	createProjectCmd.PersistentFlags().StringVarP(&projectType, "type", "", "", "Create either a project or product")
+	createProjectCmd.PersistentFlags().StringVar(&projectType, "type", "", "Specify to create either a project or bundle")
 	createProjectCmd.MarkPersistentFlagRequired("type")
-	createProjectCmd.PersistentFlags().StringVar(&versionSchema, "versionschema", "", "Version schema")
-	createProjectCmd.PersistentFlags().StringVar(&featureBranchVersioning, "featurebranchversioning", "", "Feature branch version schema")
-	createProjectCmd.PersistentFlags().StringVar(&vcsUuid, "vcsuuid", "", "Vcs repository UUID")
-	createProjectCmd.PersistentFlags().StringVar(&vcsUri, "vcsuri", "", "Vcs repository URI")
-	createProjectCmd.PersistentFlags().StringVar(&vcsName, "vcsname", "", "Name of vcs repository")
-	createProjectCmd.PersistentFlags().StringVar(&vcsType, "vcstype", "", "Type of vcs")
-	createProjectCmd.PersistentFlags().BoolVar(&includeApi, "includeapi", false, "(Optional) Set --includeapi flag to create and return a new api key and id during command")
+	createProjectCmd.PersistentFlags().StringVar(&versionSchema, "versionschema", "semver", "Version schema of project, default set to semver. Available version schemas: https://github.com/relizaio/versioning")
+	createProjectCmd.PersistentFlags().StringVar(&featureBranchVersioning, "featurebranchversioning", "Branch.Micro", "Feature branch version schema of project (Optional, default set to Branch.Micro")
+	createProjectCmd.PersistentFlags().StringVar(&vcsUuid, "vcsuuid", "", "Vcs repository UUID (if retreiving existing vcs repository, either vcsuuid or vcsuri must be set)")
+	createProjectCmd.PersistentFlags().StringVar(&vcsUri, "vcsuri", "", "Vcs repository URI, if existing repository with uri does not exist and vcsname and vcstype are not set, will attempt to autoparse github, gitlab, and bitbucket uri's")
+	createProjectCmd.PersistentFlags().StringVar(&vcsName, "vcsname", "", "Name of vcs repository (Optional - required if creating new vcs repository and uri cannot be parsed)")
+	createProjectCmd.PersistentFlags().StringVar(&vcsType, "vcstype", "", "Type of vcs type (Optional - required if creating new vcs repository and uri cannot be parsed)")
+	createProjectCmd.PersistentFlags().BoolVar(&includeApi, "includeapi", false, "(Optional) Set --includeapi flag to create and return api key and id for created project during command")
 
 	// flags for get version command
 	getVersionCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "", "Name of VCS Branch used")
