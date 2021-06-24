@@ -193,12 +193,12 @@ Flags stand for:
 - **name** - flag to denote project name (required).
 - **type** - flag to denote project type (required). Supported values: project, bundle.
 - **versionschema** - flag to denote version schema (optional, if not set "semver" will be used). [Available version schemas](https://github.com/relizaio/versioning).
-- **featurebranchversioning** flag to denote feature branch version schema (optional, if not set "Branch.Micro will be used).
-- **vcsuuid** flag to denote uuid of vcs repository for the project (for existing repositories, either this flag or vcsuri are required).
-- **vcsuri** flag to denote uri of vcs repository for the project, if existing repository with uri does not exist and vcsname and vcstype are not set, Reliza Hub will attempt to autoparse github, gitlab, and bitbucket uri's.
-- **vcsname** flag to denote name of vcs repository to create for project (required if Reliza Hub cannot parse uri).
-- **vcstype** flag to denote type of vcs to create for project. Supported values: git, svn, mercurial (required if Reliza Hub cannot parse uri).
-- **includeapi** boolean flag to return project api key and id of newly created project (optional). Default is false.
+- **featurebranchversioning** - flag to denote feature branch version schema (optional, if not set "Branch.Micro will be used).
+- **vcsuuid** - flag to denote uuid of vcs repository for the project (for existing repositories, either this flag or vcsuri are required).
+- **vcsuri** - flag to denote uri of vcs repository for the project, if existing repository with uri does not exist and vcsname and vcstype are not set, Reliza Hub will attempt to autoparse github, gitlab, and bitbucket uri's.
+- **vcsname** - flag to denote name of vcs repository to create for project (required if Reliza Hub cannot parse uri).
+- **vcstype** - flag to denote type of vcs to create for project. Supported values: git, svn, mercurial (required if Reliza Hub cannot parse uri).
+- **includeapi** - boolean flag to return project api key and id of newly created project (optional). Default is false.
 
 ## 4. Use Case: Check If Artifact Hash Already Present In Some Release
 
