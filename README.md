@@ -166,41 +166,7 @@ Note that multiple artifacts per release are supported. In which case artifact s
 
 For sample of how to use workflow in CI, refer to the GitHub Actions build yaml of this project [here](https://github.com/relizaio/reliza-cli/blob/master/.github/workflows/dockerimage.yml).
 
-## 3. Use Case: Create New Project In Reliza Hub
-
-This use case creates a new project for our organization. API key must be generated prior to using.
-
-Sample command to create project:
-
-```bash
-docker run --rm relizaio/reliza-cli    \
-    createproject    \
-    -i org_api_id    \
-    -k org_api_key    \
-    --name projectname
-    --type project
-    --versionschema semver
-    --featurebranchversioning Branch.Micro
-    --vcsuri github.com/relizaio/reliza-cli
-    --includeapi
-```
-
-Flags stand for:
-
-- **createproject** - command that that denotes we are creating a new project for our organization. Note that a vcs repository must either already exist or be created during this call.
-- **-i** - flag for org api id (required).
-- **-k** - flag for org api key (required).
-- **name** - flag to denote project name (required).
-- **type** - flag to denote project type (required). Supported values: project, bundle.
-- **versionschema** - flag to denote version schema (optional, if not set "semver" will be used). [Available version schemas](https://github.com/relizaio/versioning).
-- **featurebranchversioning** - flag to denote feature branch version schema (optional, if not set "Branch.Micro will be used).
-- **vcsuuid** - flag to denote uuid of vcs repository for the project (for existing repositories, either this flag or vcsuri are required).
-- **vcsuri** - flag to denote uri of vcs repository for the project, if existing repository with uri does not exist and vcsname and vcstype are not set, Reliza Hub will attempt to autoparse github, gitlab, and bitbucket uri's.
-- **vcsname** - flag to denote name of vcs repository to create for project (required if Reliza Hub cannot parse uri).
-- **vcstype** - flag to denote type of vcs to create for project. Supported values: git, svn, mercurial (required if Reliza Hub cannot parse uri).
-- **includeapi** - boolean flag to return project api key and id of newly created project (optional). Default is false.
-
-## 4. Use Case: Check If Artifact Hash Already Present In Some Release
+## 3. Use Case: Check If Artifact Hash Already Present In Some Release
 
 This is particularly useful for monorepos to see if there was a change in sub-project or not. We are using this technique in our sample [playground project](https://github.com/relizaio/reliza-hub-playground). We supply an artifact hash to Reliza Hub - and if it's present already, we get release details; if not - we get an empty json response {}. Search space is scoped to a single project which is defined by API Id and API Key.
 
@@ -221,7 +187,7 @@ Flags stand for:
 - **-k** - flag for project api key (required).
 - **--hash** - flag to denote actual hash (required). By convention, hash must include hashing algorithm as its first part, i.e. sha256: or sha512:
 
-## 5. Use Case: Send Deployment Metadata From Instance To Reliza Hub
+## 4. Use Case: Send Deployment Metadata From Instance To Reliza Hub
 
 This use case is for sending digests of active deployments from instance to Reliza Hub. API key must also be generated for the instance from Reliza Hub. Sample script is also provided in our [playground project](https://github.com/relizaio/reliza-hub-playground/blob/master/sample-instance-agent-scripts/send_instance_data.sh).
 
@@ -248,7 +214,7 @@ Flags stand for:
 - **--namespace** - flag to denote namespace where we are sending images (optional, if not sent "default" namespace is used). Namespaces are useful to separate different products deployed on the same instance.
 - **--sender** - flag to denote unique sender within a single namespace (optional). This is useful if say there are different nodes where each streams only part of application deployment data. In this case such nodes need to use same namespace but different senders so that their data does not stomp on each other.
 
-## 6. Use Case: Request What Releases Must Be Deployed On This Instance From Reliza Hub
+## 5. Use Case: Request What Releases Must Be Deployed On This Instance From Reliza Hub
 
 This use case is when your instance queries Reliza Hub to receive information about what release versions and specific artifacts it needs to deploy. This would usually be used by either simple deployment scripts or full-scale CD systems. A sample use is presented in our [playground project script](https://github.com/relizaio/reliza-hub-playground/blob/master/sample-instance-agent-scripts/request_instance_target.sh).
 
@@ -269,7 +235,7 @@ Flags stand for:
 - **-k** - flag for instance api key (required).
 - **--namespace** - flag to denote namespace for which we are requesting release data (optional, if not sent "default" namespace is used). Namespaces are useful to separate different products deployed on the same instance.
 
-## 7. Use Case: Request Latest Release Per Project Or Product
+## 6. Use Case: Request Latest Release Per Project Or Product
 
 This use case is when Reliza Hub is queried either by CI or CD environment or by integration instance to check latest release version available per specific Project or Product. Only releases with *COMPLETE* status may be returned.
 
@@ -312,7 +278,7 @@ rlzclientout=$(docker run --rm relizaio/reliza-cli    \
     echo $(echo $rlzclientout | jq -r .artifactDetails[0].identifier)@$(echo $rlzclientout | jq -r .artifactDetails[0].digests[] | grep sha256)
 ```
 
-## 8.1 Use Case: Parse Deployment Templates To Inject Correct Artifacts For GitOps
+## 7.1 Use Case: Parse Deployment Templates To Inject Correct Artifacts For GitOps
 
 *DEPRECATED:* Note, this functionality is now deprecated and replacetags should be used instead where possible (section 7.2 and below).
 
@@ -384,7 +350,7 @@ Flags stand for:
 - **--indirectory** - input directory when using executable cli instead of docker, must use entire path (required if using executable)
 - **--outdirectory** - output directory when using executable cli instead of docker, must use entire path (required if using executable)
 
-## 8.2 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Instance And Revision
+## 7.2 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Instance And Revision
 
 This use case is designed for the case when we have to roll back our deployments to a specific version of artifacts. Reliza CLI can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
 
@@ -418,7 +384,7 @@ Flags stand for:
 - **--type** - Type of source tags file: cyclonedx (default) or text.
 - **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
 
-## 8.3 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle And Version
+## 7.3 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle And Version
 
 This use case is designed for the case when we have to deploy a specific version of a bundle. Reliza CLI can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
 
@@ -451,7 +417,7 @@ Flags stand for:
 - **--type** - Type of source tags file: cyclonedx (default) or text.
 - **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
 
-## 8.4 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Environment
+## 7.4 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Environment
 
 This use case is designed for the case when we have to deploy to a specific environment. Reliza CLI can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
 
@@ -480,7 +446,7 @@ Flags stand for:
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
 
-## 9. Use Case: Programmatic Approvals of Releases on Reliza Hub
+## 8. Use Case: Programmatic Approvals of Releases on Reliza Hub
 
 This use case is for the case when we have configured an API key in Org settings which is allowed to perform programmatic approvals in releases.
 
@@ -508,7 +474,7 @@ Flags stand for:
 - **--approval** - approval type as per approval matrix on the Organization Settings page in Reliza Hub (required).
 - **--disapprove** - flag to indicate disapproval event instead of approval (optional).
 
-## 10. Use Case: Check if Specific Approval is Needed for a Release on Reliza Hub
+## 9. Use Case: Check if Specific Approval is Needed for a Release on Reliza Hub
 
 This use case is auxiliary to the previous use case with programmatic approvals. It checks Reliza Hub if a specific approval type is still pending for a release. For example, some approval might have already been given previously, or the release may have already been rejected - in both of these cases, an approval is not needed any more. Such check may be useful for example, to decide whether to perform a set of automated tests for a release.
 
@@ -535,7 +501,7 @@ Flags stand for:
 - **--releaseversion** - flag to specify release string version with the project flag above (either this flag and project or releaseid must be provided).
 - **--approval** - approval type as per approval matrix on the Organization Settings page in Reliza Hub (required).
 
-## 11. Use Case: Persist Reliza Hub Credentials In A Config File
+## 10. Use Case: Persist Reliza Hub Credentials In A Config File
 
 This use case is for the case when we want to persist Reliza Hub API Credentials and URL in a config file.
 
@@ -560,7 +526,7 @@ Flags stand for:
 - **-u** - flag for reliza hub uri.
 
 
-## 12. Use Case: Match list of images with digests to a bundle version on Reliza Hub
+## 11. Use Case: Match list of images with digests to a bundle version on Reliza Hub
 
 This use case is to match a list of images with digests, in example on local Docker enviornment to a bundle version on Reliza Hub. Works with User or Organization-Wide API-keys.
 
@@ -590,7 +556,43 @@ Flags stand for:
 - **--imagefile** - flag which sets absolute path to the file with image string or image k8s json (optional, either images string or image file must be provided). Default value: */resources/images*.
 - **--namespace** - flag to denote namespace where we are sending images (optional, unused, present for compatibility with instance data command, which uses simialr underlying logic).
 
-## Adding dependencies to project
+## 12. Use Case: Create New Project In Reliza Hub
+
+This use case creates a new project for our organization. API key must be generated prior to using.
+
+Sample command to create project:
+
+```bash
+docker run --rm relizaio/reliza-cli    \
+    createproject    \
+    -i org_api_id    \
+    -k org_api_key    \
+    --name projectname
+    --type project
+    --versionschema semver
+    --featurebranchversioning Branch.Micro
+    --vcsuri github.com/relizaio/reliza-cli
+    --includeapi
+```
+
+Flags stand for:
+
+- **createproject** - command that that denotes we are creating a new project for our organization. Note that a vcs repository must either already exist or be created during this call.
+- **-i** - flag for org api id (required).
+- **-k** - flag for org api key (required).
+- **name** - flag to denote project name (required).
+- **type** - flag to denote project type (required). Supported values: project, bundle.
+- **versionschema** - flag to denote version schema (optional, if not set "semver" will be used). [Available version schemas](https://github.com/relizaio/versioning).
+- **featurebranchversioning** - flag to denote feature branch version schema (optional, if not set "Branch.Micro will be used).
+- **vcsuuid** - flag to denote uuid of vcs repository for the project (for existing repositories, either this flag or vcsuri are required).
+- **vcsuri** - flag to denote uri of vcs repository for the project, if existing repository with uri does not exist and vcsname and vcstype are not set, Reliza Hub will attempt to autoparse github, gitlab, and bitbucket uri's.
+- **vcsname** - flag to denote name of vcs repository to create for project (required if Reliza Hub cannot parse uri).
+- **vcstype** - flag to denote type of vcs to create for project. Supported values: git, svn, mercurial (required if Reliza Hub cannot parse uri).
+- **includeapi** - boolean flag to return project api key and id of newly created project (optional). Default is false.
+
+# Development of Reliza-CLI
+
+## Adding dependencies to Reliza-CLI
 
 Dependencies are handled using go modules and imports file is automatically generated. If importing a github repository use this command first:
 
