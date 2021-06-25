@@ -402,7 +402,9 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 	}
 
 	jsonResponse, _ := json.Marshal(respData["getLatestRelease"])
-	fmt.Println(string(jsonResponse))
+	if "null" != string(jsonResponse) {
+		fmt.Println(string(jsonResponse))
+	}
 	return jsonResponse
 
 	// path := relizaHubUri + "/api/programmatic/v1/release/getLatestProjectRelease/" + project + "/" + branch
