@@ -475,7 +475,7 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 	client := graphql.NewClient(relizaHubUri + "/graphql")
 	req := graphql.NewRequest(`
 		query ($instanceUuid: ID, $instanceUri: String, $revision: Int!) {
-			getInstanceRevisionCycloneDxExport(instanceUuid: $instanceUuid, instanceUri: $instanceUri, revision: $revision)
+			getInstanceRevisionCycloneDxExportProg(instanceUuid: $instanceUuid, instanceUri: $instanceUri, revision: $revision)
 		}
 	`)
 	req.Var("instanceUuid", instance)
@@ -495,8 +495,7 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
-
-	return []byte(respData["getInstanceRevisionCycloneDxExport"])
+	return []byte(respData["getInstanceRevisionCycloneDxExportProg"])
 }
 
 func getBundleVersionCycloneDxExportV1(apiKeyId string, apiKey string, bundle string, version string) []byte {
