@@ -32,6 +32,24 @@ Solaris: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.
 
 Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-windows-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.06.12/reliza-cli-2021.06.12-windows-amd64.zip)
 
+# Table of Contents - Use Cases
+1. [Get Version Assignment From Reliza Hub](#1-use-case-get-version-assignment-from-reliza-hub)
+2. [Send Release Metadata to Reliza Hub](#2-use-case-send-release-metadata-to-reliza-hub)
+3. [Check If Artifact Hash Already Present In Some Release](#3-use-case-check-if-artifact-hash-already-present-in-some-release)
+4. [Send Deployment Metadata From Instance To Reliza Hub](#4-use-case-send-deployment-metadata-from-instance-to-reliza-hub)
+5. [Request What Releases Must Be Deployed On This Instance From Reliza Hub](#5-use-case-request-what-releases-must-be-deployed-on-this-instance-from-reliza-hub)
+6. [Request Latest Release Per Project Or Product](#6-use-case-request-latest-release-per-project-or-product)
+7. GitOps Operations:
+7.1. *Deprecated* [Parse Deployment Templates To Inject Correct Artifacts For GitOps](#71-use-case-parse-deployment-templates-to-inject-correct-artifacts-for-gitops)
+7.2. [Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Instance And Revision](#72-use-case-replace-tags-on-deployment-templates-to-inject-correct-artifacts-for-gitops-using-instance-and-revision)
+7.3. [Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle And Version](#73-use-case-replace-tags-on-deployment-templates-to-inject-correct-artifacts-for-gitops-using-bundle-and-version)
+7.4. [Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Environment](#74-use-case-replace-tags-on-deployment-templates-to-inject-correct-artifacts-for-gitops-using-environment)
+8. [Programmatic Approvals of Releases on Reliza Hub](#8-use-case-programmatic-approvals-of-releases-on-reliza-hub)
+9. [Check if Specific Approval is Needed for a Release on Reliza Hub](#9-use-case-check-if-specific-approval-is-needed-for-a-release-on-reliza-hub)
+10. [Persist Reliza Hub Credentials in a Config File](#10-use-case-persist-reliza-hub-credentials-in-a-config-file)
+11. [Match list of images with digests to a bundle version on Reliza Hub](#11-use-case-match-list-of-images-with-digests-to-a-bundle-version-on-reliza-hub)
+12. [Create New Project in Reliza Hub](#12-use-case-create-new-project-in-reliza-hub)
+
 ## 1. Use Case: Get Version Assignment From Reliza Hub
 
 This use case requests Version from Reliza Hub for our project. Note that project schema must be preset on Reliza Hub prior to using this API. API key must also be generated for the project from Reliza Hub.
@@ -501,7 +519,7 @@ Flags stand for:
 - **--releaseversion** - flag to specify release string version with the project flag above (either this flag and project or releaseid must be provided).
 - **--approval** - approval type as per approval matrix on the Organization Settings page in Reliza Hub (required).
 
-## 10. Use Case: Persist Reliza Hub Credentials In A Config File
+## 10. Use Case: Persist Reliza Hub Credentials in a Config File
 
 This use case is for the case when we want to persist Reliza Hub API Credentials and URL in a config file.
 
@@ -556,7 +574,7 @@ Flags stand for:
 - **--imagefile** - flag which sets absolute path to the file with image string or image k8s json (optional, either images string or image file must be provided). Default value: */resources/images*.
 - **--namespace** - flag to denote namespace where we are sending images (optional, unused, present for compatibility with instance data command, which uses simialr underlying logic).
 
-## 12. Use Case: Create New Project In Reliza Hub
+## 12. Use Case: Create New Project in Reliza Hub
 
 This use case creates a new project for our organization. API key must be generated prior to using.
 
