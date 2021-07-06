@@ -391,7 +391,7 @@ Flags stand for:
 - **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
 - **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
 - **--instanceuri** - URI of the instance (optional, either instanceuri or instance or tagsource flag must be used).
-- **--instance** - UUID of the instanceo (optional, either instanceuri or instance or tagsource flag must be used).
+- **--instance** - UUID of the instance (optional, either instanceuri or instance or tagsource flag must be used).
 - **--revision** - Revision number for the instance to use as a source for tags (optional, if not specified tags will be resolved by environment to which the instance belongs).
 - **--infile** - Input file to parse, such as helm values file or docker compose file.
 - **--outfile** - Output file with parsed values (optional, if not supplied - outputs to stdout).
@@ -607,6 +607,30 @@ Flags stand for:
 - **vcsname** - flag to denote name of vcs repository to create for project (required if Reliza Hub cannot parse uri).
 - **vcstype** - flag to denote type of vcs to create for project. Supported values: git, svn, mercurial (required if Reliza Hub cannot parse uri).
 - **includeapi** - boolean flag to return project api key and id of newly created project (optional). Default is false.
+
+## 13. Use Case: Export instance Cyclone DX spec
+
+This use case exports the Cyclone DX spec of an instance. API key must be generated prior to using.
+
+Sample command to create project:
+
+```bash
+docker run --rm relizaio/reliza-cli    \
+    exportinst    \
+    -i api_id    \
+    -k api_key    \
+    --instance instanceUuid
+    --revision -2
+```
+
+Flags stand for:
+
+- **createproject** - command that that denotes we are exporting the Cyclone DX spec from our instance.
+- **-i** - flag for api id (required).
+- **-k** - flag for api key (required).
+- **instance** - flag to denote instance UUID (either instance api, instance, or instanceuri field must be supplied).
+- **instanceuri** - flag to denote instance URI (either instance api, instance, or instanceuri field must be supplied).
+- **revision** - Revision number for the instance (optional, default value is -1).
 
 # Development of Reliza-CLI
 
