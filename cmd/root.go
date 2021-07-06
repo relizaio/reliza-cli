@@ -1247,6 +1247,16 @@ var replaceTagsCmd = &cobra.Command{
 	},
 }
 
+var exportInstCmd = &cobra.Command{
+	Use:   "exportinst",
+	Short: "Outputs the Cyclone DX spec of your instance",
+	Long:  `Outputs the Cyclone DX spec of your instance`,
+	Run: func(cmd *cobra.Command, args []string) {
+		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision, instanceURI)
+		fmt.Println(string(cycloneBytes))
+	},
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
@@ -1401,6 +1411,10 @@ func init() {
 	replaceTagsCmd.PersistentFlags().StringVar(&bundle, "bundle", "", "Bundle for which to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().BoolVar(&provenance, "provenance", true, "Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional)")
 
+	exportInstCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which export from (optional)")
+	exportInstCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to export from (optional)")
+	exportInstCmd.PersistentFlags().StringVar(&revision, "revision", "", "Revision of instance for which to export from (optional)")
+
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(printversionCmd)
 	rootCmd.AddCommand(addreleaseCmd)
@@ -1414,6 +1428,7 @@ func init() {
 	rootCmd.AddCommand(matchBundleCmd)
 	rootCmd.AddCommand(parseCopyTemplatesCmd)
 	rootCmd.AddCommand(replaceTagsCmd)
+	rootCmd.AddCommand(exportInstCmd)
 	rootCmd.AddCommand(isApprovalNeededCmd)
 }
 
