@@ -542,7 +542,7 @@ func getEnvironmentCycloneDxExportV1(apiKeyId string, apiKey string, environment
 
 	client := graphql.NewClient(relizaHubUri + "/graphql")
 	req := graphql.NewRequest(`
-		query ($environment: EnvironmentType!) {
+		query ($environment: String!) {
 			exportAsBomProgByEnv(environment: $environment)
 		}
 	`)
