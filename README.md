@@ -37,7 +37,7 @@ Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.
 2. [Send Release Metadata to Reliza Hub](#2-use-case-send-release-metadata-to-reliza-hub)
 3. [Check If Artifact Hash Already Present In Some Release](#3-use-case-check-if-artifact-hash-already-present-in-some-release)
 4. [Send Deployment Metadata From Instance To Reliza Hub](#4-use-case-send-deployment-metadata-from-instance-to-reliza-hub)
-5. [Request What Releases Must Be Deployed On This Instance From Reliza Hub](#5-use-case-request-what-releases-must-be-deployed-on-this-instance-from-reliza-hub)
+5. *Deprecated* [Request What Releases Must Be Deployed On This Instance From Reliza Hub](#5-use-case-request-what-releases-must-be-deployed-on-this-instance-from-reliza-hub)
 6. [Request Latest Release Per Project Or Product](#6-use-case-request-latest-release-per-project-or-product)
 7. GitOps Operations:
     1. *Deprecated* [Parse Deployment Templates To Inject Correct Artifacts For GitOps](#71-use-case-parse-deployment-templates-to-inject-correct-artifacts-for-gitops)
@@ -49,6 +49,7 @@ Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.
 10. [Persist Reliza Hub Credentials in a Config File](#10-use-case-persist-reliza-hub-credentials-in-a-config-file)
 11. [Match list of images with digests to a bundle version on Reliza Hub](#11-use-case-match-list-of-images-with-digests-to-a-bundle-version-on-reliza-hub)
 12. [Create New Project in Reliza Hub](#12-use-case-create-new-project-in-reliza-hub)
+13. [Export Instance CycloneDX Spec](#13-use-case-export-instance-cyclonedx-spec)
 
 ## 1. Use Case: Get Version Assignment From Reliza Hub
 
@@ -233,6 +234,8 @@ Flags stand for:
 - **--sender** - flag to denote unique sender within a single namespace (optional). This is useful if say there are different nodes where each streams only part of application deployment data. In this case such nodes need to use same namespace but different senders so that their data does not stomp on each other.
 
 ## 5. Use Case: Request What Releases Must Be Deployed On This Instance From Reliza Hub
+
+*DEPRECATED:* Note, this functionality is now deprecated and [13. Export Instance CycloneDX Spec](#13-use-case-export-instance-cyclonedx-spec) should be used instead where possible.
 
 This use case is when your instance queries Reliza Hub to receive information about what release versions and specific artifacts it needs to deploy. This would usually be used by either simple deployment scripts or full-scale CD systems. A sample use is presented in our [playground project script](https://github.com/relizaio/reliza-hub-playground/blob/master/sample-instance-agent-scripts/request_instance_target.sh).
 
@@ -608,28 +611,33 @@ Flags stand for:
 - **vcstype** - flag to denote type of vcs to create for project. Supported values: git, svn, mercurial (required if Reliza Hub cannot parse uri).
 - **includeapi** - boolean flag to return project api key and id of newly created project (optional). Default is false.
 
-## 13. Use Case: Export instance Cyclone DX spec
+## 13. Use Case: Export Instance CycloneDX Spec
 
-This use case exports the Cyclone DX spec of an instance. API key must be generated prior to using.
+This use case exports the present, past or expected state of the instance in [CycloneDX](https://cyclonedx.org) format. API key must be generated prior to using.
 
-Sample command to create project:
+The **--revision** flag is what defines the type of the state (present, past, expected). It behaves is following:
+- Default value is *-1*, which means *expected* state - this will output all project releases that *are approved* for the specific instance.
+- The value set to *-2* means *present* state - this would output project releases currently deployed on the specific instance.
+- The value set to an actual revision obtained from Reliza Hub would output project releases deployed on that specific revision.
+
+Sample command:
 
 ```bash
 docker run --rm relizaio/reliza-cli    \
     exportinst    \
     -i api_id    \
     -k api_key    \
-    --instance instanceUuid
+    --instance instanceUuid     \
     --revision -2
 ```
 
 Flags stand for:
 
-- **createproject** - command that that denotes we are exporting the Cyclone DX spec from our instance.
+- **exportinst** - command that that denotes we are exporting the CycloneDX spec from our instance.
 - **-i** - flag for api id (required).
 - **-k** - flag for api key (required).
-- **instance** - flag to denote instance UUID (either instance api, instance, or instanceuri field must be supplied).
-- **instanceuri** - flag to denote instance URI (either instance api, instance, or instanceuri field must be supplied).
+- **instance** - flag to denote instance UUID (either instance api, instance, or instanceuri field or Instance API Key must be supplied).
+- **instanceuri** - flag to denote instance URI (either instance api, instance, or instanceuri or Instance API Key field must be supplied).
 - **revision** - Revision number for the instance (optional, default value is -1).
 
 # Development of Reliza-CLI
