@@ -633,7 +633,7 @@ docker run --rm relizaio/reliza-cli    \
 
 Flags stand for:
 
-- **exportinst** - command that that denotes we are exporting the CycloneDX spec from our instance.
+- **exportinst** - command that denotes we are exporting the CycloneDX spec from our instance.
 - **-i** - flag for api id (required).
 - **-k** - flag for api key (required).
 - **instance** - flag to denote instance UUID (either instance api, instance, or instanceuri field or Instance API Key must be supplied).
