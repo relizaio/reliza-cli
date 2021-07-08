@@ -894,7 +894,7 @@ var getVersionCmd = &cobra.Command{
 		}
 
 		if commit != "" {
-			commitMap := map[string]string{"uri": vcsUri, "type": vcsType, "commit": commit}
+			commitMap := map[string]string{"uri": vcsUri, "type": vcsType, "commit": commit, "commitMessage": commitMessage}
 			if vcsTag != "" {
 				commitMap["vcsTag"] = vcsTag
 			}
@@ -905,6 +905,42 @@ var getVersionCmd = &cobra.Command{
 		}
 		if manual {
 			body["status"] = "draft"
+		}
+
+		if len(commits) > 0 {
+			plainCommits, err := base64.StdEncoding.DecodeString(commits)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			indCommits := strings.Split(string(plainCommits), "\n")
+			commitsInBody := make([]map[string]interface{}, len(indCommits)-1, len(indCommits)-1)
+			for i := range indCommits {
+				if len(indCommits[i]) > 0 {
+					singleCommitEl := map[string]interface{}{}
+					commitParts := strings.Split(indCommits[i], "|||")
+					singleCommitEl["commit"] = commitParts[0]
+					singleCommitEl["dateActual"] = commitParts[1]
+					singleCommitEl["commitMessage"] = commitParts[2]
+					commitsInBody[i] = singleCommitEl
+
+					// if commit is not present but we are here, use first line as commit
+					if len(commit) < 1 && i == 0 {
+						commitMap := map[string]string{"commit": commitParts[0], "dateActual": commitParts[1], "commitMessage": commitParts[2]}
+						if vcsTag != "" {
+							commitMap["vcsTag"] = vcsTag
+						}
+						if vcsUri != "" {
+							commitMap["uri"] = vcsUri
+						}
+						if vcsType != "" {
+							commitMap["type"] = vcsType
+						}
+						body["sourceCodeEntry"] = commitMap
+					}
+				}
+			}
+			body["commits"] = commitsInBody
 		}
 
 		body["onlyVersion"] = onlyVersion
@@ -1367,6 +1403,8 @@ func init() {
 	getVersionCmd.PersistentFlags().StringVar(&vcsUri, "vcsuri", "", "URI of VCS repository")
 	getVersionCmd.PersistentFlags().StringVar(&vcsType, "vcstype", "", "Type of VCS repository: git, svn, mercurial")
 	getVersionCmd.PersistentFlags().StringVar(&commit, "commit", "", "Commit id")
+	getVersionCmd.PersistentFlags().StringVar(&commitMessage, "commitmessage", "", "Commit message or subject (optional)")
+	getVersionCmd.PersistentFlags().StringVar(&commits, "commits", "", "Base64-encoded list of commits associated with this release, can be obtained with 'git log --date=iso-strict --pretty='%H|||%ad|||%s' | base64 -w 0' command (optional)")
 	getVersionCmd.PersistentFlags().StringVar(&vcsTag, "vcstag", "", "VCS Tag")
 	getVersionCmd.PersistentFlags().StringVar(&dateActual, "date", "", "Commit date and time in iso strict format, use git log --date=iso-strict (optional).")
 	getVersionCmd.PersistentFlags().BoolVar(&manual, "manual", false, "(Optional) Set --manual flag to indicate a manual release.")

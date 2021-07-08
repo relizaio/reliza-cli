@@ -76,6 +76,7 @@ docker run --rm relizaio/reliza-cli    \
     -b master    \
     --vcstype git \
     --commit $CI_COMMIT_SHA \
+    --commitmessage $CI_COMMIT_MESSAGE \
     --vcsuri $CI_PROJECT_URL \
     --date $(git log -1 --date=iso-strict --pretty='%ad')
 ```
@@ -102,6 +103,8 @@ Flags stand for:
 - **--vcsuri** - flag to denote vcs uri (optional). This flag is needed if we want to set a commit for the release. However, soon it will be needed only if the vcs uri is not yet set for the project.
 - **--vcstype** - flag to denote vcs type (optional). Supported values: git, svn, mercurial. As with vcsuri, this flag is needed if we want to set a commit for the release. However, soon it will be needed only if the vcs uri is not yet set for the project.
 - **--commit** - flag to denote vcs commit id or hash (optional). This is needed to provide source code entry metadata into the release.
+- **--commitmessage** - flag to denote vcs commit message (optional). Alongside *commit* flag this would be used to provide source code entry metadata into the release.
+- **--commits** - flag to provide base64-encoded list of commits in the format *git log --date=iso-strict --pretty='%H|||%ad|||%s' | base64 -w 0* (optional). If *commit* flag is not set, top commit will be used as commit bound to release.
 - **--date** - flag to denote date time with timezone when commit was made, iso strict formatting with timezone is required, i.e. for git use git log --date=iso-strict (optional).
 - **--vcstag** - flag to denote vcs tag (optional). This is needed to include vcs tag into commit, if present.
 - **--metadata** - flag to set version metadata (optional). This may be semver metadata or custom version schema metadata.
@@ -147,7 +150,7 @@ Flags stand for:
 - **vcsuri** - flag to denote vcs uri (optional). Currently this flag is needed if we want to set a commit for the release. However, soon it will be needed only if the vcs uri is not yet set for the project.
 - **vcstype** - flag to denote vcs type (optional). Supported values: git, svn, mercurial. As with vcsuri, this flag is needed if we want to set a commit for the release. However, soon it will be needed only if the vcs uri is not yet set for the project.
 - **commit** - flag to denote vcs commit id or hash (optional). This is needed to provide source code entry metadata into the release.
-- **commitMessage** - flag to denote vcs commit subject (optional). Alongside *commit* flag this would be used to provide source code entry metadata into the release.
+- **commitmessage** - flag to denote vcs commit subject (optional). Alongside *commit* flag this would be used to provide source code entry metadata into the release.
 - **commits** - flag to provide base64-encoded list of commits in the format *git log --date=iso-strict --pretty='%H|||%ad|||%s' | base64 -w 0* (optional). If *commit* flag is not set, top commit will be used as commit bound to release.
 - **date** - flag to denote date time with timezone when commit was made, iso strict formatting with timezone is required, i.e. for git use git log --date=iso-strict (optional).
 - **vcstag** - flag to denote vcs tag (optional). This is needed to include vcs tag into commit, if present.
