@@ -893,7 +893,7 @@ var getVersionCmd = &cobra.Command{
 			body["versionSchema"] = versionSchema
 		}
 
-		if commit != "" {
+		if commit != "" || commitMessage != "" {
 			commitMap := map[string]string{"uri": vcsUri, "type": vcsType, "commit": commit, "commitMessage": commitMessage}
 			if vcsTag != "" {
 				commitMap["vcsTag"] = vcsTag
@@ -1402,7 +1402,7 @@ func init() {
 	getVersionCmd.PersistentFlags().StringVar(&versionSchema, "pin", "", "Version pin if creating new branch")
 	getVersionCmd.PersistentFlags().StringVar(&vcsUri, "vcsuri", "", "URI of VCS repository")
 	getVersionCmd.PersistentFlags().StringVar(&vcsType, "vcstype", "", "Type of VCS repository: git, svn, mercurial")
-	getVersionCmd.PersistentFlags().StringVar(&commit, "commit", "", "Commit id")
+	getVersionCmd.PersistentFlags().StringVar(&commit, "commit", "", "Commit id (requried to create Source Code Entry for new release)")
 	getVersionCmd.PersistentFlags().StringVar(&commitMessage, "commitmessage", "", "Commit message or subject (optional)")
 	getVersionCmd.PersistentFlags().StringVar(&commits, "commits", "", "Base64-encoded list of commits associated with this release, can be obtained with 'git log --date=iso-strict --pretty='%H|||%ad|||%s' | base64 -w 0' command (optional)")
 	getVersionCmd.PersistentFlags().StringVar(&vcsTag, "vcstag", "", "VCS Tag")
