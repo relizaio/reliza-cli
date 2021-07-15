@@ -111,8 +111,16 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 
 	The inFile and substututionMap are required, but if the outFile file pointer has no value,
 	then the parsed copy of the inFile with the replaced tags will be written to stdout.
+
+	There are two different methods of parsing input files: simple and extended (default = "extended")
+	"simple"   mode: only replaces 'image' keys (suitable for k8s templates or compose files)
+	"extended" mode: replaces all keys present in substitution map (needed for helm values files)
 */
-func substituteCopyBasedOnMap(inFileOpened *os.File, outFileOpened *os.File, substitutionMap map[string]string) {
+func substituteCopyBasedOnMap(inFileOpened *os.File, outFileOpened *os.File, substitutionMap map[string]string, parseMode string) {
+	if parseMode != "simple" && parseMode != "extended" {
+		fmt.Println("Error: '" + parseMode + "' is not a valid parsemode. Must be either 'simple' or 'extended'")
+		os.Exit(1)
+	}
 	// Copy data from input-file to output-file, with tags replaced according to substitution map.
 	inScanner := bufio.NewScanner(inFileOpened)
 	for inScanner.Scan() {
@@ -148,18 +156,22 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, outFileOpened *os.File, sub
 
 			if len(baseImageText) > 0 && !strings.HasSuffix(line, ":") {
 				// found a match - do substitution
-				//split line before image name and concat with substitution map value
-				parts := strings.Split(line, baseImageText)
+				re := regexp.MustCompile(`^\s*image:`)
+				// if simple mode, only substitute if line begins with 'image:' key
+				if parseMode == "extended" || (parseMode == "simple" && re.MatchString(line)) {
+					//split line before image name and concat with substitution map value
+					parts := strings.Split(line, baseImageText)
 
-				// remove beginning quotes if present
-				startLine := parts[0]
-				re := regexp.MustCompile("\"$")
-				startLine = re.ReplaceAllLiteralString(startLine, "")
-				re = regexp.MustCompile("'$")
-				startLine = re.ReplaceAllLiteralString(startLine, "")
+					// remove beginning quotes if present
+					startLine := parts[0]
+					re := regexp.MustCompile("\"$")
+					startLine = re.ReplaceAllLiteralString(startLine, "")
+					re = regexp.MustCompile("'$")
+					startLine = re.ReplaceAllLiteralString(startLine, "")
 
-				line = startLine + v
-				break
+					line = startLine + v
+					break
+				}
 			}
 		}
 		// Write line with replaced tags to outfile if outfile is indiciated,
