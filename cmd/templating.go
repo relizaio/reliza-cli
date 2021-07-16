@@ -112,12 +112,14 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 	The inFile and substututionMap are required, but if the outFile file pointer has no value,
 	then the parsed copy of the inFile with the replaced tags will be written to stdout.
 
-	There are two different methods of parsing input files: simple and extended (default = "extended")
+	There are three modes for parsing input files: simple, extended and strict (default = "extended")
 	"simple"   mode: only replaces 'image' keys (suitable for k8s templates or compose files)
 	"extended" mode: replaces all keys present in substitution map (needed for helm values files)
+	"strict"   mode: if artifact is not found upstream, exit program with error code
 */
 func substituteCopyBasedOnMap(inFileOpened *os.File, outFileOpened *os.File, substitutionMap map[string]string, parseMode string) {
-	if parseMode != "simple" && parseMode != "extended" {
+	parseMode = strings.ToLower(parseMode)
+	if parseMode != "simple" && parseMode != "extended" && parseMode != "strict" {
 		fmt.Println("Error: '" + parseMode + "' is not a valid parsemode. Must be either 'simple' or 'extended'")
 		os.Exit(1)
 	}
@@ -172,6 +174,19 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, outFileOpened *os.File, sub
 					line = startLine + v
 					break
 				}
+			}
+
+			// strict mode: if line has an image tag, but no matching key found in substitution map, exit process with error code
+			re := regexp.MustCompile(`(?i)^\s*image:`)
+			if parseMode == "strict" && re.MatchString(line) {
+				fmt.Println("Failed to parse infile. Parse mode is set to 'strict' and cannot find artifact in substitution map: \n\t" + strings.TrimSpace(line))
+				// do not create output file in this case
+				outFileOpened.Close()
+				err := os.Remove(outFileOpened.Name())
+				if err != nil {
+					fmt.Println(err)
+				}
+				os.Exit(1)
 			}
 		}
 		// Write line with replaced tags to outfile if outfile is indiciated,

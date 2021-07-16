@@ -407,6 +407,7 @@ Flags stand for:
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **--type** - Type of source tags file: cyclonedx (default) or text.
 - **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
+- **--parsemode** - Flag to set the parse mode. *Extended*: normal operation. *Simple*: Only replace 'image' tags. *Strict*: Exit process if an artifact is not found upstream.(optional) (default extended)
 
 ## 7.3 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle And Version
 
@@ -440,6 +441,7 @@ Flags stand for:
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **--type** - Type of source tags file: cyclonedx (default) or text.
 - **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
+- **--parsemode** - Flag to set the parse mode. *Extended*: normal operation. *Simple*: Only replace 'image' tags. *Strict*: Exit process if an artifact is not found upstream.(optional) (default extended)
 
 ## 7.4 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Environment
 
@@ -469,6 +471,7 @@ Flags stand for:
 - **--outdirectory** - Path to directory of output files (required if indirectory is used)
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
+- **--parsemode** - Flag to set the parse mode. *Extended*: normal operation. *Simple*: Only replace 'image' tags. *Strict*: Exit process if an artifact is not found upstream.(optional) (default extended)
 
 ## 8. Use Case: Programmatic Approvals of Releases on Reliza Hub
 

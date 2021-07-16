@@ -86,7 +86,7 @@ var outfile string
 var tagSourceFile string
 var definitionReferenceFile string
 var provenance bool  // add provenance (default), or do not add provenance
-var parseMode string // "simple" || "extended" mode
+var parseMode string // "simple" || "extended" || "strict" mode
 var releaseId string
 var releaseVersion string
 var relizaHubUri string
@@ -1449,7 +1449,7 @@ func init() {
 	replaceTagsCmd.PersistentFlags().StringVar(&version, "version", "", "Bundle version for which to generate tags (optional - required when using bundle)")
 	replaceTagsCmd.PersistentFlags().StringVar(&bundle, "bundle", "", "Bundle for which to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().BoolVar(&provenance, "provenance", true, "Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional)")
-	replaceTagsCmd.PersistentFlags().StringVar(&parseMode, "parsemode", "extended", "Use to set the parse mode to either extended or simple (optional)")
+	replaceTagsCmd.PersistentFlags().StringVar(&parseMode, "parsemode", "extended", "Use to set the parse mode to either extended, simple, or strict (optional)")
 
 	exportInstCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which export from (optional)")
 	exportInstCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to export from (optional)")
