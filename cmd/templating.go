@@ -105,28 +105,31 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 }
 
 /*
-	This function takes as input a inFile file pointer, outFile file pointer, and substitutionMap
-	containing the mapping of tags to be replaced. The contents of the inFile will be copied
-	to the outFile, with the tags replaced according to the substitution map.
-
-	The inFile and substututionMap are required, but if the outFile file pointer has no value,
-	then the parsed copy of the inFile with the replaced tags will be written to stdout.
+	This function takes as input a inFile file pointer, substitutionMap and parseMode string.
+	The contents of the inFile will be read and parsed according to the mappings of substitutionMap.
+	The output of the function is a slice of strings each representing a line to be written to
+	the CLI output (either outfile or stdout). If the inFile cannot be parsed for any reason
+	(ex: strict mode), then an error message will be displayed and a value of nil will be returned.
 
 	There are three modes for parsing input files: simple, extended and strict (default = "extended")
 	"simple"   mode: only replaces 'image' keys (suitable for k8s templates or compose files)
 	"extended" mode: replaces all keys present in substitution map (needed for helm values files)
-	"strict"   mode: if artifact is not found upstream, exit program with error code
+	"strict"   mode: if artifact is not found upstream, parsing fails, return nil array of lines
 */
-func substituteCopyBasedOnMap(inFileOpened *os.File, outFileOpened *os.File, substitutionMap map[string]string, parseMode string) {
+func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap map[string]string, parseMode string) []string {
 	parseMode = strings.ToLower(parseMode)
 	if parseMode != "simple" && parseMode != "extended" && parseMode != "strict" {
 		fmt.Println("Error: '" + parseMode + "' is not a valid parsemode. Must be either 'simple' or 'extended'")
 		os.Exit(1)
 	}
+	// store lines to return once parsing is complete
+	var parsedLines []string
 	// Copy data from input-file to output-file, with tags replaced according to substitution map.
 	inScanner := bufio.NewScanner(inFileOpened)
 	for inScanner.Scan() {
 		line := inScanner.Text()
+		matchFound := false // flag used for strict mode to indicate if we fail to find image match (for strict mode)
+
 		// check if line contains any key of substitution map
 		for k, v := range substitutionMap {
 			// have a version stripping docker.io and docker.io/library if it's present
@@ -156,11 +159,12 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, outFileOpened *os.File, sub
 				}
 			}
 
+			// found a match - do substitution
 			if len(baseImageText) > 0 && !strings.HasSuffix(line, ":") {
-				// found a match - do substitution
-				re := regexp.MustCompile(`^\s*image:`)
 				// if simple mode, only substitute if line begins with 'image:' key
-				if parseMode == "extended" || (parseMode == "simple" && re.MatchString(line)) {
+				re := regexp.MustCompile(`^\s*image:`)
+				// if parseMode is not simple, always substitute line, if parseMode is simple, only substitute line if it has an 'image' tag (ie: matches regex)
+				if parseMode != "simple" || re.MatchString(line) {
 					//split line before image name and concat with substitution map value
 					parts := strings.Split(line, baseImageText)
 
@@ -171,32 +175,28 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, outFileOpened *os.File, sub
 					re = regexp.MustCompile("'$")
 					startLine = re.ReplaceAllLiteralString(startLine, "")
 
+					matchFound = true
 					line = startLine + v
 					break
 				}
 			}
+		}
 
-			// strict mode: if line has an image tag, but no matching key found in substitution map, exit process with error code
-			re := regexp.MustCompile(`(?i)^\s*image:`)
-			if parseMode == "strict" && re.MatchString(line) {
-				fmt.Println("Failed to parse infile. Parse mode is set to 'strict' and cannot find artifact in substitution map: \n\t" + strings.TrimSpace(line))
-				// do not create output file in this case
-				outFileOpened.Close()
-				err := os.Remove(outFileOpened.Name())
-				if err != nil {
-					fmt.Println(err)
-				}
-				os.Exit(1)
-			}
+		// strict mode: if line has an image tag, but no matching key found in substitution map, exit process with error code
+		re := regexp.MustCompile(`(?i)^\s*image:`)
+		if matchFound == false && parseMode == "strict" && re.MatchString(line) {
+			fmt.Println("Error: Failed to parse infile '" + inFileOpened.Name() + "'. Parse mode is set to 'strict' and cannot find artifact in substitution map: \n\t" + strings.TrimSpace(line))
+			//os.Exit(1) not sure where the best place to handle parsing failure is, here or repalceTagsCmd in root.go
+			return nil
 		}
-		// Write line with replaced tags to outfile if outfile is indiciated,
-		// otherwise write to stdout.
-		if outFileOpened != nil {
-			outFileOpened.WriteString(line + "\n")
-		} else {
-			fmt.Print(line + "\n")
-		}
+
+		// add parsed line toslice to return once parsing is complete
+		parsedLines = append(parsedLines, line)
 	}
+	if parsedLines == nil {
+		fmt.Println("Error: Failed to parse empty/non-existent input file: " + inFileOpened.Name())
+	}
+	return parsedLines
 }
 
 /*
@@ -552,7 +552,7 @@ func getBundleVersionCycloneDxExportV1(apiKeyId string, apiKey string, bundle st
 
 	var respData map[string]string
 	if err := client.Run(context.Background(), req, &respData); err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("Error (getBundleVersionCycloneDxExportV1):", err)
 		os.Exit(1)
 	}
 

@@ -1170,16 +1170,28 @@ var replaceTagsCmd = &cobra.Command{
 				}
 			}
 
-			// need to add provenance first, beacuse can only write to stdout sequentially
-			// check for argument --no-provenance, if true, add provenance to file
-			if provenance == true {
-				addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
+			// Parse infile and get slice of lines to be written to outfile/stdout
+			parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode)
+
+			// write parsed lines to outfile/stdout if parsing did not fail
+			if parsedLines != nil {
+				// need to add provenance first, beacuse can only write to stdout sequentially
+				if provenance == true {
+					addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
+				}
+				for _, line := range parsedLines {
+					if outFileOpened != nil {
+						outFileOpened.WriteString(line + "\n")
+					} else {
+						fmt.Print(line + "\n")
+					}
+				}
+			} else {
+				// parsing error
+				os.Exit(1)
 			}
 
-			// Parse infile and write to outfile with replace tags (or stdout if no outfile)
-			substituteCopyBasedOnMap(inFileOpened, outFileOpened, substitutionMap, parseMode)
-
-			// Remeber to close outfile+infile when done, and check for errors
+			// Remember to close outfile+infile when done, and check for errors
 			//fmt.Println("Closing output file...")
 			if outFileOpened != nil { // outfile might not exist if writing to stdout
 				outFileCloseError := outFileOpened.Close()
@@ -1238,17 +1250,6 @@ var replaceTagsCmd = &cobra.Command{
 
 			// replacetags based on substitutionMap for each file in directory
 			for _, fileName := range fileNames {
-				// Generate path of next output file (same as input file name, but in outDirectory)
-				outFilePath := outDirectory + fileName
-				// Create outFile to write to inside outDirectory
-				var outFileOpened *os.File
-				var err error
-				outFileOpened, err = os.Create(outFilePath)
-				if err != nil {
-					fmt.Println("Error opening outfile: " + outFilePath)
-					fmt.Println(err)
-					os.Exit(1)
-				}
 				// open infile
 				var inFileOpened *os.File
 				inFileOpened, err = os.Open(inDirectory + fileName)
@@ -1257,23 +1258,58 @@ var replaceTagsCmd = &cobra.Command{
 					fmt.Println(err)
 					os.Exit(1)
 				}
-
-				// check for argument --no-provenance, if true, add provenance to file
-				if provenance == true {
-					addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
+				stat, err := inFileOpened.Stat()
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				} else if stat.IsDir() {
+					// only parse files not directories
+					// instead of throwing error just skip directories and contiue to next file
+					continue
+				}
+				// Generate path of next output file (same as input file name, but in outDirectory)
+				outFilePath := outDirectory + fileName
+				// Create outFile to write to inside outDirectory
+				var outFileOpened *os.File
+				outFileOpened, err = os.Create(outFilePath)
+				if err != nil {
+					fmt.Println("Error opening outfile: " + outFilePath)
+					fmt.Println(err)
+					os.Exit(1)
 				}
 
 				// Parse infile and write to outfile with replace tags (or stdout if no outfile)
-				substituteCopyBasedOnMap(inFileOpened, outFileOpened, substitutionMap, parseMode)
+				parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode)
 
-				// Remeber to close outfile when done, and check for errors
-				if outFileOpened != nil {
-					outFileCloseError := outFileOpened.Close()
-					if outFileCloseError != nil {
-						fmt.Println("Error closing outfile: " + outfile)
-						fmt.Println(outFileCloseError)
-						os.Exit(1)
+				// write parsed lines to output file
+				if parsedLines != nil {
+					// write provenance to output file
+					if provenance == true {
+						addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
 					}
+					for _, line := range parsedLines {
+						outFileOpened.WriteString(line + "\n")
+					}
+				} else {
+					// parsing failed on file
+					// should we delete files already parsed and created if a later one fails? all or nothing?
+					os.Exit(1)
+				}
+
+				// Remember to close outfile when done, and check for errors
+				outFileCloseError := outFileOpened.Close()
+				if outFileCloseError != nil {
+					fmt.Println("Error closing outfile: " + outDirectory + fileName)
+					fmt.Println(outFileCloseError)
+					os.Exit(1)
+				}
+
+				// also close infile
+				inFileCloseError := inFileOpened.Close()
+				if inFileCloseError != nil {
+					fmt.Println("Error closing infile: " + inDirectory + fileName)
+					fmt.Println(inFileCloseError)
+					os.Exit(1)
 				}
 			}
 
