@@ -545,6 +545,185 @@ var addreleaseCmd = &cobra.Command{
 	},
 }
 
+var addArtifactCmd = &cobra.Command{
+	Use:   "addartifact",
+	Short: "Add artifacts to a release",
+	Long:  `This CLI command would connect to Reliza Hub and add artifacts to a release using a valid API key.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		body := map[string]interface{}{}
+		if len(releaseId) > 0 {
+			body["release"] = releaseId
+		}
+		if len(project) > 0 {
+			body["project"] = project
+		}
+		if len(version) > 0 {
+			body["version"] = version
+		}
+
+		if len(artId) > 0 {
+			// use artifacts, construct artifact array
+			artifacts := make([]map[string]interface{}, len(artId), len(artId))
+			for i, aid := range artId {
+				artifacts[i] = map[string]interface{}{"identifier": aid}
+			}
+
+			// now do some length validations and add elements
+			if len(artBuildId) > 0 && len(artBuildId) != len(artId) {
+				fmt.Println("number of --artbuildid flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artBuildId) > 0 {
+				for i, abid := range artBuildId {
+					artifacts[i]["buildId"] = abid
+				}
+			}
+
+			if len(artBuildUri) > 0 && len(artBuildUri) != len(artId) {
+				fmt.Println("number of --artbuildUri flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artBuildUri) > 0 {
+				for i, aburi := range artBuildUri {
+					artifacts[i]["buildUri"] = aburi
+				}
+			}
+
+			if len(artCiMeta) > 0 && len(artCiMeta) != len(artId) {
+				fmt.Println("number of --artcimeta flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artCiMeta) > 0 {
+				for i, acm := range artCiMeta {
+					artifacts[i]["cicdMeta"] = acm
+				}
+			}
+
+			if len(artType) > 0 && len(artType) != len(artId) {
+				fmt.Println("number of --arttype flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artType) > 0 {
+				for i, at := range artType {
+					artifacts[i]["type"] = at
+				}
+			}
+
+			if len(artDigests) > 0 && len(artDigests) != len(artId) {
+				fmt.Println("number of --artdigests flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artDigests) > 0 {
+				for i, ad := range artDigests {
+					adSpl := strings.Split(ad, ",")
+					artifacts[i]["digests"] = adSpl
+				}
+			}
+
+			if len(dateStart) > 0 && len(dateStart) != len(artId) {
+				fmt.Println("number of --datestart flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(dateStart) > 0 {
+				for i, ds := range dateStart {
+					artifacts[i]["dateFrom"] = ds
+				}
+			}
+
+			if len(dateEnd) > 0 && len(dateEnd) != len(artId) {
+				fmt.Println("number of --dateEnd flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(dateEnd) > 0 {
+				for i, de := range dateEnd {
+					artifacts[i]["dateTo"] = de
+				}
+			}
+
+			if len(artVersion) > 0 && len(artVersion) != len(artId) {
+				fmt.Println("number of --artversion flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artVersion) > 0 {
+				for i, av := range artVersion {
+					artifacts[i]["artifactVersion"] = av
+				}
+			}
+
+			if len(artPublisher) > 0 && len(artPublisher) != len(artId) {
+				fmt.Println("number of --artpublisher flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artPublisher) > 0 {
+				for i, ap := range artPublisher {
+					artifacts[i]["publisher"] = ap
+				}
+			}
+
+			if len(artPackage) > 0 && len(artPackage) != len(artId) {
+				fmt.Println("number of --artpackage flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artPackage) > 0 {
+				for i, ap := range artPackage {
+					artifacts[i]["packageType"] = strings.ToUpper(ap)
+				}
+			}
+
+			if len(artGroup) > 0 && len(artGroup) != len(artId) {
+				fmt.Println("number of --artgroup flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artGroup) > 0 {
+				for i, ag := range artGroup {
+					artifacts[i]["group"] = ag
+				}
+			}
+
+			if len(tagKeyArr) > 0 && len(tagKeyArr) != len(artId) {
+				fmt.Println("number of --tagkey flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(tagValArr) > 0 && len(tagValArr) != len(artId) {
+				fmt.Println("number of --tagval flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(tagKeyArr) > 0 && len(tagValArr) < 1 {
+				fmt.Println("number of --tagval and --tagkey flags must be the same and must match number of --artid flags")
+				os.Exit(2)
+			} else if len(tagKeyArr) > 0 {
+				for i, key := range tagKeyArr {
+					tagKeys := strings.Split(key, ",")
+					tagVals := strings.Split(tagValArr[i], ",")
+					if len(tagKeys) != len(tagVals) {
+						fmt.Println("number of keys and values per each --tagval and --tagkey flag must be the same")
+						os.Exit(2)
+					}
+					k := map[string]string{}
+					for j := range tagKeys {
+						k[tagKeys[j]] = tagVals[j]
+					}
+					artifacts[i]["tags"] = k
+				}
+			}
+
+			body["artifacts"] = artifacts
+		}
+
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			mutation ($AddArtifactInput: AddArtifactInput) {
+				addArtifact(release: $AddArtifactInput) {` + RELEASE_GQL_DATA + `}
+			}
+		`)
+		req.Var("AddArtifactInput", body)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza Go Client")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
+
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
+
+		var respData map[string]interface{}
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+			os.Exit(1)
+		}
+
+		jsonResponse, _ := json.Marshal(respData["addArtifact"])
+		fmt.Println(string(jsonResponse))
+	},
+}
+
 var approveReleaseCmd = &cobra.Command{
 	Use:   "approverelease",
 	Short: "Programmatic approval of releases using valid API key",
@@ -603,7 +782,7 @@ var approveReleaseCmd = &cobra.Command{
 
 var isApprovalNeededCmd = &cobra.Command{
 	Use:   "isapprovalneeded",
-	Short: "Check if a release needs to be approvid using valid API key",
+	Short: "Check if a release needs to be approved using valid API key",
 	Long: `This CLI command would connect to Reliza Hub and check if a specific release needs to be approved.
 			It no longer needs to be approved, if it has been previously approved or rejected.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -1382,6 +1561,24 @@ func init() {
 
 	addreleaseCmd.PersistentFlags().StringVar(&status, "status", "", "Status of release - set to 'rejected' for failed releases, otherwise 'completed' is used (optional).")
 
+	addArtifactCmd.PersistentFlags().StringVar(&releaseId, "releaseid", "", "UUID of release to add artifact to (either releaseid or project, branch, and version must be set)")
+	addArtifactCmd.PersistentFlags().StringVar(&project, "project", "", "Project UUID for this release if org-wide key is used")
+	addArtifactCmd.PersistentFlags().StringVar(&version, "version", "", "Release version")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&artId, "artid", []string{}, "Artifact ID (multiple allowed)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&artBuildId, "artbuildid", []string{}, "Artifact Build ID (multiple allowed)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&artBuildUri, "artbuilduri", []string{}, "Artifact Build URI (multiple allowed)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&artCiMeta, "artcimeta", []string{}, "Artifact CI Meta (multiple allowed)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&artType, "arttype", []string{}, "Artifact Type (multiple allowed)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&artDigests, "artdigests", []string{}, "Artifact Digests (multiple allowed, separate several digests for one artifact with commas)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&tagKeyArr, "tagkey", []string{}, "Artifact Tag Keys (multiple allowed, separate several tag keys for one artifact with commas)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&tagValArr, "tagval", []string{}, "Artifact Tag Values (multiple allowed, separate several tag values for one artifact with commas)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&dateStart, "datestart", []string{}, "Artifact Build Start date and time (optional, multiple allowed)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&dateEnd, "dateend", []string{}, "Artifact Build End date and time (optional, multiple allowed)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&artVersion, "artversion", []string{}, "Artifact version, if different from release (multiple allowed)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&artPackage, "artpackage", []string{}, "Artifact package type (multiple allowed)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&artPublisher, "artpublisher", []string{}, "Artifact publisher (multiple allowed)")
+	addArtifactCmd.PersistentFlags().StringArrayVar(&artGroup, "artgroup", []string{}, "Artifact group (multiple allowed)")
+
 	// flags for approve release command
 	approveReleaseCmd.PersistentFlags().StringVar(&releaseId, "releaseid", "", "UUID of release to be approved (either releaseid or releaseversion and project must be set)")
 	approveReleaseCmd.PersistentFlags().StringVar(&releaseVersion, "releaseversion", "", "Version of release to be approved (either releaseid or releaseversion and project must be set)")
@@ -1494,6 +1691,7 @@ func init() {
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(printversionCmd)
 	rootCmd.AddCommand(addreleaseCmd)
+	rootCmd.AddCommand(addArtifactCmd)
 	rootCmd.AddCommand(approveReleaseCmd)
 	rootCmd.AddCommand(checkReleaseByHashCmd)
 	rootCmd.AddCommand(getLatestReleaseCmd)
