@@ -162,10 +162,10 @@ Flags stand for:
 - **arttype** - flag to denote artifact type (optional). This flag is used to denote artifact type. Types are based on [CycloneDX](https://cyclonedx.org/) spec. Supported values: Docker, File, Image, Font, Library, Application, Framework, OS, Device, Firmware.
 - **datestart** - flag to denote artifact build start date and time, must conform to ISO strict date (in bash, use *date -Iseconds*, if used there must be one datestart flag entry per artifact, optional).
 - **dateend** - flag to denote artifact build end date and time, must conform to ISO strict date (in bash, use *date -Iseconds*, if used there must be one datestart flag entry per artifact, optional).
-- **publisher** - flag to denote artifact publisher (if used there must be one publisher flag entry per artifact, optional).
-- **version** - flag to denote artifact version if different from release version (if used there must be one publisher flag entry per artifact, optional).
-- **package** - flag to denote artifact package type according to CycloneDX spec: MAVEN, NPM, NUGET, GEM, PYPI, DOCKER (if used there must be one publisher flag entry per artifact, optional).
-- **group** - flag to denote artifact group (if used there must be one group flag entry per artifact, optional).
+- **artpublisher** - flag to denote artifact publisher (if used there must be one publisher flag entry per artifact, optional).
+- **artversion** - flag to denote artifact version if different from release version (if used there must be one publisher flag entry per artifact, optional).
+- **artpackage** - flag to denote artifact package type according to CycloneDX spec: MAVEN, NPM, NUGET, GEM, PYPI, DOCKER (if used there must be one publisher flag entry per artifact, optional).
+- **artgroup** - flag to denote artifact group (if used there must be one group flag entry per artifact, optional).
 - **artdigests** - flag to denote artifact digests (optional). This flag is used to indicate artifact digests. By convention, digests must be prefixed with type followed by colon and then actual digest hash, i.e. *sha256:4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd* - here type is *sha256* and digest is *4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd*. Multiple digests are supported and must be comma separated. I.e.:
 
 ```bash
@@ -645,6 +645,66 @@ Flags stand for:
 - **instance** - flag to denote instance UUID (either instance api, instance, or instanceuri field or Instance API Key must be supplied).
 - **instanceuri** - flag to denote instance URI (either instance api, instance, or instanceuri or Instance API Key field must be supplied).
 - **revision** - Revision number for the instance (optional, default value is -1).
+
+## 14. Use Case: Add new artifacts to release in Reliza Hub
+
+This use case adds 1 or more artifacts to an existing release. API key must be generated prior to using.
+
+Sample command to add artifact:
+
+```bash
+docker run --rm relizaio/reliza-cli    \
+    addartifact    \
+    -i project_or_organization_wide_rw_api_id    \
+    -k project_or_organization_wide_rw_api_key    \
+    -v 20.02.3    \
+    --artid relizaio/reliza-cli    \
+    --artbuildid 1    \
+    --artcimeta Github Actions    \
+    --arttype Docker    \
+    --artdigests sha256:4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd    \
+    --tagkey key1
+    --tagval val1
+```
+
+Flags stand for:
+
+- **addartifact** - command that that denotes we are creating a new project for our organization. Note that a vcs repository must either already exist or be created during this call.
+- **-i** - flag for project api id or organization-wide read-write api id (required).
+- **-k** - flag for project api key or organization-wide read-write api key (required).
+- **releaseid** - flag to specify release uuid, which can be obtained from the release view or programmatically (either this flag or project and version are required).
+- **project** - flag to denote project uuid (optional). Required if organization-wide read-write key is used and releaseid isn't, ignored if project specific api key is used.
+- **version** - version (either this flag and project or releaseid are required)
+- **artid** - flag to denote artifact identifier (optional). This is required to add artifact metadata into release.
+- **artbuildid** - flag to denote artifact build id (optional). This flag is optional and may be used to indicate build system id of the release (i.e., this could be circleci build number).
+- **artbuilduri** - flag to denote artifact build uri (optional). This flag is optional and is used to denote the uri for where the build takes place.
+- **artcimeta** - flag to denote artifact CI metadata (optional). This flag is optional and like artbuildid may be used to indicate build system metadata in free form.
+- **arttype** - flag to denote artifact type (optional). This flag is used to denote artifact type. Types are based on [CycloneDX](https://cyclonedx.org/) spec. Supported values: Docker, File, Image, Font, Library, Application, Framework, OS, Device, Firmware.
+- **datestart** - flag to denote artifact build start date and time, must conform to ISO strict date (in bash, use *date -Iseconds*, if used there must be one datestart flag entry per artifact, optional).
+- **dateend** - flag to denote artifact build end date and time, must conform to ISO strict date (in bash, use *date -Iseconds*, if used there must be one datestart flag entry per artifact, optional).
+- **artpublisher** - flag to denote artifact publisher (if used there must be one publisher flag entry per artifact, optional).
+- **artversion** - flag to denote artifact version if different from release version (if used there must be one publisher flag entry per artifact, optional).
+- **artpackage** - flag to denote artifact package type according to CycloneDX spec: MAVEN, NPM, NUGET, GEM, PYPI, DOCKER (if used there must be one publisher flag entry per artifact, optional).
+- **artgroup** - flag to denote artifact group (if used there must be one group flag entry per artifact, optional).
+- **artdigests** - flag to denote artifact digests (optional). This flag is used to indicate artifact digests. By convention, digests must be prefixed with type followed by colon and then actual digest hash, i.e. *sha256:4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd* - here type is *sha256* and digest is *4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd*. Multiple digests are supported and must be comma separated. I.e.:
+
+```bash
+--artdigests sha256:4e8b31b19ef16731a6f82410f9fb929da692aa97b71faeb1596c55fbf663dcdd,sha1:fe4165996a41501715ea0662b6a906b55e34a2a1
+```
+
+- **tagkey** - flag to denote keys of artifact tags (optional, but every tag key must have corresponding tag value). Multiple tag keys per artifact are supported and must be comma separated. I.e.:
+
+```bash
+--tagkey key1,key2
+```
+
+- **tagval** - flag to denote values of artifact tags (optional, but every tag value must have corresponding tag key). Multiple tag values per artifact are supported and must be comma separated. I.e.:
+
+```bash
+--tagval val1,val2
+```
+
+Note that multiple artifacts per release are supported. In which case artifact specific flags (artid, arbuildid, artbuilduri, artcimeta, arttype, artdigests, tagkey and tagval must be repeated for each artifact).
 
 # Development of Reliza-CLI
 
