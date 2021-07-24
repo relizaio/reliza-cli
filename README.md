@@ -669,7 +669,7 @@ docker run --rm relizaio/reliza-cli    \
 
 Flags stand for:
 
-- **addartifact** - command that that denotes we are creating a new project for our organization. Note that a vcs repository must either already exist or be created during this call.
+- **addartifact** - command that that denotes we are adding artifact(s) to a release.
 - **-i** - flag for project api id or organization-wide read-write api id (required).
 - **-k** - flag for project api key or organization-wide read-write api key (required).
 - **releaseid** - flag to specify release uuid, which can be obtained from the release view or programmatically (either this flag or project and version are required).
@@ -704,7 +704,9 @@ Flags stand for:
 --tagval val1,val2
 ```
 
-Note that multiple artifacts per release are supported. In which case artifact specific flags (artid, arbuildid, artbuilduri, artcimeta, arttype, artdigests, tagkey and tagval must be repeated for each artifact).
+Notes:
+1. Multiple artifacts per release are supported. In which case artifact specific flags (artid, arbuildid, artbuilduri, artcimeta, arttype, artdigests, tagkey and tagval must be repeated for each artifact).
+2. Artifacts may be added to Complete or Rejected releases (this can be used for adding for example test reports), however a special tag would be placed on those artifacts by Reliza Hub.
 
 # Development of Reliza-CLI
 
