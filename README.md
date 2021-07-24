@@ -50,6 +50,7 @@ Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.
 11. [Match list of images with digests to a bundle version on Reliza Hub](#11-use-case-match-list-of-images-with-digests-to-a-bundle-version-on-reliza-hub)
 12. [Create New Project in Reliza Hub](#12-use-case-create-new-project-in-reliza-hub)
 13. [Export Instance CycloneDX Spec](#13-use-case-export-instance-cyclonedx-spec)
+14. [Add new artifacts to release in Reliza Hub](#14-use-case-add-new-artifacts-to-release-in-reliza-hub)
 
 ## 1. Use Case: Get Version Assignment From Reliza Hub
 
