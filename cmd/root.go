@@ -518,30 +518,13 @@ var addreleaseCmd = &cobra.Command{
 		jsonBody, _ := json.Marshal(body)
 		fmt.Println(string(jsonBody))
 
-		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
 			mutation ($releaseInputProg: ReleaseInputProg) {
 				addReleaseProg(release:$releaseInputProg) {` + RELEASE_GQL_DATA + `}
 			}`,
 		)
 		req.Var("releaseInputProg", body)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("User-Agent", "Reliza Go Client")
-		req.Header.Set("Accept-Encoding", "gzip, deflate")
-
-		if len(apiKeyId) > 0 && len(apiKey) > 0 {
-			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
-			req.Header.Add("Authorization", "Basic "+auth)
-		}
-
-		var respData map[string]interface{}
-		if err := client.Run(context.Background(), req, &respData); err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-
-		jsonResponse, _ := json.Marshal(respData["addReleaseProg"])
-		fmt.Println(string(jsonResponse))
+		fmt.Println(sendRequest(req, "addReleaseProg"))
 	},
 }
 
@@ -550,6 +533,10 @@ var addArtifactCmd = &cobra.Command{
 	Short: "Add artifacts to a release",
 	Long:  `This CLI command would connect to Reliza Hub and add artifacts to a release using a valid API key.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
+
 		body := map[string]interface{}{}
 		if len(releaseId) > 0 {
 			body["release"] = releaseId
@@ -697,30 +684,13 @@ var addArtifactCmd = &cobra.Command{
 			body["artifacts"] = artifacts
 		}
 
-		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
 			mutation ($AddArtifactInput: AddArtifactInput) {
 				addArtifact(release: $AddArtifactInput) {` + RELEASE_GQL_DATA + `}
 			}
 		`)
 		req.Var("AddArtifactInput", body)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("User-Agent", "Reliza Go Client")
-		req.Header.Set("Accept-Encoding", "gzip, deflate")
-
-		if len(apiKeyId) > 0 && len(apiKey) > 0 {
-			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
-			req.Header.Add("Authorization", "Basic "+auth)
-		}
-
-		var respData map[string]interface{}
-		if err := client.Run(context.Background(), req, &respData); err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-
-		jsonResponse, _ := json.Marshal(respData["addArtifact"])
-		fmt.Println(string(jsonResponse))
+		fmt.Println(sendRequest(req, "addArtifact"))
 	},
 }
 
@@ -734,6 +704,7 @@ var approveReleaseCmd = &cobra.Command{
 		if debug == "true" {
 			fmt.Println("Using Reliza Hub at", relizaHubUri)
 		}
+
 		body := map[string]interface{}{}
 		approvalMap := map[string]bool{approvalType: !disapprove}
 		body["approvals"] = approvalMap
@@ -753,30 +724,13 @@ var approveReleaseCmd = &cobra.Command{
 			body["namespace"] = namespace
 		}
 
-		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
 			mutation ($ApproveReleaseInput: ApproveReleaseInput) {
 				approveReleaseProg(release:$ApproveReleaseInput) {` + RELEASE_GQL_DATA + `}
 			}
 		`)
 		req.Var("ApproveReleaseInput", body)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("User-Agent", "Reliza Go Client")
-		req.Header.Set("Accept-Encoding", "gzip, deflate")
-
-		if len(apiKeyId) > 0 && len(apiKey) > 0 {
-			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
-			req.Header.Add("Authorization", "Basic "+auth)
-		}
-
-		var respData map[string]interface{}
-		if err := client.Run(context.Background(), req, &respData); err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-
-		jsonResponse, _ := json.Marshal(respData["approveReleaseProg"])
-		fmt.Println(string(jsonResponse))
+		fmt.Println(sendRequest(req, "approveReleaseProg"))
 	},
 }
 
@@ -789,6 +743,7 @@ var isApprovalNeededCmd = &cobra.Command{
 		if debug == "true" {
 			fmt.Println("Using Reliza Hub at", relizaHubUri)
 		}
+
 		body := map[string]interface{}{}
 		body["type"] = approvalType
 		if len(releaseId) > 0 {
@@ -807,30 +762,13 @@ var isApprovalNeededCmd = &cobra.Command{
 			body["namespace"] = namespace
 		}
 
-		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
 			query ($IsApprovalNeededInput: IsApprovalNeededInput) {
 				isApprovalNeeded(release:$IsApprovalNeededInput)
 			}
 		`)
 		req.Var("IsApprovalNeededInput", body)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("User-Agent", "Reliza Go Client")
-		req.Header.Set("Accept-Encoding", "gzip, deflate")
-
-		if len(apiKeyId) > 0 && len(apiKey) > 0 {
-			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
-			req.Header.Add("Authorization", "Basic "+auth)
-		}
-
-		var respData map[string]interface{}
-		if err := client.Run(context.Background(), req, &respData); err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-
-		jsonResponse, _ := json.Marshal(respData["isApprovalNeeded"])
-		fmt.Println(string(jsonResponse))
+		fmt.Println(sendRequest(req, "isApprovalNeeded"))
 	},
 }
 
@@ -881,30 +819,13 @@ var instDataCmd = &cobra.Command{
 			fmt.Println(body)
 		}
 
-		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
 			mutation ($InstanceDataInput: InstanceDataInput) {
 				instData(instance:$InstanceDataInput)
 			}
 		`)
 		req.Var("InstanceDataInput", body)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("User-Agent", "Reliza Go Client")
-		req.Header.Set("Accept-Encoding", "gzip, deflate")
-
-		if len(apiKeyId) > 0 && len(apiKey) > 0 {
-			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
-			req.Header.Add("Authorization", "Basic "+auth)
-		}
-
-		var respData map[string]interface{}
-		if err := client.Run(context.Background(), req, &respData); err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-
-		jsonResponse, _ := json.Marshal(respData["instData"])
-		fmt.Println(string(jsonResponse))
+		fmt.Println(sendRequest(req, "instData"))
 	},
 }
 
@@ -952,30 +873,13 @@ var matchBundleCmd = &cobra.Command{
 			fmt.Println(body)
 		}
 
-		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
 			mutation ($InstanceDataInput: InstanceDataInput) {
 				matchToProductRelease(release:$InstanceDataInput)
 			}
 		`)
 		req.Var("InstanceDataInput", body)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("User-Agent", "Reliza Go Client")
-		req.Header.Set("Accept-Encoding", "gzip, deflate")
-
-		if len(apiKeyId) > 0 && len(apiKey) > 0 {
-			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
-			req.Header.Add("Authorization", "Basic "+auth)
-		}
-
-		var respData map[string]interface{}
-		if err := client.Run(context.Background(), req, &respData); err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-
-		jsonResponse, _ := json.Marshal(respData["matchToProductRelease"])
-		fmt.Println(string(jsonResponse))
+		fmt.Println(sendRequest(req, "matchToProductRelease"))
 	},
 }
 
@@ -1018,30 +922,13 @@ var createProjectCmd = &cobra.Command{
 
 		body["includeApi"] = includeApi
 
-		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
 			mutation ($CreateProjectInput: CreateProjectInput) {
 				createProjectProg(project:$CreateProjectInput) {` + PROJECT_GQL_DATA + `}
 			}
 		`)
 		req.Var("CreateProjectInput", body)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("User-Agent", "Reliza Go Client")
-		req.Header.Set("Accept-Encoding", "gzip, deflate")
-
-		if len(apiKeyId) > 0 && len(apiKey) > 0 {
-			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
-			req.Header.Add("Authorization", "Basic "+auth)
-		}
-
-		var respData map[string]interface{}
-		if err := client.Run(context.Background(), req, &respData); err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-
-		jsonResponse, _ := json.Marshal(respData["createProjectProg"])
-		fmt.Println(string(jsonResponse))
+		fmt.Println(sendRequest(req, "createProjectProg"))
 	},
 }
 
@@ -1125,30 +1012,13 @@ var getVersionCmd = &cobra.Command{
 
 		body["onlyVersion"] = onlyVersion
 
-		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
 			mutation ($GetNewVersionInput: GetNewVersionInput) {
 				getNewVersion(project:$GetNewVersionInput)
 			}
 		`)
 		req.Var("GetNewVersionInput", body)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("User-Agent", "Reliza Go Client")
-		req.Header.Set("Accept-Encoding", "gzip, deflate")
-
-		if len(apiKeyId) > 0 && len(apiKey) > 0 {
-			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
-			req.Header.Add("Authorization", "Basic "+auth)
-		}
-
-		var respData map[string]interface{}
-		if err := client.Run(context.Background(), req, &respData); err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-
-		jsonResponse, _ := json.Marshal(respData["getNewVersion"])
-		fmt.Println(string(jsonResponse))
+		fmt.Println(sendRequest(req, "getNewVersion"))
 	},
 }
 
@@ -1163,30 +1033,13 @@ var checkReleaseByHashCmd = &cobra.Command{
 			fmt.Println("Using Reliza Hub at", relizaHubUri)
 		}
 
-		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
 			query ($hash: String!) {
 				getReleaseByHash(hash: $hash) {` + RELEASE_GQL_DATA + `}
 			}
 		`)
 		req.Var("hash", hash)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("User-Agent", "Reliza Go Client")
-		req.Header.Set("Accept-Encoding", "gzip, deflate")
-
-		if len(apiKeyId) > 0 && len(apiKey) > 0 {
-			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
-			req.Header.Add("Authorization", "Basic "+auth)
-		}
-
-		var respData map[string]interface{}
-		if err := client.Run(context.Background(), req, &respData); err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-
-		jsonResponse, _ := json.Marshal(respData["getReleaseByHash"])
-		fmt.Println(string(jsonResponse))
+		fmt.Println(sendRequest(req, "getReleaseByHash"))
 	},
 }
 
@@ -1207,30 +1060,17 @@ var getMyReleaseCmd = &cobra.Command{
 			It would connect to Reliza Hub which would return release and artifacts versions that should be used on this instance.
 			Instance would be identified by the API key that is used`,
 	Run: func(cmd *cobra.Command, args []string) {
-		client := graphql.NewClient(relizaHubUri + "/graphql")
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
+
 		req := graphql.NewRequest(`
 			query ($namespace: String) {
 				getMyRelease(namespace: $namespace) {` + FULL_RELEASE_GQL_DATA + `}
 			}
 		`)
 		req.Var("namespace", namespace)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("User-Agent", "Reliza Go Client")
-		req.Header.Set("Accept-Encoding", "gzip, deflate")
-
-		if len(apiKeyId) > 0 && len(apiKey) > 0 {
-			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
-			req.Header.Add("Authorization", "Basic "+auth)
-		}
-
-		var respData map[string]interface{}
-		if err := client.Run(context.Background(), req, &respData); err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-
-		jsonResponse, _ := json.Marshal(respData["getMyRelease"])
-		fmt.Println(string(jsonResponse))
+		fmt.Println(sendRequest(req, "getMyRelease"))
 	},
 }
 
@@ -1706,6 +1546,28 @@ func init() {
 	rootCmd.AddCommand(isApprovalNeededCmd)
 }
 
+func sendRequest(req *graphql.Request, endpoint string) string {
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "Reliza Go Client")
+	req.Header.Set("Accept-Encoding", "gzip, deflate")
+
+	if len(apiKeyId) > 0 && len(apiKey) > 0 {
+		auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+		req.Header.Add("Authorization", "Basic "+auth)
+	}
+
+	var respData map[string]interface{}
+	client := graphql.NewClient(relizaHubUri + "/graphql")
+	if err := client.Run(context.Background(), req, &respData); err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+
+	jsonResponse, _ := json.Marshal(respData[endpoint])
+	return string(jsonResponse)
+}
+
+// No longer in use, switched to graphql
 func printResponse(err error, resp *resty.Response) {
 	if debug == "true" {
 		// Explore response object
