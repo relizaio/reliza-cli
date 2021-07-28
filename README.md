@@ -51,6 +51,7 @@ Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.
 12. [Create New Project in Reliza Hub](#12-use-case-create-new-project-in-reliza-hub)
 13. [Export Instance CycloneDX Spec](#13-use-case-export-instance-cyclonedx-spec)
 14. [Add new artifacts to release in Reliza Hub](#14-use-case-add-new-artifacts-to-release-in-reliza-hub)
+15. [Use Case: Get changelog between releases in Reliza Hub](#15-use-case-get-changelog-between-releases-in-reliza-hub)
 
 ## 1. Use Case: Get Version Assignment From Reliza Hub
 
@@ -605,7 +606,7 @@ docker run --rm relizaio/reliza-cli    \
 
 Flags stand for:
 
-- **createproject** - command that that denotes we are creating a new project for our organization. Note that a vcs repository must either already exist or be created during this call.
+- **createproject** - command that denotes we are creating a new project for our organization. Note that a vcs repository must either already exist or be created during this call.
 - **-i** - flag for org api id (required).
 - **-k** - flag for org api key (required).
 - **name** - flag to denote project name (required).
@@ -670,7 +671,7 @@ docker run --rm relizaio/reliza-cli    \
 
 Flags stand for:
 
-- **addartifact** - command that that denotes we are adding artifact(s) to a release.
+- **addartifact** - command that denotes we are adding artifact(s) to a release.
 - **-i** - flag for project api id or organization-wide read-write api id (required).
 - **-k** - flag for project api key or organization-wide read-write api key (required).
 - **releaseid** - flag to specify release uuid, which can be obtained from the release view or programmatically (either this flag or project and version are required).
@@ -708,6 +709,35 @@ Flags stand for:
 Notes:
 1. Multiple artifacts per release are supported. In which case artifact specific flags (artid, arbuildid, artbuilduri, artcimeta, arttype, artdigests, tagkey and tagval must be repeated for each artifact).
 2. Artifacts may be added to Complete or Rejected releases (this can be used for adding for example test reports), however a special tag would be placed on those artifacts by Reliza Hub.
+
+## 15. Use Case: Get changelog between releases in Reliza Hub
+
+This use case constructs a changelog using 2 different reference points from your project. API key must be generated prior to using.
+
+Sample command:
+
+```bash
+docker run --rm relizaio/reliza-cli    \
+    getchangelog    \
+    -i project_or_organization_wide_api_id    \
+    -k project_or_organization_wide_api_key    \
+    --version 1.3.36     \
+    --version2 1.3.33
+    --aggregated
+```
+
+Flags stand for:
+
+- **get** - command that denotes we are constructing a changelog.
+- **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
+- **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
+- **project** - flag to denote project UUID (required only if using org-wide key and attaining changelog using versions).
+- **version** - Release version (either this and version2 or commit and commit2 must be supplied).
+- **version2** - Second release version to construct changelog from.
+- **commit** - Commit id (either this and commit2 or version and version2 must be supplied).
+- **commit2** - Second commit id to construct changelog from.
+- **revision** - Boolean flag to create aggregated changelog (optional). Default is false.
+
 
 # Development of Reliza-CLI
 
