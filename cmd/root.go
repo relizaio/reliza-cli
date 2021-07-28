@@ -39,6 +39,7 @@ import (
 )
 
 var action string
+var aggregated bool
 var apiKeyId string
 var apiKey string
 var artBuildId []string
@@ -56,6 +57,7 @@ var branch string
 var bundle string
 var cfgFile string
 var commit string
+var commit2 string
 var commitMessage string
 var commits string // base64-encoded list of commits obtained with: git log $LATEST_COMMIT..$CURRENT_COMMIT --date=iso-strict --pretty='%H|||%ad|||%s' | base64 -w 0
 var dateActual string
@@ -103,6 +105,7 @@ var tagVal string
 var tagValArr []string
 var typeVal string
 var version string
+var version2 string
 var versionSchema string
 var vcsName string
 var vcsTag string
@@ -1349,6 +1352,43 @@ var exportInstCmd = &cobra.Command{
 	},
 }
 
+var getChangelogCmd = &cobra.Command{
+	Use:   "getchangelog",
+	Short: "Outputs changelog information of your project",
+	Long:  `Outputs changelog information of your project`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
+
+		if len(commit) > 0 && len(commit2) > 0 {
+			req := graphql.NewRequest(`
+				query ($commit1: String!, $commit2: String!, $aggregated: Boolean) {
+					getChangelogBetweenCommits(commit1: $commit1, commit2: $commit2, aggregated: $aggregated)
+				}
+			`)
+			req.Var("commit1", commit)
+			req.Var("commit2", commit2)
+			req.Var("aggregated", aggregated)
+			fmt.Println(sendRequest(req, "getChangelogBetweenCommits"))
+		} else if len(version) > 0 && len(version2) > 0 {
+			req := graphql.NewRequest(`
+				query ($version1: String!, $version2: String!, $projectUuid: ID, $aggregated: Boolean) {
+					getChangelogBetweenVersions(version1: $version1, version2: $version2, projectUuid: $projectUuid, aggregated: $aggregated)
+				}
+			`)
+			req.Var("version1", version)
+			req.Var("version2", version2)
+			req.Var("projectUuid", project)
+			req.Var("aggregated", aggregated)
+			fmt.Println(sendRequest(req, "getChangelogBetweenVersions"))
+		} else {
+			fmt.Println("Error: Either commit and commit2, or version and version2 must be set")
+			os.Exit(1)
+		}
+	},
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
@@ -1528,6 +1568,13 @@ func init() {
 	exportInstCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to export from (optional)")
 	exportInstCmd.PersistentFlags().StringVar(&revision, "revision", "", "Revision of instance for which to export from (optional, default is -1)")
 
+	getChangelogCmd.PersistentFlags().StringVar(&project, "project", "", "Project UUID if org-wide key is used and attaining changelog using versions")
+	getChangelogCmd.PersistentFlags().StringVar(&commit, "commit", "", "Commit id, either this and commit2 or version and version2 must be supplied")
+	getChangelogCmd.PersistentFlags().StringVar(&commit2, "commit2", "", "Second commit id to construct changelog from")
+	getChangelogCmd.PersistentFlags().StringVar(&version, "version", "", "Release version, either this and version2 or commit and commit2 must be supplied")
+	getChangelogCmd.PersistentFlags().StringVar(&version2, "version2", "", "Second release version to construct changelog from")
+	getChangelogCmd.PersistentFlags().BoolVar(&aggregated, "aggregated", false, "something")
+
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(printversionCmd)
 	rootCmd.AddCommand(addreleaseCmd)
@@ -1543,6 +1590,7 @@ func init() {
 	rootCmd.AddCommand(parseCopyTemplatesCmd)
 	rootCmd.AddCommand(replaceTagsCmd)
 	rootCmd.AddCommand(exportInstCmd)
+	rootCmd.AddCommand(getChangelogCmd)
 	rootCmd.AddCommand(isApprovalNeededCmd)
 }
 
