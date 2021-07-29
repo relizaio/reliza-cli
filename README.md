@@ -51,7 +51,7 @@ Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2021.
 12. [Create New Project in Reliza Hub](#12-use-case-create-new-project-in-reliza-hub)
 13. [Export Instance CycloneDX Spec](#13-use-case-export-instance-cyclonedx-spec)
 14. [Add new artifacts to release in Reliza Hub](#14-use-case-add-new-artifacts-to-release-in-reliza-hub)
-15. [Use Case: Get changelog between releases in Reliza Hub](#15-use-case-get-changelog-between-releases-in-reliza-hub)
+15. [Get changelog between releases in Reliza Hub](#15-use-case-get-changelog-between-releases-in-reliza-hub)
 
 ## 1. Use Case: Get Version Assignment From Reliza Hub
 
