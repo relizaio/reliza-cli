@@ -9,6 +9,8 @@ jobs:
     name: Build and push
     runs-on: ubuntu-latest
     steps:
+      - name: Record build start
+        run: echo "BUILD_START=$(date -Iseconds)" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v2
       - name: Configure AWS credentials
