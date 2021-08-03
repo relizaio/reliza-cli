@@ -40,7 +40,7 @@ jobs:
           echo -n "--version $VERSION " >> reliza_command
           readarray -t sha256sums <<< $(cat $VERSION/sha256sums.txt)
           for i in "${sha256sums[@]}"; do
-            echo -n "--artid $(awk '{print $2}' <<< "$i") " >> reliza_command
+            echo -n "--artid https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/$VERSION/$(awk '{print $2}' <<< "$i") " >> reliza_command
             echo -n "--artbuildid github$GITHUB_ACTION$GITHUB_SHA " >> reliza_command
             echo -n "--artbuilduri https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID " >> reliza_command
             echo -n "--artcimeta GitHub Actions " >> reliza_command
