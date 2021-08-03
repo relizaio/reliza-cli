@@ -45,7 +45,7 @@ jobs:
             echo -n "--artbuilduri https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID " >> reliza_command
             echo -n "--artcimeta GitHub Actions " >> reliza_command
             echo -n "--arttype Application " >> reliza_command
-            echo -n "--artdigests $(awk '{print $1}' <<< "$i") " >> reliza_command
+            echo -n "--artdigests sha256:$(awk '{print $1}' <<< "$i") " >> reliza_command
             echo -n "--datestart $BUILD_START " >> reliza_command
             echo -n "--dateend $(date -Iseconds) " >> reliza_command
           done
