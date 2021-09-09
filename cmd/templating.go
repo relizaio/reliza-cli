@@ -136,7 +136,7 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap map[string]
 			// for this establish base image text
 			baseImageText := ""
 
-			if strings.Contains(line, k+":") || strings.Contains(line, k+"@") || strings.HasSuffix(line, k) {
+			if (strings.Contains(line, k+":") && strings.Contains(line, k+": ")) || strings.Contains(line, k+"@") || strings.HasSuffix(line, k) {
 				baseImageText = k
 			}
 
