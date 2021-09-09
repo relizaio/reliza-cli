@@ -136,7 +136,7 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap map[string]
 			// for this establish base image text
 			baseImageText := ""
 
-			if (strings.Contains(line, k+":") && !strings.Contains(line, k+": ")) || strings.Contains(line, k+"@") || strings.HasSuffix(line, k) {
+			if strings.Contains(line, k+":") || strings.Contains(line, k+"@") || strings.HasSuffix(line, k) {
 				baseImageText = k
 			}
 
@@ -160,7 +160,7 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap map[string]
 			}
 
 			// found a match - do substitution
-			if len(baseImageText) > 0 && !strings.HasSuffix(line, ":") {
+			if len(baseImageText) > 0 && !strings.HasSuffix(line, ":") && !strings.Contains(line, baseImageText+": ") {
 				// if simple mode, only substitute if line begins with 'image:' key
 				re := regexp.MustCompile(`^\s*image:`)
 				// if parseMode is not simple, always substitute line, if parseMode is simple, only substitute line if it has an 'image' tag (ie: matches regex)
