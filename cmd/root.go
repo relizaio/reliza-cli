@@ -1042,7 +1042,11 @@ var checkReleaseByHashCmd = &cobra.Command{
 			}
 		`)
 		req.Var("hash", hash)
-		fmt.Println(sendRequest(req, "getReleaseByHash"))
+		resp := sendRequest(req, "getReleaseByHash")
+		if resp == "null" {
+			resp = "{}"
+		}
+		fmt.Println(resp)
 	},
 }
 
