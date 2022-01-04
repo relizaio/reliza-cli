@@ -1104,7 +1104,7 @@ var replaceTagsCmd = &cobra.Command{
 		// type - typeVal: options - text, cyclonedx
 
 		// 1st - scan tag source file and construct a map of generic tag to actual tag
-		tagSourceMap := scanTags(tagSourceFile, typeVal, apiKeyId, apiKey, instance, revision, instanceURI, bundle, version, environment)
+		tagSourceMap := scanTags(tagSourceFile, typeVal, apiKeyId, apiKey, instance, revision, instanceURI, bundle, version, environment, namespace)
 
 		// 2nd - scan definition reference file and identify all used tags (scan by "image:" pattern)
 		substitutionMap := map[string]string{}
@@ -1350,7 +1350,7 @@ var exportInstCmd = &cobra.Command{
 	Short: "Outputs the Cyclone DX spec of your instance",
 	Long:  `Outputs the Cyclone DX spec of your instance`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision, instanceURI)
+		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision, instanceURI, namespace)
 		fmt.Println(string(cycloneBytes))
 	},
 }
@@ -1566,10 +1566,12 @@ func init() {
 	replaceTagsCmd.PersistentFlags().StringVar(&bundle, "bundle", "", "Bundle for which to generate tags (optional)")
 	replaceTagsCmd.PersistentFlags().BoolVar(&provenance, "provenance", true, "Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&parseMode, "parsemode", "extended", "Use to set the parse mode to either extended, simple, or strict (optional)")
+	replaceTagsCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Use to define specific namespace for replace tagging (optional)")
 
 	exportInstCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which export from (optional)")
 	exportInstCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to export from (optional)")
 	exportInstCmd.PersistentFlags().StringVar(&revision, "revision", "", "Revision of instance for which to export from (optional, default is -1)")
+	exportInstCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Use to define specific namespace for instance export (optional)")
 
 	getChangelogCmd.PersistentFlags().StringVar(&project, "project", "", "Project UUID if org-wide key is used and attaining changelog using versions")
 	getChangelogCmd.PersistentFlags().StringVar(&commit, "commit", "", "Commit id, either this and commit2 or version and version2 must be supplied")

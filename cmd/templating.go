@@ -435,7 +435,8 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 	return jsonResponse
 }
 
-func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey string, instance string, revision string, instanceURI string, bundle string, version string, environment string) map[string]string {
+func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey string, instance string, revision string,
+	instanceURI string, bundle string, version string, environment string, namespace string) map[string]string {
 	tagSourceMap := map[string]string{} // 1st - scan tag source file and construct a map of generic tag to actual tag
 	if tagSourceFile != "" {
 		tagSourceMap = scanTagFile(tagSourceFile, typeVal)
@@ -452,8 +453,7 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 		json.Unmarshal(cycloneBytes, &bomJSON)
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
 	} else if len(instance) > 0 || len(instanceURI) > 0 || strings.HasPrefix(apiKeyId, "INSTANCE__") {
-		// tagSourceMap = getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision)
-		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision, instanceURI)
+		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision, instanceURI, namespace)
 		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes, &bomJSON)
@@ -465,7 +465,7 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 	return tagSourceMap
 }
 
-func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instance string, revision string, instanceURI string) []byte {
+func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instance string, revision string, instanceURI string, namespace string) []byte {
 
 	if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") {
 		//throw error and exit
@@ -477,17 +477,22 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 		revision = "-1"
 	}
 
+	if len(namespace) <= 0 {
+		namespace = ""
+	}
+
 	client := graphql.NewClient(relizaHubUri + "/graphql")
 	req := graphql.NewRequest(`
-		query ($instanceUuid: ID, $instanceUri: String, $revision: Int!) {
-			getInstanceRevisionCycloneDxExportProg(instanceUuid: $instanceUuid, instanceUri: $instanceUri, revision: $revision)
+		query ($instanceUuid: ID, $instanceUri: String, $revision: Int!, $namespace: String) {
+			getInstanceRevisionCycloneDxExportProg(instanceUuid: $instanceUuid, instanceUri: $instanceUri, revision: $revision, namespace: $namespace)
 		}
 	`)
 	req.Var("instanceUuid", instance)
 	req.Var("instanceUri", instanceURI)
 	req.Var("revision", revision)
+	req.Var("namespace", namespace)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "Reliza Go Client")
+	req.Header.Set("User-Agent", "Reliza CLI")
 	req.Header.Set("Accept-Encoding", "gzip, deflate")
 
 	if len(apiKeyId) > 0 && len(apiKey) > 0 {

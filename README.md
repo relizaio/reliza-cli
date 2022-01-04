@@ -401,6 +401,7 @@ Flags stand for:
 - **--instanceuri** - URI of the instance (optional, either instanceuri or instance or tagsource flag must be used).
 - **--instance** - UUID of the instance (optional, either instanceuri or instance or tagsource flag must be used).
 - **--revision** - Revision number for the instance to use as a source for tags (optional, if not specified tags will be resolved by environment to which the instance belongs).
+- **--namespace** - Specific namespace of the instance to use to retrieve tag sources (optional).
 - **--infile** - Input file to parse, such as helm values file or docker compose file.
 - **--outfile** - Output file with parsed values (optional, if not supplied - outputs to stdout).
 - **--indirectory** - Path to directory of input files to parse (either infile or indirectory is required)
@@ -647,6 +648,7 @@ Flags stand for:
 - **instance** - flag to denote instance UUID (either instance api, instance, or instanceuri field or Instance API Key must be supplied).
 - **instanceuri** - flag to denote instance URI (either instance api, instance, or instanceuri or Instance API Key field must be supplied).
 - **revision** - Revision number for the instance (optional, default value is -1).
+- **--namespace** - Specific namespace of the instance - if provided, only deployed releases on this particular namespace will be exported (optional).
 
 ## 14. Use Case: Add new artifacts to release in Reliza Hub
 
