@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine3.13@sha256:a11735eaa2a2cbd9b5d96f5119019dad88e3f7f59b5ac20a325a0870e498fe3f as build-stage
+FROM golang:1.17.5-alpine3.15@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74 as build-stage
 WORKDIR /build
 ENV CGO_ENABLED=0
 COPY go.mod go.sum ./
@@ -8,7 +8,7 @@ COPY . .
 RUN go version
 RUN go build -o ./ ./...
 
-FROM alpine:3.13@sha256:f51ff2d96627690d62fee79e6eecd9fa87429a38142b5df8a3bfbb26061df7fc as release-stage
+FROM alpine:3.15@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 as release-stage
 ARG CI_ENV=noci
 ARG GIT_COMMIT=git_commit_undefined
 ARG GIT_BRANCH=git_branch_undefined
