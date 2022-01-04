@@ -33,7 +33,6 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"gopkg.in/resty.v1"
 
 	"github.com/spf13/viper"
 )
@@ -1617,39 +1616,6 @@ func sendRequest(req *graphql.Request, endpoint string) string {
 
 	jsonResponse, _ := json.Marshal(respData[endpoint])
 	return string(jsonResponse)
-}
-
-// No longer in use, switched to graphql
-func printResponse(err error, resp *resty.Response) {
-	if debug == "true" {
-		// Explore response object
-		fmt.Println("Response Info:")
-		fmt.Println("Error      :", err)
-		fmt.Println("Status Code:", resp.StatusCode())
-		fmt.Println("Status     :", resp.Status())
-		fmt.Println("Time       :", resp.Time())
-		fmt.Println("Received At:", resp.ReceivedAt())
-		fmt.Println("Body       :\n", resp)
-		fmt.Println()
-	} else {
-		fmt.Println(resp)
-	}
-
-	if resp.StatusCode() != 200 {
-		fmt.Println("Error Response Info:")
-		fmt.Println("Error      :", err)
-		var jsonError ErrorBody
-		errJson := json.Unmarshal(resp.Body(), &jsonError)
-		if errJson != nil {
-			fmt.Println("Error when decoding error json data: ", errJson)
-		}
-		fmt.Println("Error Message:", jsonError.Message)
-		fmt.Println("Status Code:", resp.StatusCode())
-		fmt.Println("Status     :", resp.Status())
-		fmt.Println("Time       :", resp.Time())
-		fmt.Println("Received At:", resp.ReceivedAt())
-		os.Exit(1)
-	}
 }
 
 // initConfig reads in config file and ENV variables if set.

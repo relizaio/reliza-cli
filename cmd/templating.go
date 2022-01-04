@@ -433,28 +433,6 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 		fmt.Println(string(jsonResponse))
 	}
 	return jsonResponse
-
-	// path := relizaHubUri + "/api/programmatic/v1/release/getLatestProjectRelease/" + project + "/" + branch
-	// if len(environment) > 0 {
-	// 	path = path + "/" + environment
-	// }
-
-	// if len(tagKey) > 0 && len(tagVal) > 0 {
-	// 	path = path + "?tag=" + tagKey + "____" + tagVal
-	// }
-
-	// if debug == "true" {
-	// 	fmt.Println(path)
-	// }
-
-	// client := resty.New()
-	// resp, err := client.R().
-	// 	SetHeader("Content-Type", "application/json").
-	// 	SetHeader("User-Agent", "Reliza Go Client").
-	// 	SetHeader("Accept-Encoding", "gzip, deflate").
-	// 	SetBasicAuth(apiKeyId, apiKey).
-	// 	Get(path)
-
 }
 
 func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey string, instance string, revision string, instanceURI string, bundle string, version string, environment string) map[string]string {
