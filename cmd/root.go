@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2020 Reliza Incorporated (Reliza (tm), https://reliza.io)
+Copyright (c) 2020 - 2022 Reliza Incorporated (Reliza (tm), https://reliza.io)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -262,10 +262,6 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		initConfig(cmd)
 	},
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) {
-	// 	},
 }
 
 var printversionCmd = &cobra.Command{
@@ -1600,6 +1596,10 @@ func init() {
 }
 
 func sendRequest(req *graphql.Request, endpoint string) string {
+	return sendRequestWithUri(req, endpoint, relizaHubUri+"/graphql")
+}
+
+func sendRequestWithUri(req *graphql.Request, endpoint string, uri string) string {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "Reliza Go Client")
 	req.Header.Set("Accept-Encoding", "gzip, deflate")
@@ -1610,7 +1610,7 @@ func sendRequest(req *graphql.Request, endpoint string) string {
 	}
 
 	var respData map[string]interface{}
-	client := graphql.NewClient(relizaHubUri + "/graphql")
+	client := graphql.NewClient(uri)
 	if err := client.Run(context.Background(), req, &respData); err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(1)
