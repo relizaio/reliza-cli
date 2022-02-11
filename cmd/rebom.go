@@ -27,6 +27,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var rebomUri string
+
 type BomInput struct {
 	Meta string                 `json:"meta"`
 	Bom  map[string]interface{} `json:"bom"`
@@ -35,6 +37,7 @@ type BomInput struct {
 
 func init() {
 	putBomCmd.PersistentFlags().StringVar(&infile, "infile", "", "Input file with bom json")
+	putBomCmd.PersistentFlags().StringVar(&rebomUri, "rebomuri", "http://localhost:4000", "Rebom URI")
 	putBomCmd.MarkPersistentFlagRequired("infile")
 
 	rootCmd.AddCommand(rebomCmd)
@@ -102,5 +105,5 @@ func addBomToRebomFunc() {
 	`)
 	req.Var("bomInput", bomInput)
 	fmt.Println("adding bom...")
-	fmt.Println(sendRequestWithUri(req, "addBom", "http://localhost:4000"))
+	fmt.Println(sendRequestWithUri(req, "addBom", rebomUri+"/graphql"))
 }
