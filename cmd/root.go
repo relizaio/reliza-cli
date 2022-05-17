@@ -491,11 +491,20 @@ var addreleaseCmd = &cobra.Command{
 					singleCommitEl["commit"] = commitParts[0]
 					singleCommitEl["dateActual"] = commitParts[1]
 					singleCommitEl["commitMessage"] = commitParts[2]
+					if len(commitParts) > 3 {
+						singleCommitEl["commitAuthor"] = commitParts[3]
+						singleCommitEl["commitEmail"] = commitParts[4]
+					}
 					commitsInBody[i] = singleCommitEl
 
 					// if commit is not present but we are here, use first line as commit
 					if len(commit) < 1 && i == 0 {
-						commitMap := map[string]string{"commit": commitParts[0], "dateActual": commitParts[1], "commitMessage": commitParts[2]}
+						commitMap := map[string]string{}
+						if len(commitParts) > 3 {
+							commitMap = map[string]string{"commit": commitParts[0], "dateActual": commitParts[1], "commitMessage": commitParts[2], "commitAuthor": commitParts[3], "commitEmail": commitParts[4]}
+						} else {
+							commitMap = map[string]string{"commit": commitParts[0], "dateActual": commitParts[1], "commitMessage": commitParts[2]}
+						}
 						if vcsTag != "" {
 							commitMap["vcsTag"] = vcsTag
 						}
@@ -987,11 +996,20 @@ var getVersionCmd = &cobra.Command{
 					singleCommitEl["commit"] = commitParts[0]
 					singleCommitEl["dateActual"] = commitParts[1]
 					singleCommitEl["commitMessage"] = commitParts[2]
+					if len(commitParts) > 3 {
+						singleCommitEl["commitAuthor"] = commitParts[3]
+						singleCommitEl["commitEmail"] = commitParts[4]
+					}
 					commitsInBody[i] = singleCommitEl
 
 					// if commit is not present but we are here, use first line as commit
 					if len(commit) < 1 && i == 0 {
-						commitMap := map[string]string{"commit": commitParts[0], "dateActual": commitParts[1], "commitMessage": commitParts[2]}
+						commitMap := map[string]string{}
+						if len(commitParts) > 3 {
+							commitMap = map[string]string{"commit": commitParts[0], "dateActual": commitParts[1], "commitMessage": commitParts[2], "commitAuthor": commitParts[3], "commitEmail": commitParts[4]}
+						} else {
+							commitMap = map[string]string{"commit": commitParts[0], "dateActual": commitParts[1], "commitMessage": commitParts[2]}
+						}
 						if vcsTag != "" {
 							commitMap["vcsTag"] = vcsTag
 						}
