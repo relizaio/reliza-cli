@@ -814,7 +814,7 @@ var instDataCmd = &cobra.Command{
 				body["images"] = strings.Fields(string(imageBytes))
 			}
 		}
-		body["timeSent"] = time.Now().String()
+		body["timeSent"] = time.Now().UTC().Format(time.RFC3339)
 		if len(namespace) > 0 {
 			body["namespace"] = namespace
 		}
@@ -871,7 +871,7 @@ var matchBundleCmd = &cobra.Command{
 				body["images"] = strings.Fields(string(imageBytes))
 			}
 		}
-		body["timeSent"] = time.Now().String()
+		body["timeSent"] = time.Now().UTC().Format(time.RFC3339)
 		if len(namespace) > 0 {
 			body["namespace"] = namespace
 		}
