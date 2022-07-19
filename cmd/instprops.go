@@ -35,8 +35,8 @@ var secrets []string
 func init() {
 	instPropsSecretsCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which export from (optional)")
 	instPropsSecretsCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to export from (optional)")
-	instPropsSecretsCmd.PersistentFlags().StringVar(&revision, "revision", "-1", "Revision of instance for which to export from (optional, default is -1)")
-	instPropsSecretsCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "Use to define specific namespace for instance export (optional, default is 'default')")
+	instPropsSecretsCmd.PersistentFlags().StringVar(&revision, "revision", "", "Revision of instance for which to export from (optional, default is -1)")
+	instPropsSecretsCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Use to define specific namespace for instance export (optional, default is 'default')")
 	instPropsSecretsCmd.PersistentFlags().StringArrayVar(&properties, "property", []string{}, "Property to resolve (multiple allowed)")
 	instPropsSecretsCmd.PersistentFlags().StringArrayVar(&secrets, "secret", []string{}, "Secret to resolve (multiple allowed)")
 	rootCmd.AddCommand(instPropsSecretsCmd)
@@ -63,8 +63,8 @@ func retrieveInstancePropsSecrets() {
 		revision = "-1"
 	}
 
-	if len(namespace) <= 0 {
-		namespace = ""
+	if len(namespace) <= 1 {
+		namespace = "default"
 	}
 
 	client := graphql.NewClient(relizaHubUri + "/graphql")
