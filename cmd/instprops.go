@@ -78,6 +78,7 @@ func retrieveInstancePropsSecrets() {
 				secrets {
 					key
 					value
+					lastUpdated
 				}
 			}
 		}
