@@ -48,11 +48,13 @@ var instPropsSecretsCmd = &cobra.Command{
 	Long: `Retrieves a list of properties and secrets for specific instance from Reliza Hub.
 	Secrets are only returned if allowed to be read by the instance, if the instance has sealed certificate set and in the encrypted form.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		retrieveInstancePropsSecrets()
+		props := properties
+		secrs := secrets
+		retrieveInstancePropsSecrets(props, secrs)
 	},
 }
 
-func retrieveInstancePropsSecrets() {
+func retrieveInstancePropsSecrets(props []string, secrs []string) map[string]interface{} {
 	if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") {
 		//throw error and exit
 		fmt.Println("instance or instanceURI not specified!")
@@ -87,8 +89,8 @@ func retrieveInstancePropsSecrets() {
 	req.Var("instanceUri", instanceURI)
 	req.Var("revision", revision)
 	req.Var("namespace", namespace)
-	req.Var("properties", properties)
-	req.Var("secrets", secrets)
+	req.Var("properties", props)
+	req.Var("secrets", secrs)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "Reliza CLI")
 	req.Header.Set("Accept-Encoding", "gzip, deflate")
@@ -106,6 +108,5 @@ func retrieveInstancePropsSecrets() {
 
 	jsonResp, _ := json.Marshal(respData["getInstancePropSecrets"])
 	fmt.Println(string(jsonResp))
-	// fmt.Println(respData)
-
+	return respData["getInstancePropSecrets"].(map[string]interface{})
 }
