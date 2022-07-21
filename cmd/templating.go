@@ -115,8 +115,22 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 	"simple"   mode: only replaces 'image' keys (suitable for k8s templates or compose files)
 	"extended" mode: replaces all keys present in substitution map (needed for helm values files)
 	"strict"   mode: if artifact is not found upstream, parsing fails, return nil array of lines
+
+	resolvedSp - result of resolving secrets and properties on the instance, if applicable
+	forDiff - boolean flag - if true, timestamps will be used instead of secrets
 */
-func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap map[string]string, parseMode string) []string {
+func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap map[string]string, parseMode string, resolvedSp SecretPropsRHResp, forDiff bool) []string {
+	resolvedProperties := map[string]string{}
+	resolvedSescrets := map[string]ResolvedSecret{}
+
+	for _, rpr := range resolvedSp.Responsewrapper.Properties {
+		resolvedProperties[rpr.Key] = rpr.Value
+	}
+
+	for _, rsr := range resolvedSp.Responsewrapper.Secrets {
+		resolvedSescrets[rsr.Key] = rsr
+	}
+
 	parseMode = strings.ToLower(parseMode)
 	if parseMode != "simple" && parseMode != "extended" && parseMode != "strict" {
 		fmt.Println("Error: '" + parseMode + "' is not a valid parsemode. Must be either 'simple' or 'extended'")
@@ -128,6 +142,24 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap map[string]
 	inScanner := bufio.NewScanner(inFileOpened)
 	for inScanner.Scan() {
 		line := inScanner.Text()
+
+		// resolve props and secrets first
+		pspArr := parseLineToSecrets(line)
+		for _, psp := range pspArr {
+			// locate value corresponding to key
+			if psp.Type == "PROPERTY" {
+				line = strings.ReplaceAll(line, psp.Wholetext, resolvedProperties[psp.Key])
+			} else if psp.Type == "SECRET" {
+				rs := resolvedSescrets[psp.Key]
+				if forDiff {
+					ts := fmt.Sprintf("%d", rs.Timestamp)
+					line = strings.ReplaceAll(line, psp.Wholetext, ts)
+				} else {
+					line = strings.ReplaceAll(line, psp.Wholetext, rs.Secret)
+				}
+			}
+		}
+
 		matchFound := false // flag used for strict mode to indicate if we fail to find image match (for strict mode)
 
 		// check if line contains any key of substitution map
@@ -189,7 +221,6 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap map[string]
 			//os.Exit(1) not sure where the best place to handle parsing failure is, here or repalceTagsCmd in root.go
 			return nil
 		}
-
 		// add parsed line toslice to return once parsing is complete
 		parsedLines = append(parsedLines, line)
 	}

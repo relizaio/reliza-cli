@@ -50,11 +50,11 @@ var instPropsSecretsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		props := properties
 		secrs := secrets
-		retrieveInstancePropsSecrets(props, secrs)
+		retrieveInstancePropsSecretsVerbose(props, secrs)
 	},
 }
 
-func retrieveInstancePropsSecrets(props []string, secrs []string) map[string]interface{} {
+func retrieveInstancePropsSecrets(props []string, secrs []string) SecretPropsRHResp {
 	if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") {
 		//throw error and exit
 		fmt.Println("instance or instanceURI not specified!")
@@ -100,13 +100,30 @@ func retrieveInstancePropsSecrets(props []string, secrs []string) map[string]int
 		req.Header.Add("Authorization", "Basic "+auth)
 	}
 
-	var respData map[string]interface{}
+	var respData SecretPropsRHResp
 	if err := client.Run(context.Background(), req, &respData); err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
 
-	jsonResp, _ := json.Marshal(respData["getInstancePropSecrets"])
-	fmt.Println(string(jsonResp))
-	return respData["getInstancePropSecrets"].(map[string]interface{})
+	return respData
+
+	// jsonResp, _ := json.Marshal(respData["getInstancePropSecrets"])
+	// fmt.Println(string(jsonResp))
+	// return respData["getInstancePropSecrets"].(map[string]interface{})
+}
+
+func retrieveInstancePropsSecretsVerbose(props []string, secrs []string) {
+	respData := retrieveInstancePropsSecrets(props, secrs)
+	jsonResp, _ := json.Marshal(respData.Responsewrapper)
+	fmt.Println(string(jsonResp[:]))
+}
+
+type SecretPropsRHResp struct {
+	Responsewrapper SecretPropsRHRespMaps `json:"getInstancePropSecrets"`
+}
+
+type SecretPropsRHRespMaps struct {
+	Secrets    []ResolvedSecret   `json:"secrets"`
+	Properties []ResolvedProperty `json:"properties"`
 }
