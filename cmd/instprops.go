@@ -55,53 +55,54 @@ var instPropsSecretsCmd = &cobra.Command{
 }
 
 func retrieveInstancePropsSecrets(props []string, secrs []string) SecretPropsRHResp {
-	if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") {
-		//throw error and exit
-		fmt.Println("instance or instanceURI not specified!")
-		os.Exit(1)
-	}
+	var respData SecretPropsRHResp
 
-	if "" == revision {
-		revision = "-1"
-	}
+	if resolveProps {
+		if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") {
+			//throw error and exit
+			fmt.Println("instance or instanceURI not specified!")
+			os.Exit(1)
+		}
 
-	if len(namespace) <= 1 {
-		namespace = "default"
-	}
+		if "" == revision {
+			revision = "-1"
+		}
 
-	client := graphql.NewClient(relizaHubUri + "/graphql")
-	req := graphql.NewRequest(`
-		query ($instanceUuid: ID, $instanceUri: String, $revision: Int!, $namespace: String!, $properties: [String], $secrets: [String]) {
-			getInstancePropSecrets(instanceUuid: $instanceUuid, instanceUri: $instanceUri, revision: $revision, namespace: $namespace, properties: $properties, secrets: $secrets) {
-				properties {
-					key
-					value
-				}
-				secrets {
-					key
-					value
-					lastUpdated
+		if len(namespace) <= 1 {
+			namespace = "default"
+		}
+
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			query ($instanceUuid: ID, $instanceUri: String, $revision: Int!, $namespace: String!, $properties: [String], $secrets: [String]) {
+				getInstancePropSecrets(instanceUuid: $instanceUuid, instanceUri: $instanceUri, revision: $revision, namespace: $namespace, properties: $properties, secrets: $secrets) {
+					properties {
+						key
+						value
+					}
+					secrets {
+						key
+						value
+						lastUpdated
+					}
 				}
 			}
+		`)
+		req.Var("instanceUuid", instance)
+		req.Var("instanceUri", instanceURI)
+		req.Var("revision", revision)
+		req.Var("namespace", namespace)
+		req.Var("properties", props)
+		req.Var("secrets", secrs)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza CLI")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
+
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
 		}
-	`)
-	req.Var("instanceUuid", instance)
-	req.Var("instanceUri", instanceURI)
-	req.Var("revision", revision)
-	req.Var("namespace", namespace)
-	req.Var("properties", props)
-	req.Var("secrets", secrs)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "Reliza CLI")
-	req.Header.Set("Accept-Encoding", "gzip, deflate")
 
-	if len(apiKeyId) > 0 && len(apiKey) > 0 {
-		auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
-		req.Header.Add("Authorization", "Basic "+auth)
-	}
-
-	var respData SecretPropsRHResp
-	if resolveProps {
 		if err := client.Run(context.Background(), req, &respData); err != nil {
 			fmt.Println("Error:", err)
 			os.Exit(1)
