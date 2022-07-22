@@ -409,8 +409,18 @@ Flags stand for:
 - **--tagsource** - Source file with tags (optional, either instanceuri or instance or tagsource flag must be used).
 - **--defsource** - Source file for definitions. For helm, should be output of helm template command. (Optional, if not specified - *infile* will be parsed for definitions).
 - **--type** - Type of source tags file: cyclonedx (default) or text.
-- **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional) (default true)
+- **--provenance** - Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional, default true)
 - **--parsemode** - Flag to set the parse mode. *Extended*: normal operation. *Simple*: Only replace 'image' tags. *Strict*: Exit process if an artifact is not found upstream.(optional) (default extended)
+- **--resolveprops** - Set --resolveprops=[true|false] flag to true to enable resolution of properties and secrets from instance - see below for details. (optional, default false)
+- **--fordiff** - Set --fordiff=[true|false] flag to true to resolve templated secrets to their timestamps instead of sealed secret value. This can be used to establish where an update happened, since the sealed value otherwise may be changed every time. If true, this will also disable provenance regardless of its flag. (optional, default false)
+
+To resolve secrets and properties from instances, the resolveprops flag must be set to true. Other than that, in the templated file the properties should be defined as following:
+
+`$RELIZA{PROPERTY.property_key}` - where `proeprty_key` part must be set on the corresponding instance on the Reliza Hub.
+
+While secrets should be defined as:
+
+`$RELIZA{SECRET.secret_key}` - where `secret_key` part must be set on the Reliza Hub. More so, the secret must be allowed for usage by particular instance. Finally, instance must have a property set for the sealed certificates, since we are only sending sealed certificates and not in plain text.
 
 ## 7.3 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle And Version
 
@@ -730,7 +740,7 @@ docker run --rm relizaio/reliza-cli    \
 
 Flags stand for:
 
-- **get** - command that denotes we are constructing a changelog.
+- **getchangelog** - command that denotes we are constructing a changelog.
 - **-i** - flag for api id which can be either api id for this project or organization-wide read API (required).
 - **-k** - flag for api key which can be either api key for this project or organization-wide read API (required).
 - **project** - flag to denote project UUID (required only if using org-wide key and attaining changelog using versions).
@@ -740,6 +750,38 @@ Flags stand for:
 - **commit2** - Second commit id to construct changelog from.
 - **revision** - Boolean flag to create aggregated changelog (optional). Default is false.
 
+## 16. Use Case: Get specific properties and secrets defined for the instance in Reliza Hub
+
+This use case retrieves properties and secrets set for the instance on Reliza Hub. Note that secrets are only retrieved in sealed form and require (Bitnami Sealed Secret)[https://github.com/bitnami-labs/sealed-secrets] certificate property to be set on the instance - the key for that property is `SEALED_SECRETS_CERT`.
+
+Note that secrets must be allowed to be read by the particular instance.
+
+Also note that secrets are retrieved as sealed with the namespace-scope.
+
+Sample command:
+
+```bash
+docker run --rm relizaio/reliza-cli    \
+    instprops    \
+    -i instance_or_organization_wide_api_id    \
+    -k instance_or_organization_wide_api_key    \
+    --instanceuri test.com     \
+    --property FQDN
+    --property my_property
+    --secret test_secret
+    --secret test_secret2
+
+Flags stand for:
+
+- **instprops** - command that denotes we are retrieving properties and secrets for the instance.
+- **-i** - flag for api id which can be either api id for this instance or organization-wide read API (required).
+- **-k** - flag for api key which can be either api key for this instance or organization-wide read API (required).
+- **--instanceuri** - URI of the instance (optional, either instanceuri or instance flag must be used).
+- **--instance** - UUID of the instance (optional, either instanceuri or instance flag must be used).
+- **--revision** - Revision number for the instance to use as a source for properties (optional, defaults to latest).
+- **--namespace** - Specific namespace of the instance to use to retrieve sealed secrets - as secrets are returned sealed with namespace scope (optional, default to "default").
+- **--property** - Specifies name of the property to retrieve. For multiple properties, use multiple --property flags.
+- **--secret** - Specifies name of the secret to retrieve. For multiple secrets, use multiple --secret flags.
 
 # Development of Reliza-CLI
 
