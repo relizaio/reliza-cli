@@ -28,6 +28,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var forDiff bool
+var resolveProps bool // legacy behavior is to have this false (default)
+
 func init() {
 	replaceTagsCmd.PersistentFlags().StringVar(&infile, "infile", "", "Input file to parse, such as helm values file or docker compose file")
 	replaceTagsCmd.PersistentFlags().StringVar(&outfile, "outfile", "", "Output file with parsed values (optional, if not supplied - outputs to stdout)")
@@ -45,6 +48,8 @@ func init() {
 	replaceTagsCmd.PersistentFlags().BoolVar(&provenance, "provenance", true, "Set --provenance=[true|false] flag to enable/disable adding provenance (metadata) to beginning of outfile. (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&parseMode, "parsemode", "extended", "Use to set the parse mode to either extended, simple, or strict (optional)")
 	replaceTagsCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Use to define specific namespace for replace tagging (optional)")
+	replaceTagsCmd.PersistentFlags().BoolVar(&forDiff, "fordiff", false, "(Optional) Set --fordiff=[true|false] flag to true to specify that secrets would be resolved by timestamp instead of sealed value. Setting to true disables provenance.")
+	replaceTagsCmd.PersistentFlags().BoolVar(&resolveProps, "resolveprops", false, "(Optional) Set --resolveprops=[true|false] flag to specify whether to resolve instance properties and secrets on Reliza Hub.")
 
 	rootCmd.AddCommand(replaceTagsCmd)
 }
@@ -126,12 +131,12 @@ var replaceTagsCmd = &cobra.Command{
 			}
 
 			// Parse infile and get slice of lines to be written to outfile/stdout
-			parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode, resolvedSp, false)
+			parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode, resolvedSp, forDiff)
 
 			// write parsed lines to outfile/stdout if parsing did not fail
 			if parsedLines != nil {
 				// need to add provenance first, beacuse can only write to stdout sequentially
-				if provenance == true {
+				if !forDiff && provenance {
 					addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
 				}
 				for _, line := range parsedLines {
@@ -248,12 +253,12 @@ var replaceTagsCmd = &cobra.Command{
 					os.Exit(1)
 				}
 
-				parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode, resolvedSp, false)
+				parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode, resolvedSp, forDiff)
 
 				// write parsed lines to output file
 				if parsedLines != nil {
 					// write provenance to output file
-					if provenance == true {
+					if forDiff && provenance {
 						addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
 					}
 					for _, line := range parsedLines {
@@ -416,7 +421,7 @@ type SecretProps struct {
 type PropSecretParse struct {
 	Type      string // PROPERTY or SECRET
 	Key       string // key known to Reliza Hub
-	Wholetext string // Whole string to substitue including $RELIZA prefix and {}
+	Wholetext string // Whole string to substitute including $RELIZA prefix and {}
 }
 
 type ResolvedSecret struct {

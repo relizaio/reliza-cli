@@ -101,9 +101,11 @@ func retrieveInstancePropsSecrets(props []string, secrs []string) SecretPropsRHR
 	}
 
 	var respData SecretPropsRHResp
-	if err := client.Run(context.Background(), req, &respData); err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
+	if resolveProps {
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			fmt.Println("Error:", err)
+			os.Exit(1)
+		}
 	}
 
 	return respData
