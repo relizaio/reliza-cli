@@ -234,9 +234,21 @@ var replaceTagsCmd = &cobra.Command{
 				}
 
 				// Parse infile and write to outfile with replace tags (or stdout if no outfile)
-				// TODO
-				var sprr SecretPropsRHResp
-				parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode, sprr, false)
+
+				// retrieve secrets and props from infile
+				sp := parseSecretsPropsFromInFile(inFileOpened)
+				resolvedSp := resolveSecretPropsOnRelizaHub(sp)
+				// fmt.Println(resolvedSp)
+
+				// reopen in file for substitution
+				inFileOpened, err = os.Open(infile)
+				if err != nil {
+					fmt.Println("Error opening infile: " + infile)
+					fmt.Println(err)
+					os.Exit(1)
+				}
+
+				parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode, resolvedSp, false)
 
 				// write parsed lines to output file
 				if parsedLines != nil {
