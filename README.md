@@ -622,6 +622,7 @@ Flags stand for:
 - **-k** - flag for org api key (required).
 - **name** - flag to denote project name (required).
 - **type** - flag to denote project type (required). Supported values: project, bundle.
+- **defaultbranch** - flag to denote default branch name (optional, if not set "main" will be used). Available names are either main or master.
 - **versionschema** - flag to denote version schema (optional, if not set "semver" will be used). [Available version schemas](https://github.com/relizaio/versioning).
 - **featurebranchversioning** - flag to denote feature branch version schema (optional, if not set "Branch.Micro will be used).
 - **vcsuuid** - flag to denote uuid of vcs repository for the project (for existing repositories, either this flag or vcsuri are required).

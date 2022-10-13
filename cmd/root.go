@@ -61,6 +61,7 @@ var dateActual string
 var dateStart []string
 var dateEnd []string
 var debug string
+var defaultBranch string
 var disapprove bool // approve (default) or disapprove
 var endpoint string
 var environment string
@@ -904,6 +905,9 @@ var createProjectCmd = &cobra.Command{
 				body["type"] = "PRODUCT"
 			}
 		}
+		if len(defaultBranch) > 0 {
+			body["defaultBranch"] = strings.ToUpper(defaultBranch)
+		}
 		if len(versionSchema) > 0 {
 			body["versionSchema"] = versionSchema
 		}
@@ -1261,6 +1265,7 @@ func init() {
 	createProjectCmd.MarkPersistentFlagRequired("name")
 	createProjectCmd.PersistentFlags().StringVar(&projectType, "type", "", "Specify to create either a project or bundle")
 	createProjectCmd.MarkPersistentFlagRequired("type")
+	createProjectCmd.PersistentFlags().StringVar(&defaultBranch, "defaultbranch", "main", "Default branch name of project, default set to main. Available names are either main or master.")
 	createProjectCmd.PersistentFlags().StringVar(&versionSchema, "versionschema", "semver", "Version schema of project, default set to semver. Available version schemas: https://github.com/relizaio/versioning")
 	createProjectCmd.PersistentFlags().StringVar(&featureBranchVersioning, "featurebranchversioning", "Branch.Micro", "Feature branch version schema of project (Optional, default set to Branch.Micro")
 	createProjectCmd.PersistentFlags().StringVar(&vcsUuid, "vcsuuid", "", "Vcs repository UUID (if retreiving existing vcs repository, either vcsuuid or vcsuri must be set)")
