@@ -416,7 +416,7 @@ Flags stand for:
 
 To resolve secrets and properties from instances, the resolveprops flag must be set to true. Other than that, in the templated file the properties should be defined as following:
 
-`$RELIZA{PROPERTY.property_key}` - where `proeprty_key` part must be set on the corresponding instance on the Reliza Hub.
+`$RELIZA{PROPERTY.property_key}` - where `property_key` part must be set on the corresponding instance on the Reliza Hub, or `$RELIZA{PROPERTY.property_key:default_value}` to also set a default value in case the property key is not found on Reliza Hub.
 
 While secrets should be defined as:
 

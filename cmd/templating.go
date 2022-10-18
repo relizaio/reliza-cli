@@ -146,6 +146,9 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap map[string]
 		// resolve props and secrets first
 		pspArr := parseLineToSecrets(line)
 		for _, psp := range pspArr {
+			if len(resolvedProperties[psp.Key]) < 1 {
+				resolvedProperties[psp.Key] = psp.Default
+			}
 			// locate value corresponding to key
 			if psp.Type == "PROPERTY" {
 				line = strings.ReplaceAll(line, psp.Wholetext, resolvedProperties[psp.Key])

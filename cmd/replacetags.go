@@ -396,7 +396,12 @@ func parseLineToSecrets(line string) []PropSecretParse {
 				rp2 := strings.Split(rp1, "}")[0]
 				var psp1 PropSecretParse
 				psp1.Type = "PROPERTY"
-				psp1.Key = rp2
+				if strings.Contains(rp2, ":") {
+					psp1.Key = strings.Split(rp2, ":")[0]
+					psp1.Default = strings.Split(rp2, ":")[1]
+				} else {
+					psp1.Key = rp2
+				}
 				psp1.Wholetext = "$RELIZA{PROPERTY." + rp2 + "}"
 				psp = append(psp, psp1)
 			} else if strings.HasPrefix(rlzPart, "SECRET") {
@@ -404,7 +409,12 @@ func parseLineToSecrets(line string) []PropSecretParse {
 				rp2 := strings.Split(rp1, "}")[0]
 				var psp2 PropSecretParse
 				psp2.Type = "SECRET"
-				psp2.Key = rp2
+				if strings.Contains(rp2, ":") {
+					psp2.Key = strings.Split(rp2, ":")[0]
+					psp2.Default = strings.Split(rp2, ":")[1]
+				} else {
+					psp2.Key = rp2
+				}
 				psp2.Wholetext = "$RELIZA{SECRET." + rp2 + "}"
 				psp = append(psp, psp2)
 			}
@@ -421,6 +431,7 @@ type SecretProps struct {
 type PropSecretParse struct {
 	Type      string // PROPERTY or SECRET
 	Key       string // key known to Reliza Hub
+	Default   string // default value of property or secret
 	Wholetext string // Whole string to substitute including $RELIZA prefix and {}
 }
 
