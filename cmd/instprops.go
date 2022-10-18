@@ -117,6 +117,7 @@ func retrieveInstancePropsSecrets(props []string, secrs []string) SecretPropsRHR
 }
 
 func retrieveInstancePropsSecretsVerbose(props []string, secrs []string) {
+	resolveProps = true
 	respData := retrieveInstancePropsSecrets(props, secrs)
 	jsonResp, _ := json.Marshal(respData.Responsewrapper)
 	fmt.Println(string(jsonResp[:]))
