@@ -661,30 +661,7 @@ Flags stand for:
 - **revision** - Revision number for the instance (optional, default value is -1).
 - **--namespace** - Specific namespace of the instance - if provided, only deployed releases on this particular namespace will be exported (optional).
 
-## 14. Use Case: Export Bundle CycloneDX Spec
-
-This use case exports a specific version of a bundle in [CycloneDX](https://cyclonedx.org) format. API key must be generated prior to using.
-
-Sample command:
-
-```bash
-docker run --rm relizaio/reliza-cli    \
-    exportbundle    \
-    -i api_id    \
-    -k api_key    \
-    --bundle <bundle name>    \
-    --version <bundle version>
-```
-
-Flags stand for:
-
-- **exportbundle** - command that denotes we are exporting the CycloneDX spec from our bundle.
-- **-i** - flag for api id (required).
-- **-k** - flag for api key (required).
-- **bundle** - flag to denote bundle name (required).
-- **version** - flag to denote bundle version (required).
-
-## 15. Use Case: Add new artifacts to release in Reliza Hub
+## 14. Use Case: Add new artifacts to release in Reliza Hub
 
 This use case adds 1 or more artifacts to an existing release. API key must be generated prior to using.
 
@@ -746,7 +723,7 @@ Notes:
 1. Multiple artifacts per release are supported. In which case artifact specific flags (artid, arbuildid, artbuilduri, artcimeta, arttype, artdigests, tagkey and tagval must be repeated for each artifact).
 2. Artifacts may be added to Complete or Rejected releases (this can be used for adding for example test reports), however a special tag would be placed on those artifacts by Reliza Hub.
 
-## 16. Use Case: Get changelog between releases in Reliza Hub
+## 15. Use Case: Get changelog between releases in Reliza Hub
 
 This use case constructs a changelog using 2 different reference points from your project. API key must be generated prior to using.
 
@@ -774,7 +751,7 @@ Flags stand for:
 - **commit2** - Second commit id to construct changelog from.
 - **revision** - Boolean flag to create aggregated changelog (optional). Default is false.
 
-## 17. Use Case: Get specific properties and secrets defined for the instance in Reliza Hub
+## 16. Use Case: Get specific properties and secrets defined for the instance in Reliza Hub
 
 This use case retrieves properties and secrets set for the instance on Reliza Hub. Note that secrets are only retrieved in sealed form and require (Bitnami Sealed Secret)[https://github.com/bitnami-labs/sealed-secrets] certificate property to be set on the instance - the key for that property is `SEALED_SECRETS_CERT`.
 
@@ -807,6 +784,30 @@ Flags stand for:
 - **--property** - Specifies name of the property to retrieve. For multiple properties, use multiple --property flags.
 - **--secret** - Specifies name of the secret to retrieve. For multiple secrets, use multiple --secret flags.
 ```
+
+## 17. Use Case: Export Bundle CycloneDX Spec
+
+This use case exports a specific version of a bundle in [CycloneDX](https://cyclonedx.org) format. API key must be generated prior to using.
+
+Sample command:
+
+```bash
+docker run --rm relizaio/reliza-cli    \
+    exportbundle    \
+    -i api_id    \
+    -k api_key    \
+    --bundle <bundle name>    \
+    --version <bundle version>
+```
+
+Flags stand for:
+
+- **exportbundle** - command that denotes we are exporting the CycloneDX spec from our bundle.
+- **-i** - flag for api id (required).
+- **-k** - flag for api key (required).
+- **bundle** - flag to denote bundle name (required).
+- **version** - flag to denote bundle version (required).
+
 
 # Development of Reliza-CLI
 
