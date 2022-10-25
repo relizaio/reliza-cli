@@ -806,6 +806,7 @@ Flags stand for:
 - **--namespace** - Specific namespace of the instance to use to retrieve sealed secrets - as secrets are returned sealed with namespace scope (optional, default to "default").
 - **--property** - Specifies name of the property to retrieve. For multiple properties, use multiple --property flags.
 - **--secret** - Specifies name of the secret to retrieve. For multiple secrets, use multiple --secret flags.
+```
 
 # Development of Reliza-CLI
 
