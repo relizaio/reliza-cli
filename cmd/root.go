@@ -1119,6 +1119,16 @@ var exportInstCmd = &cobra.Command{
 	},
 }
 
+var exportBundleCmd = &cobra.Command{
+	Use:   "exportbundle",
+	Short: "Outputs the Cyclone DX spec of your bundle",
+	Long:  `Outputs the Cyclone DX spec of your bundle`,
+	Run: func(cmd *cobra.Command, args []string) {
+		cycloneBytes := getBundleVersionCycloneDxExportV1(apiKeyId, apiKey, bundle, version)
+		fmt.Println(string(cycloneBytes))
+	},
+}
+
 var getChangelogCmd = &cobra.Command{
 	Use:   "getchangelog",
 	Short: "Outputs changelog information of your project",
@@ -1319,6 +1329,11 @@ func init() {
 	exportInstCmd.PersistentFlags().StringVar(&revision, "revision", "", "Revision of instance for which to export from (optional, default is -1)")
 	exportInstCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Use to define specific namespace for instance export (optional)")
 
+	exportBundleCmd.PersistentFlags().StringVar(&bundle, "bundle", "", "Bundle for which to export from")
+	exportBundleCmd.PersistentFlags().StringVar(&version, "version", "", "Bundle version for which to export from")
+	exportBundleCmd.MarkPersistentFlagRequired("bundle")
+	exportBundleCmd.MarkPersistentFlagRequired("version")
+
 	getChangelogCmd.PersistentFlags().StringVar(&project, "project", "", "Project UUID if org-wide key is used and attaining changelog using versions")
 	getChangelogCmd.PersistentFlags().StringVar(&commit, "commit", "", "Commit id, either this and commit2 or version and version2 must be supplied")
 	getChangelogCmd.PersistentFlags().StringVar(&commit2, "commit2", "", "Second commit id to construct changelog from")
@@ -1340,6 +1355,7 @@ func init() {
 	rootCmd.AddCommand(matchBundleCmd)
 	rootCmd.AddCommand(parseCopyTemplatesCmd)
 	rootCmd.AddCommand(exportInstCmd)
+	rootCmd.AddCommand(exportBundleCmd)
 	rootCmd.AddCommand(getChangelogCmd)
 	rootCmd.AddCommand(isApprovalNeededCmd)
 }
