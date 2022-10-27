@@ -1377,7 +1377,7 @@ func sendRequestWithUri(req *graphql.Request, endpoint string, uri string) strin
 	var respData map[string]interface{}
 	client := graphql.NewClient(uri)
 	if err := client.Run(context.Background(), req, &respData); err != nil {
-		fmt.Println("Error:", err)
+		printGqlError(err)
 		os.Exit(1)
 	}
 
@@ -1437,4 +1437,9 @@ func bindFlags(cmd *cobra.Command, v *viper.Viper) {
 			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
 		}
 	})
+}
+
+func printGqlError(err error) {
+	splitError := strings.Split(err.Error(), ":")
+	fmt.Println("Error: ", splitError[len(splitError)-1])
 }

@@ -458,7 +458,7 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 
 	var respData map[string]interface{}
 	if err := client.Run(context.Background(), req, &respData); err != nil {
-		fmt.Println("Error:", err)
+		printGqlError(err)
 		os.Exit(1)
 	}
 
@@ -536,7 +536,7 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 
 	var respData map[string]string
 	if err := client.Run(context.Background(), req, &respData); err != nil {
-		fmt.Println("Error:", err)
+		printGqlError(err)
 		os.Exit(1)
 	}
 	return []byte(respData["getInstanceRevisionCycloneDxExportProg"])
@@ -569,7 +569,7 @@ func getBundleVersionCycloneDxExportV1(apiKeyId string, apiKey string, bundle st
 
 	var respData map[string]string
 	if err := client.Run(context.Background(), req, &respData); err != nil {
-		fmt.Println("Error (getBundleVersionCycloneDxExportV1):", err)
+		printGqlError(err)
 		os.Exit(1)
 	}
 
@@ -602,7 +602,7 @@ func getEnvironmentCycloneDxExportV1(apiKeyId string, apiKey string, environment
 
 	var respData map[string]string
 	if err := client.Run(context.Background(), req, &respData); err != nil {
-		fmt.Println("Error:", err)
+		printGqlError(err)
 		os.Exit(1)
 	}
 

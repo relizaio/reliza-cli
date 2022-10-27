@@ -104,7 +104,7 @@ func retrieveInstancePropsSecrets(props []string, secrs []string) SecretPropsRHR
 		}
 
 		if err := client.Run(context.Background(), req, &respData); err != nil {
-			fmt.Println("Error:", err)
+			printGqlError(err)
 			os.Exit(1)
 		}
 	}
