@@ -809,6 +809,24 @@ Flags stand for:
 - **version** - flag to denote bundle version (required).
 
 
+## 18. Use Case: Override and get merged helm chart values
+
+This use case lets you do a helm style override of the default helm chart values and outputs merged helm values.
+
+Sample command:
+```bash
+docker run --rm relizaio/reliza-cli    \
+    helmvalues <Chart Path>   \
+    -f <values-ovverride-1.yaml>    \
+    -f <values-ovverride-2.yaml>    \
+    -o <output-values.yaml>
+```
+
+Flags stand for:
+
+- **--outfile | -o** - Output file with merge values (optional, if not supplied - outputs to stdout).
+- **--values | -f** - Specify override values YAML file (can specify multiple).
+
 # Development of Reliza-CLI
 
 ## Adding dependencies to Reliza-CLI

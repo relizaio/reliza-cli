@@ -110,6 +110,7 @@ var vcsTag string
 var vcsType string
 var vcsUri string
 var vcsUuid string
+var valueFiles []string
 
 const (
 	defaultConfigFilename = ".reliza"
