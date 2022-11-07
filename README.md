@@ -816,7 +816,7 @@ This use case lets you do a helm style override of the default helm chart values
 Sample command:
 ```bash
 docker run --rm relizaio/reliza-cli    \
-    helmvalues <Chart Path>   \
+    helmvalues <Absolute or Relative Path to the Chart>   \
     -f <values-ovverride-1.yaml>    \
     -f <values-ovverride-2.yaml>    \
     -o <output-values.yaml>
@@ -825,7 +825,7 @@ docker run --rm relizaio/reliza-cli    \
 Flags stand for:
 
 - **--outfile | -o** - Output file with merge values (optional, if not supplied - outputs to stdout).
-- **--values | -f** - Specify override values YAML file (can specify multiple).
+- **--values | -f** - Specify override values YAML file. Indicate file name only here, path would be resolved according to path to the chart in the command. Can specify multiple value file - in that case and if different values files define same properties, properties in the files that appear later in the command will take precedence - just like helm works.
 
 # Development of Reliza-CLI
 
