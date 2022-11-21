@@ -820,8 +820,8 @@ Sample command:
 ```bash
 docker run --rm relizaio/reliza-cli    \
     helmvalues <Absolute or Relative Path to the Chart>   \
-    -f <values-ovverride-1.yaml>    \
-    -f <values-ovverride-2.yaml>    \
+    -f <values-override-1.yaml>    \
+    -f <values-override-2.yaml>    \
     -o <output-values.yaml>
 ```
 
