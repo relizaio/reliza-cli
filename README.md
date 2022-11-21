@@ -52,6 +52,9 @@ Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2022.
 13. [Export Instance CycloneDX Spec](#13-use-case-export-instance-cyclonedx-spec)
 14. [Add new artifacts to release in Reliza Hub](#14-use-case-add-new-artifacts-to-release-in-reliza-hub)
 15. [Get changelog between releases in Reliza Hub](#15-use-case-get-changelog-between-releases-in-reliza-hub)
+16. [Get specific properties and secrets defined for the instance in Reliza Hub](#16-use-case-get-specific-properties-and-secrets-defined-for-the-instance-in-reliza-hub)
+17. [Export Bundle CycloneDX Spec](#17-use-case-export-bundle-cyclonedx-spec)
+18. [Override and get merged helm chart values](#18-use-case-override-and-get-merged-helm-chart-values)
 
 ## 1. Use Case: Get Version Assignment From Reliza Hub
 
