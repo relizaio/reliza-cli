@@ -96,11 +96,13 @@ var project string
 var projectName string
 var projectType string
 var senderId string
+var state string
 var status string
 var tagKey string
 var tagKeyArr []string
 var tagVal string
 var tagValArr []string
+var targetBranch string
 var typeVal string
 var version string
 var version2 string
@@ -1167,6 +1169,41 @@ var getChangelogCmd = &cobra.Command{
 	},
 }
 
+var prDataCmd = &cobra.Command{
+	Use:   "prdata",
+	Short: "Sends pull request data to Reliza Hub",
+	Long:  `This CLI command would stream pull request data from ci to Reliza Hub`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
+
+		body := map[string]interface{}{"branch": branch}
+
+		if len(state) > 0 {
+			body["state"] = state
+		}
+		if len(project) > 0 {
+			body["project"] = project
+		}
+
+		if len(targetBranch) > 0 {
+			body["targetBranch"] = targetBranch
+		}
+		if debug == "true" {
+			fmt.Println(body)
+		}
+		req := graphql.NewRequest(`
+			mutation ($PullRequestInput: PullRequestInput) {
+				setPRData(pullRequest:$PullRequestInput)
+			}
+		`)
+		req.Var("PullRequestInput", body)
+		fmt.Println(req)
+		fmt.Println(sendRequest(req, "prdata"))
+	},
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
@@ -1342,6 +1379,11 @@ func init() {
 	getChangelogCmd.PersistentFlags().StringVar(&version2, "version2", "", "Second release version to construct changelog from")
 	getChangelogCmd.PersistentFlags().BoolVar(&aggregated, "aggregated", false, "something")
 
+	prDataCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "", "Name of VCS Branch used")
+	prDataCmd.PersistentFlags().StringVarP(&state, "state", "s", "", "State of the Pull Request")
+	prDataCmd.PersistentFlags().StringVarP(&targetBranch, "targetBranch", "t", "", "Name of target branch")
+	prDataCmd.PersistentFlags().StringVar(&project, "project", "", "Project UUID if org-wide key is used")
+
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(printversionCmd)
 	rootCmd.AddCommand(addreleaseCmd)
@@ -1359,6 +1401,7 @@ func init() {
 	rootCmd.AddCommand(exportBundleCmd)
 	rootCmd.AddCommand(getChangelogCmd)
 	rootCmd.AddCommand(isApprovalNeededCmd)
+	rootCmd.AddCommand(prDataCmd)
 }
 
 func sendRequest(req *graphql.Request, endpoint string) string {
