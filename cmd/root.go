@@ -53,10 +53,12 @@ var approvalType string
 var branch string
 var bundle string
 var cfgFile string
+var closedDate string
 var commit string
 var commit2 string
 var commitMessage string
 var commits string // base64-encoded list of commits obtained with: git log $LATEST_COMMIT..$CURRENT_COMMIT --date=iso-strict --pretty='%H|||%ad|||%s' | base64 -w 0
+var createdDate string
 var dateActual string
 var dateStart []string
 var dateEnd []string
@@ -74,9 +76,11 @@ var includeApi bool
 var instance string
 var instanceURI string
 var manual bool
+var mergedDate string
 var metadata string
 var modifier string
 var namespace string
+var number string
 var onlyVersion bool
 var outDirectory string
 var parseDirectory string
@@ -103,6 +107,7 @@ var tagKeyArr []string
 var tagVal string
 var tagValArr []string
 var targetBranch string
+var title string
 var typeVal string
 var version string
 var version2 string
@@ -1190,6 +1195,25 @@ var prDataCmd = &cobra.Command{
 		if len(targetBranch) > 0 {
 			body["targetBranch"] = targetBranch
 		}
+		if len(endpoint) > 0 {
+			body["endpoint"] = endpoint
+		}
+		if len(title) > 0 {
+			body["title"] = title
+		}
+		if len(createdDate) > 0 {
+			body["createdDate"] = createdDate
+		}
+		if len(closedDate) > 0 {
+			body["closedDate"] = closedDate
+		}
+		if len(mergedDate) > 0 {
+			body["mergedDate"] = mergedDate
+		}
+		if len(number) > 0 {
+			body["number"] = number
+		}
+
 		if debug == "true" {
 			fmt.Println(body)
 		}
@@ -1199,7 +1223,6 @@ var prDataCmd = &cobra.Command{
 			}
 		`)
 		req.Var("PullRequestInput", body)
-		fmt.Println(req)
 		fmt.Println(sendRequest(req, "prdata"))
 	},
 }
@@ -1383,6 +1406,12 @@ func init() {
 	prDataCmd.PersistentFlags().StringVarP(&state, "state", "s", "", "State of the Pull Request")
 	prDataCmd.PersistentFlags().StringVarP(&targetBranch, "targetBranch", "t", "", "Name of target branch")
 	prDataCmd.PersistentFlags().StringVar(&project, "project", "", "Project UUID if org-wide key is used")
+	prDataCmd.PersistentFlags().StringVar(&endpoint, "endpoint", "", "HTML endpoint of the Pull Request")
+	prDataCmd.PersistentFlags().StringVar(&title, "title", "", "Title of the Pull Request")
+	prDataCmd.PersistentFlags().StringVar(&createdDate, "createdDate", "", "Datetime when the Pull Request was created")
+	prDataCmd.PersistentFlags().StringVar(&closedDate, "closedDate", "", "Datetime when the Pull Request was closed")
+	prDataCmd.PersistentFlags().StringVar(&mergedDate, "mergedDate", "", "Datetime when the Pull Request was merged")
+	prDataCmd.PersistentFlags().StringVar(&number, "number", "", "Number of the Pull Request")
 
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(printversionCmd)
