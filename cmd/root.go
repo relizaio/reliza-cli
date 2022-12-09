@@ -1132,7 +1132,7 @@ var exportBundleCmd = &cobra.Command{
 	Short: "Outputs the Cyclone DX spec of your bundle",
 	Long:  `Outputs the Cyclone DX spec of your bundle`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cycloneBytes := getBundleVersionCycloneDxExportV1(apiKeyId, apiKey, bundle, version)
+		cycloneBytes := getBundleVersionCycloneDxExportV1(apiKeyId, apiKey, bundle, environment, version)
 		fmt.Println(string(cycloneBytes))
 	},
 }

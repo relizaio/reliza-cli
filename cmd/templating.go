@@ -545,7 +545,7 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 func getBundleVersionCycloneDxExportV1(apiKeyId string, apiKey string, bundle string,
 	environment string, version string) []byte {
 
-	if len(bundle) <= 0 && (len(version) <= 0 || len(environment <= 0)) {
+	if len(bundle) <= 0 && (len(version) <= 0 || len(environment) <= 0) {
 		//throw error and exit
 		fmt.Println("Error: Bundle name and either version or environment must be provided!")
 		os.Exit(1)
