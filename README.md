@@ -425,9 +425,9 @@ While secrets should be defined as:
 
 `$RELIZA{SECRET.secret_key}` - where `secret_key` part must be set on the Reliza Hub. More so, the secret must be allowed for usage by particular instance. Finally, instance must have a property set for the sealed certificates, since we are only sending sealed certificates and not in plain text.
 
-## 7.3 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle And Version
+## 7.3 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle
 
-This use case is designed for the case when we have to deploy a specific version of a bundle. Reliza CLI can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
+This use case is designed for the case when we have to deploy a specific version of a bundle or approved bundle by environment. Reliza CLI can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
 
 Sample Command:
 
@@ -448,7 +448,8 @@ Flags stand for:
 - **-i** - flag for api id which can be a organization-wide read API (required).
 - **-k** - flag for api key which can be a organization-wide read API (required).
 - **--bundle** - Name of the bundle (optional, either bundle name & version or tagsource flag must be used).
-- **--version** - Version number for the bundle to use as a source for tags (optional, to be used with bundle flag).
+- **--version** - Version number for the bundle to use as a source for tags (optional, either version or environment must be used bundle flag).
+- **--environment** - Environment for which latest approved bundle should be used as a source for tags (optional, either version or environment must be used bundle flag).
 - **--infile** - Input file to parse, such as helm values file or docker compose file.
 - **--outfile** - Output file with parsed values (optional, if not supplied - outputs to stdout).
 - **--indirectory** - Path to directory of input files to parse (either infile or indirectory is required)

@@ -474,14 +474,14 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 	tagSourceMap := map[string]string{} // 1st - scan tag source file and construct a map of generic tag to actual tag
 	if tagSourceFile != "" {
 		tagSourceMap = scanTagFile(tagSourceFile, typeVal)
-	} else if len(environment) > 0 {
-		cycloneBytes := getEnvironmentCycloneDxExportV1(apiKeyId, apiKey, environment)
+	} else if len(bundle) > 0 {
+		cycloneBytes := getBundleVersionCycloneDxExportV1(apiKeyId, apiKey, bundle, environment, version)
 		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes, &bomJSON)
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
-	} else if len(bundle) > 0 && len(version) > 0 {
-		cycloneBytes := getBundleVersionCycloneDxExportV1(apiKeyId, apiKey, bundle, version)
+	} else if len(environment) > 0 {
+		cycloneBytes := getEnvironmentCycloneDxExportV1(apiKeyId, apiKey, environment)
 		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes, &bomJSON)
@@ -542,22 +542,24 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 	return []byte(respData["getInstanceRevisionCycloneDxExportProg"])
 }
 
-func getBundleVersionCycloneDxExportV1(apiKeyId string, apiKey string, bundle string, version string) []byte {
+func getBundleVersionCycloneDxExportV1(apiKeyId string, apiKey string, bundle string,
+	environment string, version string) []byte {
 
-	if len(bundle) <= 0 && len(version) <= 0 {
+	if len(bundle) <= 0 && (len(version) <= 0 || len(environment <= 0)) {
 		//throw error and exit
-		fmt.Println("instance or instanceURI not specified!")
+		fmt.Println("Error: Bundle name and either version or environment must be provided!")
 		os.Exit(1)
 	}
 
 	client := graphql.NewClient(relizaHubUri + "/graphql")
 	req := graphql.NewRequest(`
-		query ($bundleName: String!, $bundleVersion: String!) {
-			exportAsBomProg(bundleName: $bundleName, bundleVersion: $bundleVersion)
+		query ($bundleName: String!, $bundleVersion: String, $environment: String) {
+			exportAsBomProg(bundleName: $bundleName, bundleVersion: $bundleVersion, environment: $environment)
 		}
 	`)
 	req.Var("bundleName", bundle)
 	req.Var("bundleVersion", version)
+	req.Var("environment", environment)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "Reliza Go Client")
 	req.Header.Set("Accept-Encoding", "gzip, deflate")
