@@ -810,7 +810,8 @@ Flags stand for:
 - **-i** - flag for api id (required).
 - **-k** - flag for api key (required).
 - **bundle** - flag to denote bundle name (required).
-- **version** - flag to denote bundle version (required).
+- **version** - flag to denote bundle version (either version or environment must be set).
+- **env** - flag to denote environment, for which to export latest approved bundle (either version or environment must be set).
 
 
 ## 18. Use Case: Override and get merged helm chart values

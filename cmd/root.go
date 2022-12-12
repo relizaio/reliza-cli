@@ -1391,9 +1391,9 @@ func init() {
 	exportInstCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Use to define specific namespace for instance export (optional)")
 
 	exportBundleCmd.PersistentFlags().StringVar(&bundle, "bundle", "", "Bundle for which to export from")
-	exportBundleCmd.PersistentFlags().StringVar(&version, "version", "", "Bundle version for which to export from")
+	exportBundleCmd.PersistentFlags().StringVar(&version, "version", "", "Bundle version for which to export from, either version or environment must be set")
+	exportBundleCmd.PersistentFlags().StringVar(&environment, "env", "", "Bundle environment for which to export from last approved bundle, either version or environment must be set")
 	exportBundleCmd.MarkPersistentFlagRequired("bundle")
-	exportBundleCmd.MarkPersistentFlagRequired("version")
 
 	getChangelogCmd.PersistentFlags().StringVar(&project, "project", "", "Project UUID if org-wide key is used and attaining changelog using versions")
 	getChangelogCmd.PersistentFlags().StringVar(&commit, "commit", "", "Commit id, either this and commit2 or version and version2 must be supplied")
