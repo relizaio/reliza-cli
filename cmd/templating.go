@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -165,8 +166,22 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap map[string]
 
 		matchFound := false // flag used for strict mode to indicate if we fail to find image match (for strict mode)
 
-		// check if line contains any key of substitution map
+		// sort map by length of keys to always prefer longer matches
+		var sortedSubstitutions []KeyValueSorted
 		for k, v := range substitutionMap {
+			kvs := KeyValueSorted{Key: k, Value: v, Length: len(k)}
+			sortedSubstitutions = append(sortedSubstitutions, kvs)
+		}
+		sort.Slice(sortedSubstitutions, func(i, j int) bool {
+			return sortedSubstitutions[i].Length > sortedSubstitutions[j].Length
+		})
+
+		// check if line contains any key of substitution map
+		for _, kvs := range sortedSubstitutions {
+
+			k := kvs.Key
+			v := kvs.Value
+
 			// have a version stripping docker.io and docker.io/library if it's present
 			// for this establish base image text
 			baseImageText := ""
@@ -609,4 +624,10 @@ func getEnvironmentCycloneDxExportV1(apiKeyId string, apiKey string, environment
 	}
 
 	return []byte(respData["exportAsBomProgByEnv"])
+}
+
+type KeyValueSorted struct {
+	Key    string
+	Value  string
+	Length int
 }
