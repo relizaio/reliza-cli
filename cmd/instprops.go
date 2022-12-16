@@ -40,6 +40,10 @@ func init() {
 	instPropsSecretsCmd.PersistentFlags().StringArrayVar(&properties, "property", []string{}, "Property to resolve (multiple allowed)")
 	instPropsSecretsCmd.PersistentFlags().StringArrayVar(&secrets, "secret", []string{}, "Secret to resolve (multiple allowed)")
 	rootCmd.AddCommand(instPropsSecretsCmd)
+
+	isInstHasSecretCertCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which export from (optional)")
+	isInstHasSecretCertCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to export from (optional)")
+	rootCmd.AddCommand(isInstHasSecretCertCmd)
 }
 
 var instPropsSecretsCmd = &cobra.Command{
@@ -51,6 +55,40 @@ var instPropsSecretsCmd = &cobra.Command{
 		props := properties
 		secrs := secrets
 		retrieveInstancePropsSecretsVerbose(props, secrs)
+	},
+}
+
+var isInstHasSecretCertCmd = &cobra.Command{
+	Use:   "iscertinit",
+	Short: "Used to check whether instance has sealed cert property configured",
+	Long: `Bitnami Sealed Certificate property is used to encrypt secrets for instance.
+	This command checks whether this property is configured for the particular instance.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var respData IsHasCertRHResp
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			query ($instanceUuid: ID, $instanceUri: String) {
+				isInstanceHasSealedSecretCert(instanceUuid: $instanceUuid, instanceUri: $instanceUri)
+			}
+		`)
+		req.Var("instanceUuid", instance)
+		req.Var("instanceUri", instanceURI)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza CLI")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
+
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
+
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			printGqlError(err)
+			os.Exit(1)
+		}
+
+		jsonResp, _ := json.Marshal(respData.Responsewrapper)
+		fmt.Println(string(jsonResp))
 	},
 }
 
@@ -121,6 +159,10 @@ func retrieveInstancePropsSecretsVerbose(props []string, secrs []string) {
 	respData := retrieveInstancePropsSecrets(props, secrs)
 	jsonResp, _ := json.Marshal(respData.Responsewrapper)
 	fmt.Println(string(jsonResp[:]))
+}
+
+type IsHasCertRHResp struct {
+	Responsewrapper bool `json:"isInstanceHasSealedSecretCert"`
 }
 
 type SecretPropsRHResp struct {
