@@ -1213,6 +1213,10 @@ var prDataCmd = &cobra.Command{
 		if len(number) > 0 {
 			body["number"] = number
 		}
+		if len(commits) > 0 {
+			indCommits := strings.Split(string(commits), ",")
+			body["commits"] = indCommits
+		}
 
 		if debug == "true" {
 			fmt.Println(body)
@@ -1412,6 +1416,7 @@ func init() {
 	prDataCmd.PersistentFlags().StringVar(&closedDate, "closedDate", "", "Datetime when the Pull Request was closed")
 	prDataCmd.PersistentFlags().StringVar(&mergedDate, "mergedDate", "", "Datetime when the Pull Request was merged")
 	prDataCmd.PersistentFlags().StringVar(&number, "number", "", "Number of the Pull Request")
+	prDataCmd.PersistentFlags().StringVar(&commits, "commits", "", "Comma seprated commit shas on this Pull Request")
 
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(printversionCmd)
