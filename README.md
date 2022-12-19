@@ -55,6 +55,7 @@ Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2022.
 16. [Get specific properties and secrets defined for the instance in Reliza Hub](#16-use-case-get-specific-properties-and-secrets-defined-for-the-instance-in-reliza-hub)
 17. [Export Bundle CycloneDX Spec](#17-use-case-export-bundle-cyclonedx-spec)
 18. [Override and get merged helm chart values](#18-use-case-override-and-get-merged-helm-chart-values)
+19. [Send Pull Request Data to Reliza Hub](#19-use-case-send-pull-request-data-to-reliza-hub)
 
 ## 1. Use Case: Get Version Assignment From Reliza Hub
 
@@ -831,6 +832,43 @@ Flags stand for:
 
 - **--outfile | -o** - Output file with merge values (optional, if not supplied - outputs to stdout).
 - **--values | -f** - Specify override values YAML file. Indicate file name only here, path would be resolved according to path to the chart in the command. Can specify multiple value file - in that case and if different values files define same properties, properties in the files that appear later in the command will take precedence - just like helm works.
+
+## 19. Use Case: Send Pull Request Data to Reliza Hub
+
+This use case is used in the CI workflow to stream Pull Request metadata to Reliza Hub.
+
+Sample command to send Pull Request details:
+
+Sample command:
+```bash
+docker run --rm relizaio/reliza-cli    \
+    prdata \
+    -i project_or_organization_wide_api_id    \
+    -k project_or_organization_wide_api_key    \
+    -b <base branch name> \
+    -s <pull request state - OPEN | CLOSED | MERGED> \
+    -t <target branch name> \
+    --endpoint <pull request endpoint> \
+    --title <title> \
+    --createdDate <ISO 8601 date > \
+    --number <pull request number> \
+    --commits <comma separated list of commit shas>
+```
+
+Flags stand for:
+
+- **--branch | -b** - Name of the base branch for the pull request.
+- **--state** - State of the pull request
+- **--targetBranch | t** - Name of the target branch for the pull request.
+- **--endpoint** - HTML endpoint of the pull request.
+- **--title** - Title of the pull request.
+- **--number** - Number of the pull request.
+- **--commits** - Comma seprated commit shas on this pull request.
+- **--createdDate** - Datetime when the pull request was created.
+- **--closedDate** - Datetime when the pull request was closed.
+- **--mergedDate** - Datetime when the pull request was merged.
+- **--endpoint** - Title of the pull request.
+- **--project** - Project UUID if org-wide key is used.
 
 # Development of Reliza-CLI
 
