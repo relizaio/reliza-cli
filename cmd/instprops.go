@@ -29,8 +29,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var properties []string
-var secrets []string
+var (
+	properties []string
+	secrets    []string
+	sealedCert string
+)
 
 func init() {
 	instPropsSecretsCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which export from (optional)")
@@ -44,6 +47,11 @@ func init() {
 	isInstHasSecretCertCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which export from (optional)")
 	isInstHasSecretCertCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to export from (optional)")
 	rootCmd.AddCommand(isInstHasSecretCertCmd)
+
+	setInstSecretCertCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which export from (optional)")
+	setInstSecretCertCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to export from (optional)")
+	setInstSecretCertCmd.PersistentFlags().StringVar(&sealedCert, "cert", "", "Sealed certificate used by the instance (required)")
+	rootCmd.AddCommand(setInstSecretCertCmd)
 }
 
 var instPropsSecretsCmd = &cobra.Command{
@@ -60,7 +68,7 @@ var instPropsSecretsCmd = &cobra.Command{
 
 var isInstHasSecretCertCmd = &cobra.Command{
 	Use:   "iscertinit",
-	Short: "Used to check whether instance has sealed cert property configured",
+	Short: "Use to check whether instance has sealed cert property configured",
 	Long: `Bitnami Sealed Certificate property is used to encrypt secrets for instance.
 	This command checks whether this property is configured for the particular instance.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -73,6 +81,43 @@ var isInstHasSecretCertCmd = &cobra.Command{
 		`)
 		req.Var("instanceUuid", instance)
 		req.Var("instanceUri", instanceURI)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "Reliza CLI")
+		req.Header.Set("Accept-Encoding", "gzip, deflate")
+
+		if len(apiKeyId) > 0 && len(apiKey) > 0 {
+			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
+			req.Header.Add("Authorization", "Basic "+auth)
+		}
+
+		if err := client.Run(context.Background(), req, &respData); err != nil {
+			printGqlError(err)
+			os.Exit(1)
+		}
+
+		jsonResp, _ := json.Marshal(respData.Responsewrapper)
+		fmt.Println(string(jsonResp))
+	},
+}
+
+var setInstSecretCertCmd = &cobra.Command{
+	Use:   "setsecretcert",
+	Short: "Use to to set sealed cert property on the instance",
+	Long: `Bitnami Sealed Certificate property is used to encrypt secrets for instance.
+	This command sets this certificate for the particular instance.
+	Only supports instance own API Key.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var respData SetCertRHResp
+		client := graphql.NewClient(relizaHubUri + "/graphql")
+		req := graphql.NewRequest(`
+			mutation ($instanceUuid: ID, $instanceUri: String, $sealedCert: String!) {
+				setInstanceSealedSecretCert(instanceUuid: $instanceUuid, instanceUri: $instanceUri,
+					sealedCert: $sealedCert)
+			}
+		`)
+		req.Var("instanceUuid", instance)
+		req.Var("instanceUri", instanceURI)
+		req.Var("sealedCert", sealedCert)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("User-Agent", "Reliza CLI")
 		req.Header.Set("Accept-Encoding", "gzip, deflate")
@@ -163,6 +208,10 @@ func retrieveInstancePropsSecretsVerbose(props []string, secrs []string) {
 
 type IsHasCertRHResp struct {
 	Responsewrapper bool `json:"isInstanceHasSealedSecretCert"`
+}
+
+type SetCertRHResp struct {
+	Responsewrapper bool `json:"setInstanceSealedSecretCert"`
 }
 
 type SecretPropsRHResp struct {
