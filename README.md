@@ -32,6 +32,12 @@ Solaris: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2022.
 
 Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2022.12.5/reliza-cli-2022.12.5-windows-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2022.12.5/reliza-cli-2022.12.5-windows-amd64.zip)
 
+It is possible to set authentication data via explicit flags, login command (see below) or following environment variables:
+
+- APIKEYID - for API Key ID
+- APIKEY - for API Key itself
+- URI - for Reliza Hub Uri (if not set, default at https://app.relizahub.com is used)
+
 # Table of Contents - Use Cases
 1. [Get Version Assignment From Reliza Hub](#1-use-case-get-version-assignment-from-reliza-hub)
 2. [Send Release Metadata to Reliza Hub](#2-use-case-send-release-metadata-to-reliza-hub)
