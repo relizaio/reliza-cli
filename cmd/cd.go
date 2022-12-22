@@ -20,6 +20,7 @@ package cmd
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -28,26 +29,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	artDigest string
+)
+
 func init() {
-	argoGenCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which to generate (either this, or instanceuri must be provided)")
-	argoGenCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to generate (either this, or instanceuri must be provided)")
-	argoGenCmd.PersistentFlags().StringVar(&revision, "revision", "", "Revision of instance for which to generate (optional, default is -1)")
-	argoGenCmd.PersistentFlags().StringVar(&infile, "infile", "", "Input file to parse, such as helm values file or docker compose file")
-	argoGenCmd.PersistentFlags().StringVar(&outfile, "outfile", "", "Output file with parsed values (optional, if not supplied - outputs to stdout)")
+	artifactGetSecrets.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which to generate (either this, or instanceuri must be provided)")
+	artifactGetSecrets.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to generate (either this, or instanceuri must be provided)")
+	artifactGetSecrets.PersistentFlags().StringVar(&artDigest, "artdigest", "", "Digest or hash of the artifact to resolve secrets for")
 
-	argoGenCmd.MarkPersistentFlagRequired("infile")
-
-	rootCmd.AddCommand(argoGenCmd)
+	rootCmd.AddCommand(cdCmd)
+	cdCmd.AddCommand(artifactGetSecrets)
 }
 
-var argoGenCmd = &cobra.Command{
-	Use:   "argogen",
-	Short: "Generate ArgoCD specific yaml values",
-	Long: `Generates ArgoCD yaml values based on CycloneDX definitions obtained from Reliza Hub.
-	This is similar to replacetags, but specific to Argo and outputs files with Argo definitions.
-	Secrets are only returned if allowed to be read by the instance, if the instance has sealed certificate set and in the encrypted form.`,
+var cdCmd = &cobra.Command{
+	Use:   "cd",
+	Short: "Umbrella for commands specific to CD",
+	Long:  `Set of commands for continuous delivery.`,
+}
+
+var artifactGetSecrets = &cobra.Command{
+	Use:   "artsecrets",
+	Short: "Get secrets to download specific artifact",
+	Long: `Command to get secrets for specific. Artifact must belong to the organizaiton.
+			Secret names are returned`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// 1. Obtain CycloneDX definitions
 		var respData ProjectAuthResp
 
 		if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") {
@@ -73,7 +79,7 @@ var argoGenCmd = &cobra.Command{
 		`)
 		req.Var("instanceUuid", instance)
 		req.Var("instanceUri", instanceURI)
-		req.Var("artDigest", "sha256:dd43ce80c439e1a0d10fcf49df763c7327132c61d4d3552f288d78786be6bb9a")
+		req.Var("artDigest", artDigest)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("User-Agent", "Reliza CLI")
 		req.Header.Set("Accept-Encoding", "gzip, deflate")
@@ -88,7 +94,12 @@ var argoGenCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println(respData)
+		respJson, err := json.Marshal(respData)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(string(respJson))
 	},
 }
 
