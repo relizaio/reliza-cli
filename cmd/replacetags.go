@@ -258,7 +258,7 @@ var replaceTagsCmd = &cobra.Command{
 				// write parsed lines to output file
 				if parsedLines != nil {
 					// write provenance to output file
-					if forDiff && provenance {
+					if !forDiff && provenance {
 						addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
 					}
 					for _, line := range parsedLines {
