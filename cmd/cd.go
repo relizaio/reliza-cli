@@ -110,7 +110,7 @@ var artifactGetSecrets = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Println(string(respJson))
+		fmt.Print(string(respJson))
 	},
 }
 
