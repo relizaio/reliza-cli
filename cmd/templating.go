@@ -348,8 +348,6 @@ func scanTagFile(tagSourceFile string, typeVal string) map[string]string {
 }
 
 func extractComponentsFromCycloneJSON(bomJSON map[string]interface{}, tagSourceMap map[string]string) map[string]string {
-	// go to components in cyclone dx
-
 	var bomComponents []interface{}
 	if components, ok := bomJSON["components"]; ok {
 		bomComponents = components.([]interface{})
@@ -388,6 +386,7 @@ func extractComponentsFromCycloneJSON(bomJSON map[string]interface{}, tagSourceM
 					alg := hashEntry.(map[string]interface{})["alg"].(string)
 					if 0 == strings.Compare(alg, "SHA-256") {
 						// take name and attach hash
+						fmt.Println(contName)
 						fullImageName := stripImageHashTag(contName) + "@sha256:" + hashEntry.(map[string]interface{})["content"].(string)
 						parseImageNameIntoMap(fullImageName, tagSourceMap)
 						resolvedImage = true
@@ -414,11 +413,14 @@ func parseImageNameIntoMap(imageName string, tagSourceMap map[string]string) {
 
 func stripImageHashTag(imageName string) string {
 	strippedImageName := imageName
-	if strings.Contains(imageName, "@") {
-		sourceTagSplit := strings.Split(imageName, "@")
+	strippedImageName = strings.Replace(strippedImageName, "http://", "", -1)
+	strippedImageName = strings.Replace(strippedImageName, "https://", "", -1)
+	strippedImageName = strings.Replace(strippedImageName, "oci://", "", -1)
+	if strings.Contains(strippedImageName, "@") {
+		sourceTagSplit := strings.Split(strippedImageName, "@")
 		strippedImageName = sourceTagSplit[0]
-	} else if strings.Contains(imageName, ":") {
-		sourceTagSplit := strings.SplitN(imageName, ":", 2)
+	} else if strings.Contains(strippedImageName, ":") {
+		sourceTagSplit := strings.SplitN(strippedImageName, ":", 2)
 		strippedImageName = sourceTagSplit[0]
 	}
 	return strippedImageName
@@ -503,7 +505,6 @@ func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey stri
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
 	} else if len(instance) > 0 || len(instanceURI) > 0 || strings.HasPrefix(apiKeyId, "INSTANCE__") {
 		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision, instanceURI, namespace)
-		// fmt.Println("res", tagSourceRes)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes, &bomJSON)
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
