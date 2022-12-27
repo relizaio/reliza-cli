@@ -386,7 +386,6 @@ func extractComponentsFromCycloneJSON(bomJSON map[string]interface{}, tagSourceM
 					alg := hashEntry.(map[string]interface{})["alg"].(string)
 					if 0 == strings.Compare(alg, "SHA-256") {
 						// take name and attach hash
-						fmt.Println(contName)
 						fullImageName := stripImageHashTag(contName) + "@sha256:" + hashEntry.(map[string]interface{})["content"].(string)
 						parseImageNameIntoMap(fullImageName, tagSourceMap)
 						resolvedImage = true
