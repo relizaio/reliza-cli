@@ -204,7 +204,6 @@ var replaceTagsCmd = &cobra.Command{
 			}
 			// Get slice of names of each file in inDirectory
 			for _, f := range files {
-				//fmt.Println(f.Name())
 				fileNames = append(fileNames, f.Name())
 			}
 
@@ -355,20 +354,6 @@ func parseSecretsPropsFromInFile(inFileOpened *os.File) SecretProps {
 				sp.Secrets[psp.Key] = true
 			}
 		}
-		// if strings.Contains(line, "$RELIZA") {
-		// 	rlzParts := strings.Split(line, "$RELIZA{")
-		// 	for _, rlzPart := range rlzParts {
-		// 		if strings.HasPrefix(rlzPart, "PROPERTY") {
-		// 			rp1 := strings.Split(rlzPart, "PROPERTY.")[1]
-		// 			rp2 := strings.Split(rp1, "}")[0]
-		// 			sp.Properties[rp2] = true
-		// 		} else if strings.HasPrefix(rlzPart, "SECRET") {
-		// 			rp1 := strings.Split(rlzPart, "SECRET.")[1]
-		// 			rp2 := strings.Split(rp1, "}")[0]
-		// 			sp.Secrets[rp2] = true
-		// 		}
-		// 	}
-		// }
 	}
 	return sp
 }
