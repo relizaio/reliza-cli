@@ -19,4 +19,5 @@ jobs:
           image_name: $IMAGE_NAME
           reliza_api_id: ${{ secrets.RELIZA_API_ID }}
           reliza_api_key: ${{ secrets.RELIZA_API_KEY }}
+          ci_metadata: ""
       
