@@ -40,6 +40,8 @@ func init() {
 	artifactGetSecrets.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which to generate (either this, or instanceuri must be provided)")
 	artifactGetSecrets.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to generate (either this, or instanceuri must be provided)")
 	artifactGetSecrets.PersistentFlags().StringVar(&artDigest, "artdigest", "", "Digest or hash of the artifact to resolve secrets for")
+	artifactGetSecrets.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace to use for secrets (optional, defaults to default namespace)")
+	artifactGetSecrets.MarkPersistentFlagRequired("artdigest")
 
 	cdCmd.AddCommand(artifactGetSecrets)
 
@@ -68,20 +70,18 @@ var artifactGetSecrets = &cobra.Command{
 		var respData ProjectAuthResp
 
 		if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") {
-			//throw error and exit
 			fmt.Println("instance or instanceURI not specified!")
 			os.Exit(1)
 		}
 
 		if len(namespace) <= 1 {
-			// TODO: pass argocd namespace name here
 			namespace = "default"
 		}
 
 		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
-			query ($instanceUuid: ID, $instanceUri: String, $artDigest: String!) {
-				artifactDownloadSecrets(instanceUuid: $instanceUuid, instanceUri: $instanceUri, artDigest: $artDigest) {
+			query ($instanceUuid: ID, $instanceUri: String, $artDigest: String!, $namespace: String) {
+				artifactDownloadSecrets(instanceUuid: $instanceUuid, instanceUri: $instanceUri, artDigest: $artDigest, namespace: $namespace) {
 					login
 					password
 					type
@@ -91,6 +91,7 @@ var artifactGetSecrets = &cobra.Command{
 		req.Var("instanceUuid", instance)
 		req.Var("instanceUri", instanceURI)
 		req.Var("artDigest", artDigest)
+		req.Var("namespace", namespace)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("User-Agent", "Reliza CLI")
 		req.Header.Set("Accept-Encoding", "gzip, deflate")
