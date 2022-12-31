@@ -494,25 +494,22 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 	return jsonResponse
 }
 
-func scanTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey string, instance string, revision string,
-	instanceURI string, bundle string, version string, environment string, namespace string) map[string]string {
-	tagSourceMap := map[string]string{} // 1st - scan tag source file and construct a map of generic tag to actual tag
-	if tagSourceFile != "" {
-		tagSourceMap = scanTagFile(tagSourceFile, typeVal)
-	} else if len(bundle) > 0 {
-		cycloneBytes := getBundleVersionCycloneDxExportV1(apiKeyId, apiKey, bundle, environment, version)
-		// fmt.Println("res", tagSourceRes)
+func scanTags(replaceTagsVars ReplaceTagsVars) map[string]string {
+	tagSourceMap := map[string]string{}
+	if replaceTagsVars.TagSourceFile != "" {
+		tagSourceMap = scanTagFile(replaceTagsVars.TagSourceFile, replaceTagsVars.TypeVal)
+	} else if len(replaceTagsVars.Bundle) > 0 {
+		cycloneBytes := getBundleVersionCycloneDxExportV1(replaceTagsVars.ApiKeyId, replaceTagsVars.ApiKey, replaceTagsVars.Bundle, replaceTagsVars.Environment, replaceTagsVars.Version)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes, &bomJSON)
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
-	} else if len(environment) > 0 {
-		cycloneBytes := getEnvironmentCycloneDxExportV1(apiKeyId, apiKey, environment)
-		// fmt.Println("res", tagSourceRes)
+	} else if len(replaceTagsVars.Environment) > 0 {
+		cycloneBytes := getEnvironmentCycloneDxExportV1(replaceTagsVars.ApiKeyId, replaceTagsVars.ApiKey, replaceTagsVars.Environment)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes, &bomJSON)
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
-	} else if len(instance) > 0 || len(instanceURI) > 0 || strings.HasPrefix(apiKeyId, "INSTANCE__") {
-		cycloneBytes := getInstanceRevisionCycloneDxExportV1(apiKeyId, apiKey, instance, revision, instanceURI, namespace)
+	} else if len(replaceTagsVars.Instance) > 0 || len(replaceTagsVars.InstanceURI) > 0 || strings.HasPrefix(replaceTagsVars.ApiKeyId, "INSTANCE__") {
+		cycloneBytes := getInstanceRevisionCycloneDxExportV1(replaceTagsVars.ApiKeyId, replaceTagsVars.ApiKey, replaceTagsVars.Instance, replaceTagsVars.Revision, replaceTagsVars.InstanceURI, replaceTagsVars.Namespace)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes, &bomJSON)
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)

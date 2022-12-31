@@ -25,10 +25,12 @@ import (
 )
 
 func TestReplaceTags(t *testing.T) {
-	tagSourceFile := "mafia_tag_source_cdx.json"
-	typeVal := "cyclonedx"
-	infile := "values_mafia.yaml"
-	replacedTags := cmd.ReplaceTags(tagSourceFile, typeVal, "", "", "", "", "", "", "", "", "", infile, "")
+	var replaceTagsVars cmd.ReplaceTagsVars
+	replaceTagsVars.TagSourceFile = "mafia_tag_source_cdx.json"
+	replaceTagsVars.TypeVal = "cyclonedx"
+	replaceTagsVars.Infile = "values_mafia.yaml"
+
+	replacedTags := cmd.ReplaceTags(replaceTagsVars)
 	expectedReplacement, err := os.ReadFile("expected_values_mafia.yaml")
 	if err != nil {
 		t.Fatalf("failed reading expected values file")
