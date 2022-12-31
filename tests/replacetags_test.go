@@ -39,3 +39,19 @@ func TestReplaceTags(t *testing.T) {
 		t.Fatalf("replaced tags do not equal expected, actual = " + replacedTags)
 	}
 }
+
+func TestReplaceTagsBitnamiStyle(t *testing.T) {
+	var replaceTagsVars cmd.ReplaceTagsVars
+	replaceTagsVars.TagSourceFile = "mafia_tag_source_cdx.json"
+	replaceTagsVars.TypeVal = "cyclonedx"
+	replaceTagsVars.Infile = "values_mafia_bitnami_style.yaml"
+
+	replacedTags := cmd.ReplaceTags(replaceTagsVars)
+	expectedReplacement, err := os.ReadFile("expected_values_mafia_bitnami_style.yaml")
+	if err != nil {
+		t.Fatalf("failed reading expected values file")
+	}
+	if replacedTags != string(expectedReplacement) {
+		t.Fatalf("replaced tags do not equal expected, actual = " + replacedTags)
+	}
+}
