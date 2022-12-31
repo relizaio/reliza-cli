@@ -64,6 +64,25 @@ var replaceTagsCmd = &cobra.Command{
 	},
 }
 
+func constructSubstitutionMap(tagSourceMap *map[string]string) *map[string]string {
+	// scan definition reference file and identify all used tags (scan by "image:" pattern)
+	substitutionMap := map[string]string{}
+	if definitionReferenceFile != "" {
+		defScanMap := scanDefenitionReferenceFile()
+		// combine 2 maps and come up with substitution map to apply to source (i.e. to source helm chart)
+		// traverse defScanMap, map to tagSourceMap and put to substitution map
+		for k := range defScanMap {
+			// https://stackoverflow.com/questions/2050391/how-to-check-if-a-map-contains-a-key-in-go
+			if tagVal, ok := (*tagSourceMap)[k]; ok {
+				substitutionMap[k] = tagVal
+			}
+		}
+	} else {
+		substitutionMap = *tagSourceMap
+	}
+	return &substitutionMap
+}
+
 func ReplaceTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey string, instance string, revision string,
 	instanceURI string, bundle string, version string, environment string, namespace string, infile string, indirectory string) string {
 
@@ -75,21 +94,7 @@ func ReplaceTags(tagSourceFile string, typeVal string, apiKeyId string, apiKey s
 	// 1st - scan tag source file and construct a map of generic tag to actual tag
 	tagSourceMap := scanTags(tagSourceFile, typeVal, apiKeyId, apiKey, instance, revision, instanceURI, bundle, version, environment, namespace)
 
-	// 2nd - scan definition reference file and identify all used tags (scan by "image:" pattern)
-	substitutionMap := map[string]string{}
-	if definitionReferenceFile != "" {
-		defScanMap := scanDefenitionReferenceFile()
-		// combine 2 maps and come up with substitution map to apply to source (i.e. to source helm chart)
-		// traverse defScanMap, map to tagSourceMap and put to substitution map
-		for k := range defScanMap {
-			// https://stackoverflow.com/questions/2050391/how-to-check-if-a-map-contains-a-key-in-go
-			if tagVal, ok := tagSourceMap[k]; ok {
-				substitutionMap[k] = tagVal
-			}
-		}
-	} else {
-		substitutionMap = tagSourceMap
-	}
+	substitutionMap := *(constructSubstitutionMap(&tagSourceMap))
 
 	// Check if input is infile or inDirectory (operating on directory or file?)
 	if len(infile) > 0 && len(inDirectory) == 0 {
