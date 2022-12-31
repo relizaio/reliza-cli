@@ -173,7 +173,7 @@ func replaceTagsOnFile(replaceTagsVars *ReplaceTagsVars, substitutionMap *map[st
 	}
 
 	// Parse infile and get slice of lines to be written to outfile/stdout
-	parsedLines := substituteCopyBasedOnMap(inFileOpened, *substitutionMap, parseMode, resolvedSp, forDiff)
+	parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode, resolvedSp, forDiff)
 	// write parsed lines to outfile/stdout if parsing did not fail
 	if parsedLines != nil {
 		// need to add provenance first, beacuse can only write to stdout sequentially
@@ -189,7 +189,7 @@ func replaceTagsOnFile(replaceTagsVars *ReplaceTagsVars, substitutionMap *map[st
 			}
 		}
 	} else {
-		// parsing error
+		fmt.Println("Error parsing input file")
 		os.Exit(1)
 	}
 	// Remember to close outfile+infile when done, and check for errors
@@ -295,7 +295,7 @@ func replaceTagsOnDirectory(substitutionMap *map[string]string) {
 			os.Exit(1)
 		}
 
-		parsedLines := substituteCopyBasedOnMap(inFileOpened, *substitutionMap, parseMode, resolvedSp, forDiff)
+		parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode, resolvedSp, forDiff)
 
 		// write parsed lines to output file
 		if parsedLines != nil {

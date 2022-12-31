@@ -120,7 +120,7 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 	resolvedSp - result of resolving secrets and properties on the instance, if applicable
 	forDiff - boolean flag - if true, timestamps will be used instead of secrets
 */
-func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap map[string]string, parseMode string, resolvedSp SecretPropsRHResp, forDiff bool) []string {
+func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string]string, parseMode string, resolvedSp SecretPropsRHResp, forDiff bool) []string {
 	resolvedProperties := map[string]string{}
 	resolvedSescrets := map[string]ResolvedSecret{}
 
@@ -177,7 +177,7 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap map[string]
 
 		// sort map by length of keys to always prefer longer matches
 		var sortedSubstitutions []KeyValueSorted
-		for k, v := range substitutionMap {
+		for k, v := range *substitutionMap {
 			kvs := KeyValueSorted{Key: k, Value: v, Length: len(k)}
 			sortedSubstitutions = append(sortedSubstitutions, kvs)
 		}
