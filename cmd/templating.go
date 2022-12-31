@@ -106,6 +106,21 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 }
 
 /*
+  sort map by length of keys to always prefer longer matches
+*/
+func sortSubstitutionMap(substitutionMap *map[string]string) *[]KeyValueSorted {
+	var sortedSubstitutions []KeyValueSorted
+	for k, v := range *substitutionMap {
+		kvs := KeyValueSorted{Key: k, Value: v, Length: len(k)}
+		sortedSubstitutions = append(sortedSubstitutions, kvs)
+	}
+	sort.Slice(sortedSubstitutions, func(i, j int) bool {
+		return sortedSubstitutions[i].Length > sortedSubstitutions[j].Length
+	})
+	return &sortedSubstitutions
+}
+
+/*
 	This function takes as input a inFile file pointer, substitutionMap and parseMode string.
 	The contents of the inFile will be read and parsed according to the mappings of substitutionMap.
 	The output of the function is a slice of strings each representing a line to be written to
@@ -137,6 +152,9 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string
 		fmt.Println("Error: '" + parseMode + "' is not a valid parsemode. Must be either 'simple' or 'extended'")
 		os.Exit(1)
 	}
+
+	sortedSubstitutions := *(sortSubstitutionMap(substitutionMap))
+
 	// store lines to return once parsing is complete
 	var parsedLines []string
 	// Copy data from input-file to output-file, with tags replaced according to substitution map.
@@ -174,16 +192,6 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string
 		}
 
 		matchFound := false // flag used for strict mode to indicate if we fail to find image match (for strict mode)
-
-		// sort map by length of keys to always prefer longer matches
-		var sortedSubstitutions []KeyValueSorted
-		for k, v := range *substitutionMap {
-			kvs := KeyValueSorted{Key: k, Value: v, Length: len(k)}
-			sortedSubstitutions = append(sortedSubstitutions, kvs)
-		}
-		sort.Slice(sortedSubstitutions, func(i, j int) bool {
-			return sortedSubstitutions[i].Length > sortedSubstitutions[j].Length
-		})
 
 		// check if line contains any key of substitution map
 		for _, kvs := range sortedSubstitutions {
