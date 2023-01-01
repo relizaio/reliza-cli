@@ -148,14 +148,14 @@ func GetDigestedImageFromSubstitution(subst Substitution) string {
 */
 func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string]Substitution, parseMode string, resolvedSp SecretPropsRHResp, forDiff bool) []string {
 	resolvedProperties := map[string]string{}
-	resolvedSescrets := map[string]ResolvedSecret{}
+	resolvedSecrets := map[string]ResolvedSecret{}
 
 	for _, rpr := range resolvedSp.Responsewrapper.Properties {
 		resolvedProperties[rpr.Key] = rpr.Value
 	}
 
 	for _, rsr := range resolvedSp.Responsewrapper.Secrets {
-		resolvedSescrets[rsr.Key] = rsr
+		resolvedSecrets[rsr.Key] = rsr
 	}
 
 	parseMode = strings.ToLower(parseMode)
@@ -165,22 +165,25 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string
 	}
 
 	sortedSubstitutions := *(sortSubstitutionMap(substitutionMap))
-
-	// store lines to return once parsing is complete
-	var parsedLines []string
-	// Copy data from input-file to output-file, with tags replaced according to substitution map.
-	inScanner := bufio.NewScanner(inFileOpened)
-	for inScanner.Scan() {
-		line := inScanner.Text()
-		line = parseLineOnScan(line, &sortedSubstitutions, &resolvedProperties, &resolvedSescrets, inFileOpened.Name())
-
-		// add parsed line toslice to return once parsing is complete
-		parsedLines = append(parsedLines, line)
-	}
+	parsedLines := *(parseLines(inFileOpened, &sortedSubstitutions, &resolvedProperties, &resolvedSecrets))
 	if parsedLines == nil {
 		fmt.Println("Error: Failed to parse empty/non-existent input file: " + inFileOpened.Name())
 	}
 	return parsedLines
+}
+
+func parseLines(inFileOpened *os.File, sortedSubstitutions *[]KeyValueSorted, resolvedProperties *map[string]string,
+	resolvedSecrets *map[string]ResolvedSecret) *[]string {
+	var parsedLines []string
+
+	inScanner := bufio.NewScanner(inFileOpened)
+
+	for inScanner.Scan() {
+		line := inScanner.Text()
+		line = parseLineOnScan(line, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
+		parsedLines = append(parsedLines, line)
+	}
+	return &parsedLines
 }
 
 func parseLineOnScan(line string, sortedSubstitutions *[]KeyValueSorted, resolvedProperties *map[string]string,
