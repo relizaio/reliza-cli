@@ -79,9 +79,57 @@ var replaceTagsCmd = &cobra.Command{
 	},
 }
 
-func constructSubstitutionMap(tagSourceMap *map[string]string) *map[string]string {
+func GetSubstitutionFromDigestedString(ds string) Substitution {
+	// sample ds = taleodor/mafia-express:tag@sha256:7205756e730e3c614f30509bdb33770f5816897abb49aa8308364fec1864882d
+
+	var subst Substitution
+	digestSplit := strings.Split(ds, "@")
+	if len(digestSplit) > 1 {
+		subst.Digest = digestSplit[1]
+	}
+
+	tagSplit := strings.Split(digestSplit[0], ":")
+
+	// tagSplit may have 3 parts, if port is used as part of registry
+	if len(tagSplit) > 1 {
+		tagPart := tagSplit[len(tagSplit)-1]
+		if !strings.Contains(tagPart, "/") {
+			subst.Tag = tagPart
+		}
+	}
+
+	var imagePart string
+
+	if len(subst.Tag) > 0 {
+		imagePart = strings.Replace(digestSplit[0], ":"+subst.Tag, "", -1)
+	} else {
+		imagePart = digestSplit[0]
+	}
+
+	imageSplit := strings.Split(imagePart, "/")
+
+	if len(imageSplit) == 1 {
+		subst.Registry = "docker.io"
+		subst.Image = "library/" + imagePart
+	} else if len(imageSplit) > 2 {
+		subst.Registry = imageSplit[0]
+		subst.Image = strings.Replace(imagePart, imageSplit[0]+"/", "", -1)
+	} else if len(imageSplit) == 2 {
+		if strings.Contains(imageSplit[0], ".") {
+			subst.Registry = imageSplit[0]
+			subst.Image = imageSplit[1]
+		} else {
+			subst.Registry = "docker.io"
+			subst.Image = imagePart
+		}
+	}
+
+	return subst
+}
+
+func constructSubstitutionMap(tagSourceMap *map[string]string) *map[string]Substitution {
 	// scan definition reference file and identify all used tags (scan by "image:" pattern)
-	substitutionMap := map[string]string{}
+	substitutionMap := map[string]Substitution{}
 	if definitionReferenceFile != "" {
 		defScanMap := scanDefenitionReferenceFile()
 		// combine 2 maps and come up with substitution map to apply to source (i.e. to source helm chart)
@@ -89,11 +137,13 @@ func constructSubstitutionMap(tagSourceMap *map[string]string) *map[string]strin
 		for k := range defScanMap {
 			// https://stackoverflow.com/questions/2050391/how-to-check-if-a-map-contains-a-key-in-go
 			if tagVal, ok := (*tagSourceMap)[k]; ok {
-				substitutionMap[k] = tagVal
+				substitutionMap[k] = GetSubstitutionFromDigestedString(tagVal)
 			}
 		}
 	} else {
-		substitutionMap = *tagSourceMap
+		for tagSourceKey, tagSourceVal := range *tagSourceMap {
+			substitutionMap[tagSourceKey] = GetSubstitutionFromDigestedString(tagSourceVal)
+		}
 	}
 	return &substitutionMap
 }
@@ -122,7 +172,7 @@ func ReplaceTags(replaceTagsVars ReplaceTagsVars) string {
 	return retOut
 }
 
-func replaceTagsOnFile(replaceTagsVars *ReplaceTagsVars, substitutionMap *map[string]string) string {
+func replaceTagsOnFile(replaceTagsVars *ReplaceTagsVars, substitutionMap *map[string]Substitution) string {
 	retOut := ""
 
 	infile := replaceTagsVars.Infile
@@ -212,7 +262,7 @@ func replaceTagsOnFile(replaceTagsVars *ReplaceTagsVars, substitutionMap *map[st
 	return retOut
 }
 
-func replaceTagsOnDirectory(substitutionMap *map[string]string) {
+func replaceTagsOnDirectory(substitutionMap *map[string]Substitution) {
 	// If parsing files from input directory, an output directory path should be provided, not an output file path.
 	if len(outfile) > 0 {
 		fmt.Println("Warning: please only provide '--outdirectory' flag (no '--outfile') when using '--indirectory' as input instead of '--infile'.")
@@ -483,4 +533,11 @@ type ReplaceTagsVars struct {
 	Infile        string
 	Indirectory   string
 	Outfile       string
+}
+
+type Substitution struct {
+	Registry string
+	Image    string
+	Digest   string
+	Tag      string
 }

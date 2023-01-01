@@ -108,7 +108,7 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 /*
   sort map by length of keys to always prefer longer matches
 */
-func sortSubstitutionMap(substitutionMap *map[string]string) *[]KeyValueSorted {
+func sortSubstitutionMap(substitutionMap *map[string]Substitution) *[]KeyValueSorted {
 	var sortedSubstitutions []KeyValueSorted
 	for k, v := range *substitutionMap {
 		kvs := KeyValueSorted{Key: k, Value: v, Length: len(k)}
@@ -118,6 +118,17 @@ func sortSubstitutionMap(substitutionMap *map[string]string) *[]KeyValueSorted {
 		return sortedSubstitutions[i].Length > sortedSubstitutions[j].Length
 	})
 	return &sortedSubstitutions
+}
+
+func GetDigestedImageFromSubstitution(subst Substitution) string {
+	digestedImage := subst.Registry + "/" + subst.Image
+	if len(subst.Tag) > 0 {
+		digestedImage += ":" + subst.Tag
+	}
+	if len(subst.Digest) > 0 {
+		digestedImage += "@" + subst.Digest
+	}
+	return digestedImage
 }
 
 /*
@@ -135,7 +146,7 @@ func sortSubstitutionMap(substitutionMap *map[string]string) *[]KeyValueSorted {
 	resolvedSp - result of resolving secrets and properties on the instance, if applicable
 	forDiff - boolean flag - if true, timestamps will be used instead of secrets
 */
-func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string]string, parseMode string, resolvedSp SecretPropsRHResp, forDiff bool) []string {
+func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string]Substitution, parseMode string, resolvedSp SecretPropsRHResp, forDiff bool) []string {
 	resolvedProperties := map[string]string{}
 	resolvedSescrets := map[string]ResolvedSecret{}
 
@@ -197,7 +208,7 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string
 		for _, kvs := range sortedSubstitutions {
 
 			k := kvs.Key
-			v := kvs.Value
+			v := GetDigestedImageFromSubstitution(kvs.Value)
 
 			// have a version stripping docker.io and docker.io/library if it's present
 			// for this establish base image text
@@ -642,6 +653,6 @@ func getEnvironmentCycloneDxExportV1(apiKeyId string, apiKey string, environment
 
 type KeyValueSorted struct {
 	Key    string
-	Value  string
+	Value  Substitution
 	Length int
 }
