@@ -77,6 +77,10 @@ func TestReplaceTagsBitnamiStyle(t *testing.T) {
 
 	replacedTags := cmd.ReplaceTags(replaceTagsVars)
 	expectedReplacement, err := os.ReadFile("expected_values_mafia_bitnami_style.yaml")
+
+	// actualOutFile, _ := os.Create("actual_bitnami_out.yaml")
+	// actualOutFile.WriteString(replacedTags)
+
 	if err != nil {
 		t.Fatalf("failed reading expected values file")
 	}

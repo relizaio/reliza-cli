@@ -120,6 +120,11 @@ func sortSubstitutionMap(substitutionMap *map[string]Substitution) *[]KeyValueSo
 	return &sortedSubstitutions
 }
 
+func GetMatchingKeyFromSubstitution(subst Substitution) string {
+	matchingKeyImage := subst.Registry + "/" + subst.Image
+	return matchingKeyImage
+}
+
 func GetDigestedImageFromSubstitution(subst Substitution) string {
 	digestedImage := subst.Registry + "/" + subst.Image
 	if len(subst.Tag) > 0 {
@@ -183,9 +188,10 @@ func parseLines(inFileOpened *os.File, sortedSubstitutions *[]KeyValueSorted, re
 		line := inScanner.Text()
 		if isBitnamiImageStart(line) {
 			bitnamiLineCache = append(bitnamiLineCache, line)
-		} else if len(bitnamiLineCache) > 0 && len(bitnamiLineCache) < 5 {
+		} else if len(bitnamiLineCache) > 0 && len(bitnamiLineCache) < 4 {
 			bitnamiLineCache = append(bitnamiLineCache, line)
-		} else if len(bitnamiLineCache) == 5 {
+		} else if len(bitnamiLineCache) == 4 {
+			bitnamiLineCache = append(bitnamiLineCache, line)
 			parsedBitnamiLines := parseBitnamiLines(&bitnamiLineCache, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
 			for _, pbl := range *parsedBitnamiLines {
 				parsedLines = append(parsedLines, pbl)
@@ -222,15 +228,14 @@ func parseValidatedBitnamiLines(bitnamiLineCache *[]string, sortedSubstitutions 
 	repoLine := strings.Trim((*bitnamiLineCache)[2], " ")
 	bitnamiSubst.Image = strings.ReplaceAll(repoLine, "repository: ", "")
 	tagLine := strings.Trim((*bitnamiLineCache)[3], " ")
-	bitnamiSubst.Image = strings.ReplaceAll(tagLine, "tag: ", "")
+	bitnamiSubst.Tag = strings.ReplaceAll(tagLine, "tag: ", "")
 	digestLine := strings.Trim((*bitnamiLineCache)[4], " ")
 	bitnamiSubst.Digest = strings.ReplaceAll(digestLine, "digest: ", "")
-	digestedImage := GetDigestedImageFromSubstitution(bitnamiSubst)
-	matchKey := stripImageHashTag(digestedImage)
+	matchKey := GetMatchingKeyFromSubstitution(bitnamiSubst)
 	var replacedSubst Substitution
 	for _, kvs := range *sortedSubstitutions {
 		k := kvs.Key
-		if matchKey == k {
+		if isImageMatchingSubstitutionKey(matchKey, k) {
 			replacedSubst = kvs.Value
 			break
 		}
@@ -249,6 +254,14 @@ func parseValidatedBitnamiLines(bitnamiLineCache *[]string, sortedSubstitutions 
 		parsedLines = *bitnamiLineCache
 	}
 	return &parsedLines
+}
+
+func isImageMatchingSubstitutionKey(image string, substKey string) bool {
+	imageMatch := strings.Replace(image, "docker.io/library/", "", 1)
+	imageMatch = strings.Replace(imageMatch, "docker.io/", "", 1)
+	substKeyMatch := strings.Replace(substKey, "docker.io/library/", "", 1)
+	substKeyMatch = strings.Replace(substKeyMatch, "docker.io/", "", 1)
+	return (imageMatch == substKeyMatch)
 }
 
 /**
