@@ -178,12 +178,134 @@ func parseLines(inFileOpened *os.File, sortedSubstitutions *[]KeyValueSorted, re
 
 	inScanner := bufio.NewScanner(inFileOpened)
 
+	var bitnamiLineCache []string
 	for inScanner.Scan() {
 		line := inScanner.Text()
-		line = parseLineOnScan(line, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
-		parsedLines = append(parsedLines, line)
+		if isBitnamiImageStart(line) {
+			bitnamiLineCache = append(bitnamiLineCache, line)
+		} else if len(bitnamiLineCache) > 0 && len(bitnamiLineCache) < 5 {
+			bitnamiLineCache = append(bitnamiLineCache, line)
+		} else if len(bitnamiLineCache) == 5 {
+			parsedBitnamiLines := parseBitnamiLines(&bitnamiLineCache, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
+			for _, pbl := range *parsedBitnamiLines {
+				parsedLines = append(parsedLines, pbl)
+			}
+			bitnamiLineCache = []string{}
+		} else {
+			line = parseLineOnScan(line, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
+			parsedLines = append(parsedLines, line)
+		}
 	}
 	return &parsedLines
+}
+
+func parseBitnamiLines(bitnamiLineCache *[]string, sortedSubstitutions *[]KeyValueSorted,
+	resolvedProperties *map[string]string, resolvedSecrets *map[string]ResolvedSecret, inFileName string) *[]string {
+	var parsedLines []string
+	isBitnami := isBitnamiLinesBitnami(bitnamiLineCache)
+	if isBitnami {
+		parsedLines = *(parseValidatedBitnamiLines(bitnamiLineCache, sortedSubstitutions))
+	} else {
+		for _, blc := range *bitnamiLineCache {
+			line := parseLineOnScan(blc, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileName)
+			parsedLines = append(parsedLines, line)
+		}
+	}
+	return &parsedLines
+}
+
+func parseValidatedBitnamiLines(bitnamiLineCache *[]string, sortedSubstitutions *[]KeyValueSorted) *[]string {
+	var parsedLines []string
+	var bitnamiSubst Substitution
+	regLine := strings.Trim((*bitnamiLineCache)[1], " ")
+	bitnamiSubst.Registry = strings.ReplaceAll(regLine, "registry: ", "")
+	repoLine := strings.Trim((*bitnamiLineCache)[2], " ")
+	bitnamiSubst.Image = strings.ReplaceAll(repoLine, "repository: ", "")
+	tagLine := strings.Trim((*bitnamiLineCache)[3], " ")
+	bitnamiSubst.Image = strings.ReplaceAll(tagLine, "tag: ", "")
+	digestLine := strings.Trim((*bitnamiLineCache)[4], " ")
+	bitnamiSubst.Digest = strings.ReplaceAll(digestLine, "digest: ", "")
+	digestedImage := GetDigestedImageFromSubstitution(bitnamiSubst)
+	matchKey := stripImageHashTag(digestedImage)
+	var replacedSubst Substitution
+	for _, kvs := range *sortedSubstitutions {
+		k := kvs.Key
+		if matchKey == k {
+			replacedSubst = kvs.Value
+			break
+		}
+	}
+	if len(replacedSubst.Digest) > 0 {
+		parsedLines = append(parsedLines, (*bitnamiLineCache)[0])
+		regLineSplit := strings.Split((*bitnamiLineCache)[1], ": ")
+		parsedLines = append(parsedLines, regLineSplit[0]+": "+replacedSubst.Registry)
+		repoLineSplit := strings.Split((*bitnamiLineCache)[2], ": ")
+		parsedLines = append(parsedLines, repoLineSplit[0]+": "+replacedSubst.Image)
+		tagLineSplit := strings.Split((*bitnamiLineCache)[3], ": ")
+		parsedLines = append(parsedLines, tagLineSplit[0]+": "+replacedSubst.Tag)
+		digestLineSplit := strings.Split((*bitnamiLineCache)[4], ": ")
+		parsedLines = append(parsedLines, digestLineSplit[0]+": "+replacedSubst.Digest)
+	} else {
+		parsedLines = *bitnamiLineCache
+	}
+	return &parsedLines
+}
+
+/**
+Tests if a given set of bitnami lines is really bitnami.
+Bitnami
+First line is always bitnami, so it tests the other four.
+Sample:
+  image:
+    registry: docker.io
+    repository: taleodor/mafia-express
+    tag: latest
+    digest: ""
+*/
+func isBitnamiLinesBitnami(bitnamiLineCache *[]string) bool {
+	isBitnami := true
+
+	if len(*bitnamiLineCache) != 5 {
+		isBitnami = false
+	}
+
+	if isBitnami {
+		regLine := strings.Trim((*bitnamiLineCache)[1], " ")
+		if !strings.HasPrefix(regLine, "registry: ") {
+			isBitnami = false
+		}
+	}
+
+	if isBitnami {
+		repoLine := strings.Trim((*bitnamiLineCache)[2], " ")
+		if !strings.HasPrefix(repoLine, "repository: ") {
+			isBitnami = false
+		}
+	}
+
+	if isBitnami {
+		tagLine := strings.Trim((*bitnamiLineCache)[3], " ")
+		if !strings.HasPrefix(tagLine, "tag: ") {
+			isBitnami = false
+		}
+	}
+
+	if isBitnami {
+		digestLine := strings.Trim((*bitnamiLineCache)[4], " ")
+		if !strings.HasPrefix(digestLine, "digest: ") {
+			isBitnami = false
+		}
+	}
+
+	return isBitnami
+}
+
+func isBitnamiImageStart(line string) bool {
+	isBitnamiImageStart := false
+	if strings.Trim(line, " ") == "image:" {
+		isBitnamiImageStart = true
+	}
+	return isBitnamiImageStart
 }
 
 func parseLineOnScan(line string, sortedSubstitutions *[]KeyValueSorted, resolvedProperties *map[string]string,
@@ -252,7 +374,6 @@ func parseLineOnScan(line string, sortedSubstitutions *[]KeyValueSorted, resolve
 			}
 		}
 
-		// found a match - do substitution
 		if len(baseImageText) > 0 && !strings.HasSuffix(line, ":") && !strings.Contains(line, baseImageText+": ") {
 			// if simple mode, only substitute if line begins with 'image:' key
 			re := regexp.MustCompile(`^\s*image:`)
