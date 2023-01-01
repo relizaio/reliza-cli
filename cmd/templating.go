@@ -172,101 +172,8 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string
 	inScanner := bufio.NewScanner(inFileOpened)
 	for inScanner.Scan() {
 		line := inScanner.Text()
+		line = parseLineOnScan(line, &sortedSubstitutions, &resolvedProperties, &resolvedSescrets, inFileOpened.Name())
 
-		// resolve props and secrets first
-		pspArr := parseLineToSecrets(line)
-		for _, psp := range pspArr {
-			if len(resolvedProperties[psp.Key]) < 1 && len(psp.Default) > 0 {
-				resolvedProperties[psp.Key] = psp.Default
-			}
-			// locate value corresponding to key
-			if psp.Type == "PROPERTY" {
-				propVal, isPropExists := resolvedProperties[psp.Key]
-				if !isPropExists {
-					fmt.Println("Property " + psp.Key + " not set; also make sure that --resolveprops flag is set to true; exiting...")
-					os.Exit(1)
-				}
-				line = strings.ReplaceAll(line, psp.Wholetext, propVal)
-			} else if psp.Type == "SECRET" {
-				rs, isSecretExists := resolvedSescrets[psp.Key]
-				if !isSecretExists {
-					fmt.Println("Secret " + psp.Key + " not set or not available; also make sure that --resolveprops flag is set to true; exiting...")
-					os.Exit(1)
-				}
-				if forDiff {
-					ts := fmt.Sprintf("%d", rs.Timestamp)
-					line = strings.ReplaceAll(line, psp.Wholetext, ts)
-				} else {
-					line = strings.ReplaceAll(line, psp.Wholetext, rs.Secret)
-				}
-			}
-		}
-
-		matchFound := false // flag used for strict mode to indicate if we fail to find image match (for strict mode)
-
-		// check if line contains any key of substitution map
-		for _, kvs := range sortedSubstitutions {
-
-			k := kvs.Key
-			v := GetDigestedImageFromSubstitution(kvs.Value)
-
-			// have a version stripping docker.io and docker.io/library if it's present
-			// for this establish base image text
-			baseImageText := ""
-
-			if strings.Contains(line, k+":") || strings.Contains(line, k+"@") || strings.HasSuffix(line, k) {
-				baseImageText = k
-			}
-
-			if len(baseImageText) < 1 {
-				// try stripping docker.io
-				contText := strings.Replace(k, "docker.io/", "", 1)
-				if strings.Contains(line, contText+":") || strings.Contains(line, contText+"@") || strings.HasSuffix(line, contText) {
-					baseImageText = contText
-				}
-			}
-
-			if len(baseImageText) < 1 {
-				// try stripping docker.io/library
-				contText := strings.Replace(k, "docker.io/library/", "", 1)
-				// note that exact match is too loose here, so instead we only look for image: pattern
-				if !strings.Contains(line, "//"+contText) &&
-					(strings.Contains(line, contText+":") || strings.Contains(line, contText+"@") || strings.Contains(strings.ToLower(line), "image: "+contText) ||
-						strings.Contains(strings.ToLower(line), "image:"+contText)) {
-					baseImageText = contText
-				}
-			}
-
-			// found a match - do substitution
-			if len(baseImageText) > 0 && !strings.HasSuffix(line, ":") && !strings.Contains(line, baseImageText+": ") {
-				// if simple mode, only substitute if line begins with 'image:' key
-				re := regexp.MustCompile(`^\s*image:`)
-				// if parseMode is not simple, always substitute line, if parseMode is simple, only substitute line if it has an 'image' tag (ie: matches regex)
-				if parseMode != "simple" || re.MatchString(line) {
-					//split line before image name and concat with substitution map value
-					parts := strings.Split(line, baseImageText)
-
-					// remove beginning quotes if present
-					startLine := parts[0]
-					re := regexp.MustCompile("\"$")
-					startLine = re.ReplaceAllLiteralString(startLine, "")
-					re = regexp.MustCompile("'$")
-					startLine = re.ReplaceAllLiteralString(startLine, "")
-
-					matchFound = true
-					line = startLine + v
-					break
-				}
-			}
-		}
-
-		// strict mode: if line has an image tag, but no matching key found in substitution map, exit process with error code
-		re := regexp.MustCompile(`(?i)^\s*image:`)
-		if matchFound == false && parseMode == "strict" && re.MatchString(line) {
-			fmt.Println("Error: Failed to parse infile '" + inFileOpened.Name() + "'. Parse mode is set to 'strict' and cannot find artifact in substitution map: \n\t" + strings.TrimSpace(line))
-			//os.Exit(1) not sure where the best place to handle parsing failure is, here or repalceTagsCmd in root.go
-			return nil
-		}
 		// add parsed line toslice to return once parsing is complete
 		parsedLines = append(parsedLines, line)
 	}
@@ -274,6 +181,104 @@ func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string
 		fmt.Println("Error: Failed to parse empty/non-existent input file: " + inFileOpened.Name())
 	}
 	return parsedLines
+}
+
+func parseLineOnScan(line string, sortedSubstitutions *[]KeyValueSorted, resolvedProperties *map[string]string,
+	resolvedSecrets *map[string]ResolvedSecret, inFileName string) string {
+	// resolve props and secrets first
+	pspArr := parseLineToSecrets(line)
+	for _, psp := range pspArr {
+		if len((*resolvedProperties)[psp.Key]) < 1 && len(psp.Default) > 0 {
+			(*resolvedProperties)[psp.Key] = psp.Default
+		}
+		// locate value corresponding to key
+		if psp.Type == "PROPERTY" {
+			propVal, isPropExists := (*resolvedProperties)[psp.Key]
+			if !isPropExists {
+				fmt.Println("Property " + psp.Key + " not set; also make sure that --resolveprops flag is set to true; exiting...")
+				os.Exit(1)
+			}
+			line = strings.ReplaceAll(line, psp.Wholetext, propVal)
+		} else if psp.Type == "SECRET" {
+			rs, isSecretExists := (*resolvedSecrets)[psp.Key]
+			if !isSecretExists {
+				fmt.Println("Secret " + psp.Key + " not set or not available; also make sure that --resolveprops flag is set to true; exiting...")
+				os.Exit(1)
+			}
+			if forDiff {
+				ts := fmt.Sprintf("%d", rs.Timestamp)
+				line = strings.ReplaceAll(line, psp.Wholetext, ts)
+			} else {
+				line = strings.ReplaceAll(line, psp.Wholetext, rs.Secret)
+			}
+		}
+	}
+
+	matchFound := false // flag used for strict mode to indicate if we fail to find image match (for strict mode)
+
+	// check if line contains any key of substitution map
+	for _, kvs := range *sortedSubstitutions {
+
+		k := kvs.Key
+		v := GetDigestedImageFromSubstitution(kvs.Value)
+
+		// have a version stripping docker.io and docker.io/library if it's present
+		// for this establish base image text
+		baseImageText := ""
+
+		if strings.Contains(line, k+":") || strings.Contains(line, k+"@") || strings.HasSuffix(line, k) {
+			baseImageText = k
+		}
+
+		if len(baseImageText) < 1 {
+			// try stripping docker.io
+			contText := strings.Replace(k, "docker.io/", "", 1)
+			if strings.Contains(line, contText+":") || strings.Contains(line, contText+"@") || strings.HasSuffix(line, contText) {
+				baseImageText = contText
+			}
+		}
+
+		if len(baseImageText) < 1 {
+			// try stripping docker.io/library
+			contText := strings.Replace(k, "docker.io/library/", "", 1)
+			// note that exact match is too loose here, so instead we only look for image: pattern
+			if !strings.Contains(line, "//"+contText) &&
+				(strings.Contains(line, contText+":") || strings.Contains(line, contText+"@") || strings.Contains(strings.ToLower(line), "image: "+contText) ||
+					strings.Contains(strings.ToLower(line), "image:"+contText)) {
+				baseImageText = contText
+			}
+		}
+
+		// found a match - do substitution
+		if len(baseImageText) > 0 && !strings.HasSuffix(line, ":") && !strings.Contains(line, baseImageText+": ") {
+			// if simple mode, only substitute if line begins with 'image:' key
+			re := regexp.MustCompile(`^\s*image:`)
+			// if parseMode is not simple, always substitute line, if parseMode is simple, only substitute line if it has an 'image' tag (ie: matches regex)
+			if parseMode != "simple" || re.MatchString(line) {
+				//split line before image name and concat with substitution map value
+				parts := strings.Split(line, baseImageText)
+
+				// remove beginning quotes if present
+				startLine := parts[0]
+				re := regexp.MustCompile("\"$")
+				startLine = re.ReplaceAllLiteralString(startLine, "")
+				re = regexp.MustCompile("'$")
+				startLine = re.ReplaceAllLiteralString(startLine, "")
+
+				matchFound = true
+				line = startLine + v
+				break
+			}
+		}
+	}
+
+	// strict mode: if line has an image tag, but no matching key found in substitution map, exit process with error code
+	re := regexp.MustCompile(`(?i)^\s*image:`)
+	if !matchFound && parseMode == "strict" && re.MatchString(line) {
+		fmt.Println("Error: Failed to parse infile '" + inFileName + "'. Parse mode is set to 'strict' and cannot find artifact in substitution map: \n\t" + strings.TrimSpace(line))
+		os.Exit(1)
+	}
+	return line
 }
 
 /*
