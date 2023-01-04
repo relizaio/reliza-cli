@@ -219,13 +219,8 @@ func parseLines(inFileOpened *os.File, sortedSubstitutions *[]KeyValueSorted, re
 
 func parseBitnamiLines(bitnamiLineCache *[]string, sortedSubstitutions *[]KeyValueSorted,
 	resolvedProperties *map[string]string, resolvedSecrets *map[string]ResolvedSecret, inFileName string) *[]string {
-	var parsedLines []string
-	fmt.Println(len(*bitnamiLineCache))
-	isBitnami := isBitnamiLinesBitnami(bitnamiLineCache)
-	fmt.Println(isBitnami)
-	if isBitnami {
-		parsedLines = *(parseValidatedBitnamiLines(bitnamiLineCache, sortedSubstitutions))
-	} else {
+	parsedLines, isBitnami := validateAndParseBitnamiLines(bitnamiLineCache, sortedSubstitutions)
+	if !isBitnami {
 		for _, blc := range *bitnamiLineCache {
 			line := parseLineOnScan(blc, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileName)
 			parsedLines = append(parsedLines, line)
@@ -234,40 +229,95 @@ func parseBitnamiLines(bitnamiLineCache *[]string, sortedSubstitutions *[]KeyVal
 	return &parsedLines
 }
 
-func parseValidatedBitnamiLines(bitnamiLineCache *[]string, sortedSubstitutions *[]KeyValueSorted) *[]string {
+/**
+Sample non-merged:
+  image:
+    registry: docker.io
+    repository: taleodor/mafia-express
+    tag: latest
+    digest: ""
+Sample merged:
+  image:
+    debug: false
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+    registry: docker.io
+    repository: library/redis
+    tag: latest
+*/
+func validateAndParseBitnamiLines(bitnamiLineCache *[]string, sortedSubstitutions *[]KeyValueSorted) ([]string, bool) {
 	var parsedLines []string
 	var bitnamiSubst Substitution
-	regLine := strings.Trim((*bitnamiLineCache)[1], " ")
-	bitnamiSubst.Registry = strings.ReplaceAll(regLine, "registry: ", "")
-	repoLine := strings.Trim((*bitnamiLineCache)[2], " ")
-	bitnamiSubst.Image = strings.ReplaceAll(repoLine, "repository: ", "")
-	tagLine := strings.Trim((*bitnamiLineCache)[3], " ")
-	bitnamiSubst.Tag = strings.ReplaceAll(tagLine, "tag: ", "")
-	digestLine := strings.Trim((*bitnamiLineCache)[4], " ")
-	bitnamiSubst.Digest = strings.ReplaceAll(digestLine, "digest: ", "")
-	matchKey := GetMatchingKeyFromSubstitution(bitnamiSubst)
-	var replacedSubst Substitution
-	for _, kvs := range *sortedSubstitutions {
-		k := kvs.Key
-		if isImageMatchingSubstitutionKey(matchKey, k) {
-			replacedSubst = kvs.Value
-			break
+
+	bitnamiCheckMap := map[string]bool{}
+	isBitnami := true
+
+	if len(*bitnamiLineCache) < 5 {
+		isBitnami = false
+	}
+
+	if isBitnami {
+		for _, line := range *bitnamiLineCache {
+			trimmedLine := strings.Trim(line, " ")
+			if strings.HasPrefix(trimmedLine, "registry: ") {
+				bitnamiCheckMap["registry"] = true
+				bitnamiSubst.Registry = strings.ReplaceAll(trimmedLine, "registry: ", "")
+			} else if strings.HasPrefix(trimmedLine, "repository: ") {
+				bitnamiCheckMap["repository"] = true
+				bitnamiSubst.Image = strings.ReplaceAll(trimmedLine, "repository: ", "")
+			} else if strings.HasPrefix(trimmedLine, "tag: ") {
+				bitnamiCheckMap["tag"] = true
+				bitnamiSubst.Tag = strings.ReplaceAll(trimmedLine, "tag: ", "")
+			} else if strings.HasPrefix(trimmedLine, "digest: ") {
+				bitnamiCheckMap["digest"] = true
+				bitnamiSubst.Digest = strings.ReplaceAll(trimmedLine, "digest: ", "")
+			}
 		}
 	}
-	if len(replacedSubst.Digest) > 0 {
-		parsedLines = append(parsedLines, (*bitnamiLineCache)[0])
-		regLineSplit := strings.Split((*bitnamiLineCache)[1], ": ")
-		parsedLines = append(parsedLines, regLineSplit[0]+": "+replacedSubst.Registry)
-		repoLineSplit := strings.Split((*bitnamiLineCache)[2], ": ")
-		parsedLines = append(parsedLines, repoLineSplit[0]+": "+replacedSubst.Image)
-		tagLineSplit := strings.Split((*bitnamiLineCache)[3], ": ")
-		parsedLines = append(parsedLines, tagLineSplit[0]+": "+replacedSubst.Tag)
-		digestLineSplit := strings.Split((*bitnamiLineCache)[4], ": ")
-		parsedLines = append(parsedLines, digestLineSplit[0]+": "+replacedSubst.Digest)
-	} else {
+
+	if isBitnami && len(bitnamiCheckMap) < 4 {
+		isBitnami = false
+	}
+
+	if isBitnami {
+		matchKey := GetMatchingKeyFromSubstitution(bitnamiSubst)
+		var replacedSubst Substitution
+		for _, kvs := range *sortedSubstitutions {
+			k := kvs.Key
+			if isImageMatchingSubstitutionKey(matchKey, k) {
+				replacedSubst = kvs.Value
+				break
+			}
+		}
+
+		if len(replacedSubst.Digest) > 0 {
+			for _, line := range *bitnamiLineCache {
+				trimmedLine := strings.Trim(line, " ")
+				if strings.HasPrefix(trimmedLine, "registry: ") {
+					lineSplit := strings.Split(line, ": ")
+					parsedLines = append(parsedLines, lineSplit[0]+": "+replacedSubst.Registry)
+				} else if strings.HasPrefix(trimmedLine, "repository: ") {
+					lineSplit := strings.Split(line, ": ")
+					parsedLines = append(parsedLines, lineSplit[0]+": "+replacedSubst.Image)
+				} else if strings.HasPrefix(trimmedLine, "tag: ") {
+					lineSplit := strings.Split(line, ": ")
+					parsedLines = append(parsedLines, lineSplit[0]+": "+replacedSubst.Tag)
+				} else if strings.HasPrefix(trimmedLine, "digest: ") {
+					lineSplit := strings.Split(line, ": ")
+					parsedLines = append(parsedLines, lineSplit[0]+": "+replacedSubst.Digest)
+				} else {
+					parsedLines = append(parsedLines, line)
+				}
+			}
+		}
+	}
+
+	if !isBitnami {
 		parsedLines = *bitnamiLineCache
 	}
-	return &parsedLines
+
+	return parsedLines, isBitnami
 }
 
 func isImageMatchingSubstitutionKey(image string, substKey string) bool {
@@ -276,55 +326,6 @@ func isImageMatchingSubstitutionKey(image string, substKey string) bool {
 	substKeyMatch := strings.Replace(substKey, "docker.io/library/", "", 1)
 	substKeyMatch = strings.Replace(substKeyMatch, "docker.io/", "", 1)
 	return (imageMatch == substKeyMatch)
-}
-
-/**
-Tests if a given set of bitnami lines is really bitnami.
-Bitnami
-First line is always bitnami, so it tests the other four.
-Sample:
-  image:
-    registry: docker.io
-    repository: taleodor/mafia-express
-    tag: latest
-    digest: ""
-*/
-func isBitnamiLinesBitnami(bitnamiLineCache *[]string) bool {
-	isBitnami := true
-
-	if len(*bitnamiLineCache) != 5 {
-		isBitnami = false
-	}
-
-	if isBitnami {
-		regLine := strings.Trim((*bitnamiLineCache)[1], " ")
-		if !strings.HasPrefix(regLine, "registry: ") {
-			isBitnami = false
-		}
-	}
-
-	if isBitnami {
-		repoLine := strings.Trim((*bitnamiLineCache)[2], " ")
-		if !strings.HasPrefix(repoLine, "repository: ") {
-			isBitnami = false
-		}
-	}
-
-	if isBitnami {
-		tagLine := strings.Trim((*bitnamiLineCache)[3], " ")
-		if !strings.HasPrefix(tagLine, "tag: ") {
-			isBitnami = false
-		}
-	}
-
-	if isBitnami {
-		digestLine := strings.Trim((*bitnamiLineCache)[4], " ")
-		if !strings.HasPrefix(digestLine, "digest: ") {
-			isBitnami = false
-		}
-	}
-
-	return isBitnami
 }
 
 /**
