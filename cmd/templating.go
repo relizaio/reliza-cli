@@ -10,6 +10,7 @@ import (
 	"os"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -182,25 +183,36 @@ func parseLines(inFileOpened *os.File, sortedSubstitutions *[]KeyValueSorted, re
 	var parsedLines []string
 
 	inScanner := bufio.NewScanner(inFileOpened)
+	establishedWhiteSpacePrefix := 0
 
 	var bitnamiLineCache []string
 	for inScanner.Scan() {
 		line := inScanner.Text()
-		if isBitnamiImageStart(line) {
+		isBitnamiImageStart, whiteSpacePrefix := isBitnamiImageStart(line)
+		if isBitnamiImageStart {
+			establishedWhiteSpacePrefix = whiteSpacePrefix + 2
 			bitnamiLineCache = append(bitnamiLineCache, line)
-		} else if len(bitnamiLineCache) > 0 && len(bitnamiLineCache) < 4 {
+		} else if len(bitnamiLineCache) > 0 && IsInBitnamiParse(line, establishedWhiteSpacePrefix) {
 			bitnamiLineCache = append(bitnamiLineCache, line)
-		} else if len(bitnamiLineCache) == 4 {
-			bitnamiLineCache = append(bitnamiLineCache, line)
+		} else if len(bitnamiLineCache) > 0 {
 			parsedBitnamiLines := parseBitnamiLines(&bitnamiLineCache, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
 			for _, pbl := range *parsedBitnamiLines {
 				parsedLines = append(parsedLines, pbl)
 			}
 			bitnamiLineCache = []string{}
+			line = parseLineOnScan(line, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
+			parsedLines = append(parsedLines, line)
 		} else {
 			line = parseLineOnScan(line, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
 			parsedLines = append(parsedLines, line)
 		}
+	}
+	if len(bitnamiLineCache) > 0 {
+		parsedBitnamiLines := parseBitnamiLines(&bitnamiLineCache, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
+		for _, pbl := range *parsedBitnamiLines {
+			parsedLines = append(parsedLines, pbl)
+		}
+		bitnamiLineCache = []string{}
 	}
 	return &parsedLines
 }
@@ -208,7 +220,9 @@ func parseLines(inFileOpened *os.File, sortedSubstitutions *[]KeyValueSorted, re
 func parseBitnamiLines(bitnamiLineCache *[]string, sortedSubstitutions *[]KeyValueSorted,
 	resolvedProperties *map[string]string, resolvedSecrets *map[string]ResolvedSecret, inFileName string) *[]string {
 	var parsedLines []string
+	fmt.Println(len(*bitnamiLineCache))
 	isBitnami := isBitnamiLinesBitnami(bitnamiLineCache)
+	fmt.Println(isBitnami)
 	if isBitnami {
 		parsedLines = *(parseValidatedBitnamiLines(bitnamiLineCache, sortedSubstitutions))
 	} else {
@@ -313,12 +327,25 @@ func isBitnamiLinesBitnami(bitnamiLineCache *[]string) bool {
 	return isBitnami
 }
 
-func isBitnamiImageStart(line string) bool {
+/**
+Returns true if is start and returns number of whitespace before image
+*/
+func isBitnamiImageStart(line string) (bool, int) {
 	isBitnamiImageStart := false
 	if strings.Trim(line, " ") == "image:" {
 		isBitnamiImageStart = true
 	}
-	return isBitnamiImageStart
+	whiteSpacePrefix := strings.Split(line, "image:")[0]
+	return isBitnamiImageStart, len(whiteSpacePrefix)
+}
+
+func IsInBitnamiParse(line string, whitespacePrefix int) bool {
+	isInParse := false
+	re := regexp.MustCompile(`^\s{` + strconv.Itoa(whitespacePrefix) + `}[^\s]`)
+	if re.MatchString(line) {
+		isInParse = true
+	}
+	return isInParse
 }
 
 func parseLineOnScan(line string, sortedSubstitutions *[]KeyValueSorted, resolvedProperties *map[string]string,

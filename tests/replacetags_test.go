@@ -88,3 +88,45 @@ func TestReplaceTagsBitnamiStyle(t *testing.T) {
 		t.Fatalf("replaced tags do not equal expected, actual = " + replacedTags)
 	}
 }
+
+func TestIsInBitnamiParse(t *testing.T) {
+	testLine1 := "    pullPolicy: IfNotPresent"
+	inParse11 := cmd.IsInBitnamiParse(testLine1, 4)
+
+	if !inParse11 {
+		t.Fatalf("Failed in bitnami parse check, should be true with 4 whitespace prefix")
+	}
+
+	inParse12 := cmd.IsInBitnamiParse(testLine1, 5)
+
+	if inParse12 {
+		t.Fatalf("Failed in bitnami parse check, should be false with 5 whitespace prefix")
+	}
+
+	testLine2 := "    registry: docker.io"
+	inParse21 := cmd.IsInBitnamiParse(testLine2, 4)
+
+	if !inParse21 {
+		t.Fatalf("Failed in bitnami parse check, should be true with 4 whitespace prefix")
+	}
+}
+
+func TestReplaceTagsBitnamiStyleMerged(t *testing.T) {
+	var replaceTagsVars cmd.ReplaceTagsVars
+	replaceTagsVars.TagSourceFile = "mafia_tag_source_cdx.json"
+	replaceTagsVars.TypeVal = "cyclonedx"
+	replaceTagsVars.Infile = "values_mafia_bitnami_merged_style.yaml"
+
+	replacedTags := cmd.ReplaceTags(replaceTagsVars)
+	expectedReplacement, err := os.ReadFile("expected_values_mafia_bitnami_merged_style.yaml")
+
+	// actualOutFile, _ := os.Create("actual_bitnami_out.yaml")
+	// actualOutFile.WriteString(replacedTags)
+
+	if err != nil {
+		t.Fatalf("failed reading expected values file")
+	}
+	if replacedTags != string(expectedReplacement) {
+		t.Fatalf("replaced tags do not equal expected, actual = " + replacedTags)
+	}
+}
