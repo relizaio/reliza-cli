@@ -76,7 +76,7 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 				//fmt.Println(branch)
 				// call Reliza Hub with specified project id
 				body := getLatestReleaseFunc("false", relizaHubUri, projectId, productId, branch, environment,
-					tagKey, tagVal, apiKeyId, apiKey, instance, namespace)
+					tagKey, tagVal, apiKeyId, apiKey, instance, namespace, "")
 
 				// parse body json
 				var bodyJson map[string]interface{}
@@ -624,7 +624,7 @@ func stripImageHashTag(imageName string) string {
 }
 
 func getLatestReleaseFunc(debug string, relizaHubUri string, project string, product string, branch string, environment string,
-	tagKey string, tagVal string, apiKeyId string, apiKey string, instance string, namespace string) []byte {
+	tagKey string, tagVal string, apiKeyId string, apiKey string, instance string, namespace string, status string) []byte {
 	if debug == "true" {
 		fmt.Println("Using Reliza Hub at", relizaHubUri)
 	}
@@ -652,6 +652,10 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 
 	if len(namespace) > 0 {
 		body["namespace"] = namespace
+	}
+
+	if len(status) > 0 {
+		body["status"] = strings.ToUpper(status)
 	}
 
 	client := graphql.NewClient(relizaHubUri + "/graphql")

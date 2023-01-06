@@ -1079,7 +1079,7 @@ var getLatestReleaseCmd = &cobra.Command{
 	Long: `This CLI command would connect to Reliza Hub and would obtain latest release for specified Project and Branch
 			or specified Product and Feature Set.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		getLatestReleaseFunc(debug, relizaHubUri, project, product, branch, environment, tagKey, tagVal, apiKeyId, apiKey, instance, namespace)
+		getLatestReleaseFunc(debug, relizaHubUri, project, product, branch, environment, tagKey, tagVal, apiKeyId, apiKey, instance, namespace, status)
 	},
 }
 
@@ -1379,6 +1379,7 @@ func init() {
 	getLatestReleaseCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace within instance for which to check release, only matters if instance is supplied (optional)")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&tagKey, "tagkey", "", "Tag key to use for picking artifact (optional)")
 	getLatestReleaseCmd.PersistentFlags().StringVar(&tagVal, "tagval", "", "Tag value to use for picking artifact (optional)")
+	getLatestReleaseCmd.PersistentFlags().StringVar(&status, "status", "", "Status of the release, default is completed (optional)")
 
 	// flags for parse template command
 	parseCopyTemplatesCmd.PersistentFlags().StringVar(&environment, "env", "", "Environment to obtain approvals details from (optional)")
