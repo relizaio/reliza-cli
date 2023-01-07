@@ -30,15 +30,19 @@ import (
 )
 
 var (
-	properties []string
-	secrets    []string
+	properties          []string
+	secrets             []string
+	bundleSpecificProps bool
+	bundleId            string
 )
 
 func init() {
-	instPropsSecretsCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which export from (optional)")
-	instPropsSecretsCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to export from (optional)")
-	instPropsSecretsCmd.PersistentFlags().StringVar(&revision, "revision", "", "Revision of instance for which to export from (optional, default is -1)")
-	instPropsSecretsCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Use to define specific namespace for instance export (optional, default is 'default')")
+	instPropsSecretsCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID of instance for which to retrieve props and secrets (optional)")
+	instPropsSecretsCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to retrieve props and secrets (optional)")
+	instPropsSecretsCmd.PersistentFlags().StringVar(&revision, "revision", "", "Revision of instance for which to retrieve props and secrets (optional, default is -1)")
+	instPropsSecretsCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Use to define specific namespace for retrieve props and secrets (optional, default is 'default')")
+	instPropsSecretsCmd.PersistentFlags().StringVar(&bundleId, "bundleid", "", "UUID of specific bundle to retrieve props and secrets (optional, default is empty - uses namespace wide)")
+	instPropsSecretsCmd.PersistentFlags().BoolVar(&bundleSpecificProps, "usenamespacebundle", false, "Set to true for new behavior where namespace and bundle are used for prop resolution (optional, default is 'false')")
 	instPropsSecretsCmd.PersistentFlags().StringArrayVar(&properties, "property", []string{}, "Property to resolve (multiple allowed)")
 	instPropsSecretsCmd.PersistentFlags().StringArrayVar(&secrets, "secret", []string{}, "Secret to resolve (multiple allowed)")
 	rootCmd.AddCommand(instPropsSecretsCmd)
@@ -76,8 +80,8 @@ func retrieveInstancePropsSecrets(props []string, secrs []string) SecretPropsRHR
 
 		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
-			query ($instanceUuid: ID, $instanceUri: String, $revision: Int!, $namespace: String!, $properties: [String], $secrets: [String]) {
-				getInstancePropSecrets(instanceUuid: $instanceUuid, instanceUri: $instanceUri, revision: $revision, namespace: $namespace, properties: $properties, secrets: $secrets) {
+			query ($instanceUuid: ID, $instanceUri: String, $revision: Int!, $namespace: String!, $properties: [String], $secrets: [String], $bundle: ID, $bundleSpecificProps: Boolean) {
+				getInstancePropSecrets(instanceUuid: $instanceUuid, instanceUri: $instanceUri, revision: $revision, namespace: $namespace, properties: $properties, secrets: $secrets, bundle: $bundle, bundleSpecificProps: $bundleSpecificProps) {
 					properties {
 						key
 						value
@@ -90,12 +94,15 @@ func retrieveInstancePropsSecrets(props []string, secrs []string) SecretPropsRHR
 				}
 			}
 		`)
+
 		req.Var("instanceUuid", instance)
 		req.Var("instanceUri", instanceURI)
 		req.Var("revision", revision)
 		req.Var("namespace", namespace)
 		req.Var("properties", props)
 		req.Var("secrets", secrs)
+		req.Var("bundle", bundleId)
+		req.Var("bundleSpecificProps", bundleSpecificProps)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("User-Agent", "Reliza CLI")
 		req.Header.Set("Accept-Encoding", "gzip, deflate")
