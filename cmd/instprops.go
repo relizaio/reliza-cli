@@ -33,7 +33,6 @@ var (
 	properties          []string
 	secrets             []string
 	bundleSpecificProps bool
-	bundleId            string
 )
 
 func init() {
@@ -41,7 +40,7 @@ func init() {
 	instPropsSecretsCmd.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to retrieve props and secrets (optional)")
 	instPropsSecretsCmd.PersistentFlags().StringVar(&revision, "revision", "", "Revision of instance for which to retrieve props and secrets (optional, default is -1)")
 	instPropsSecretsCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Use to define specific namespace for retrieve props and secrets (optional, default is 'default')")
-	instPropsSecretsCmd.PersistentFlags().StringVar(&bundleId, "bundleid", "", "UUID of specific bundle to retrieve props and secrets (optional, default is empty - uses namespace wide)")
+	instPropsSecretsCmd.PersistentFlags().StringVar(&bundle, "bundle", "", "UUID or name of specific bundle to retrieve props and secrets (optional, default is empty - uses namespace wide)")
 	instPropsSecretsCmd.PersistentFlags().BoolVar(&bundleSpecificProps, "usenamespacebundle", false, "Set to true for new behavior where namespace and bundle are used for prop resolution (optional, default is 'false')")
 	instPropsSecretsCmd.PersistentFlags().StringArrayVar(&properties, "property", []string{}, "Property to resolve (multiple allowed)")
 	instPropsSecretsCmd.PersistentFlags().StringArrayVar(&secrets, "secret", []string{}, "Secret to resolve (multiple allowed)")
@@ -101,7 +100,7 @@ func retrieveInstancePropsSecrets(props []string, secrs []string) SecretPropsRHR
 		req.Var("namespace", namespace)
 		req.Var("properties", props)
 		req.Var("secrets", secrs)
-		req.Var("bundle", bundleId)
+		req.Var("bundle", bundle)
 		req.Var("bundleSpecificProps", bundleSpecificProps)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("User-Agent", "Reliza CLI")
