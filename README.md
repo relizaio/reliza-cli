@@ -300,7 +300,7 @@ Flags stand for:
 - **--tagval** - flag to denote tag value to use as a selector for artifact (optional, if provided tagkey flag must also be supplied).
 - **--instance** - flag to denote specific instance for which release should match (optional, if supplied namespace flag is also used and env flag gets overrided by instance's environment).
 - **--namespace** - flag to denote specific namespace within instance, if instance is supplied (optional).
-- **--status** - Status of the release, default is completed (optional) | can be - [complete, pending or rejected].
+- **--status** - Status of the last known release to return, default is complete (optional, can be - [complete, pending or rejected]). If set to "pending", will return either pending or complete release. If set to "rejected", will return either pending or complete or rejected releases.
 
 Here is a full example how we can use the getlatestrelease command leveraging jq to obtain the latest docker image with sha256 that we need to use for integration (don't forget to change api_id, api_key, project, branch and env to proper values as needed):
 
