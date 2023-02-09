@@ -871,6 +871,7 @@ Flags stand for:
 - **--title** - Title of the pull request.
 - **--number** - Number of the pull request.
 - **--commits** - Comma seprated commit shas on this pull request.
+- **--commits** - SHA of current commit on the Pull Request (will be merged with existing list)
 - **--createdDate** - Datetime when the pull request was created.
 - **--closedDate** - Datetime when the pull request was closed.
 - **--mergedDate** - Datetime when the pull request was merged.
