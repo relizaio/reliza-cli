@@ -1213,12 +1213,61 @@ var prDataCmd = &cobra.Command{
 		if len(number) > 0 {
 			body["number"] = number
 		}
-		if len(commit) > 0 {
-			body["commit"] = commit
+		if commit != "" {
+			commitMap := map[string]string{"uri": vcsUri, "type": vcsType, "commit": commit, "commitMessage": commitMessage}
+			if vcsTag != "" {
+				commitMap["vcsTag"] = vcsTag
+			}
+			if dateActual != "" {
+				commitMap["dateActual"] = dateActual
+			}
+			body["sourceCodeEntry"] = commitMap
 		}
+
 		if len(commits) > 0 {
-			indCommits := strings.Split(string(commits), ",")
-			body["commits"] = indCommits
+			// fmt.Println(commits)
+			plainCommits, err := base64.StdEncoding.DecodeString(commits)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			indCommits := strings.Split(string(plainCommits), "\n")
+			commitsInBody := make([]map[string]interface{}, len(indCommits)-1, len(indCommits)-1)
+			for i := range indCommits {
+				if len(indCommits[i]) > 0 {
+					singleCommitEl := map[string]interface{}{}
+					commitParts := strings.Split(indCommits[i], "|||")
+					singleCommitEl["commit"] = commitParts[0]
+					singleCommitEl["dateActual"] = commitParts[1]
+					singleCommitEl["commitMessage"] = commitParts[2]
+					if len(commitParts) > 3 {
+						singleCommitEl["commitAuthor"] = commitParts[3]
+						singleCommitEl["commitEmail"] = commitParts[4]
+					}
+					commitsInBody[i] = singleCommitEl
+
+					// if commit is not present but we are here, use first line as commit
+					if len(commit) < 1 && i == 0 {
+						commitMap := map[string]string{}
+						if len(commitParts) > 3 {
+							commitMap = map[string]string{"commit": commitParts[0], "dateActual": commitParts[1], "commitMessage": commitParts[2], "commitAuthor": commitParts[3], "commitEmail": commitParts[4]}
+						} else {
+							commitMap = map[string]string{"commit": commitParts[0], "dateActual": commitParts[1], "commitMessage": commitParts[2]}
+						}
+						if vcsTag != "" {
+							commitMap["vcsTag"] = vcsTag
+						}
+						if vcsUri != "" {
+							commitMap["uri"] = vcsUri
+						}
+						if vcsType != "" {
+							commitMap["type"] = vcsType
+						}
+						body["sourceCodeEntry"] = commitMap
+					}
+				}
+			}
+			body["commits"] = commitsInBody
 		}
 
 		if debug == "true" {
@@ -1420,8 +1469,13 @@ func init() {
 	prDataCmd.PersistentFlags().StringVar(&closedDate, "closedDate", "", "Datetime when the Pull Request was closed")
 	prDataCmd.PersistentFlags().StringVar(&mergedDate, "mergedDate", "", "Datetime when the Pull Request was merged")
 	prDataCmd.PersistentFlags().StringVar(&number, "number", "", "Number of the Pull Request")
-	prDataCmd.PersistentFlags().StringVar(&commits, "commits", "", "Comma seprated commit shas on this Pull Request")
 	prDataCmd.PersistentFlags().StringVar(&commit, "commit", "", "SHA of current commit on the Pull Request (will be merged with existing list)")
+	prDataCmd.PersistentFlags().StringVar(&commitMessage, "commitmessage", "", "Commit message or subject (optional)")
+	prDataCmd.PersistentFlags().StringVar(&vcsUri, "vcsuri", "", "URI of VCS repository")
+	prDataCmd.PersistentFlags().StringVar(&vcsType, "vcstype", "", "Type of VCS repository: git, svn, mercurial")
+	prDataCmd.PersistentFlags().StringVar(&commits, "commits", "", "Base64-encoded list of commits associated with this pull request event, can be obtained with 'git log --date=iso-strict --pretty='%H|||%ad|||%s' | base64 -w 0' command (optional)")
+	prDataCmd.PersistentFlags().StringVar(&vcsTag, "vcstag", "", "VCS Tag")
+	prDataCmd.PersistentFlags().StringVar(&dateActual, "commitdate", "", "Commit date and time in iso strict format, use git log --date=iso-strict (optional).")
 
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(printversionCmd)
