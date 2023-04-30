@@ -438,7 +438,7 @@ func parseSecretsPropsFromInFile(inFileOpened *os.File) SecretProps {
 		for _, psp := range pspArr {
 			if psp.Type == "PROPERTY" {
 				sp.Properties[psp.Key] = true
-			} else if psp.Type == "SECRET" {
+			} else if psp.Type == "SECRET" || psp.Type == "PLAINSECRET" {
 				sp.Secrets[psp.Key] = true
 			}
 		}
@@ -489,6 +489,19 @@ func parseLineToSecrets(line string) []PropSecretParse {
 					psp2.Key = rp2
 				}
 				psp2.Wholetext = "$RELIZA{SECRET." + rp2 + "}"
+				psp = append(psp, psp2)
+			} else if strings.HasPrefix(rlzPart, "PLAINSECRET") {
+				rp1 := strings.Split(rlzPart, "PLAINSECRET.")[1]
+				rp2 := strings.Split(rp1, "}")[0]
+				var psp2 PropSecretParse
+				psp2.Type = "PLAINSECRET"
+				if strings.Contains(rp2, ":") {
+					psp2.Key = strings.Split(rp2, ":")[0]
+					psp2.Default = strings.Split(rp2, ":")[1]
+				} else {
+					psp2.Key = rp2
+				}
+				psp2.Wholetext = "$RELIZA{PLAINSECRET." + rp2 + "}"
 				psp = append(psp, psp2)
 			}
 		}

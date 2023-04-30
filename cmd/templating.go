@@ -365,7 +365,7 @@ func parseLineOnScan(line string, sortedSubstitutions *[]KeyValueSorted, resolve
 				os.Exit(1)
 			}
 			line = strings.ReplaceAll(line, psp.Wholetext, propVal)
-		} else if psp.Type == "SECRET" {
+		} else if psp.Type == "SECRET" || psp.Type == "PLAINSECRET" {
 			rs, isSecretExists := (*resolvedSecrets)[psp.Key]
 			if !isSecretExists {
 				fmt.Println("Secret " + psp.Key + " not set or not available; also make sure that --resolveprops flag is set to true; exiting...")
@@ -374,8 +374,12 @@ func parseLineOnScan(line string, sortedSubstitutions *[]KeyValueSorted, resolve
 			if forDiff {
 				ts := fmt.Sprintf("%d", rs.Timestamp)
 				line = strings.ReplaceAll(line, psp.Wholetext, ts)
-			} else {
+			} else if psp.Type == "SECRET" {
 				line = strings.ReplaceAll(line, psp.Wholetext, rs.Secret)
+			} else if psp.Type == "PLAINSECRET" {
+				createNamespaceIfMissing(namespace)
+				plainSecret := resolvePlainSecret(rs.Secret, namespace)
+				line = strings.ReplaceAll(line, psp.Wholetext, plainSecret)
 			}
 		}
 	}
