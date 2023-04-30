@@ -433,6 +433,8 @@ While secrets should be defined as:
 
 `$RELIZA{SECRET.secret_key}` - where `secret_key` part must be set on the Reliza Hub. More so, the secret must be allowed for usage by particular instance. Finally, instance must have a property set for the sealed certificates, since we are only sending sealed certificates and not in plain text.
 
+`$RELIZA{PLAINSECRET.secret_key}` is same as SECRET but resolves to plain value. This only works in the reliza-cd context.
+
 ## 7.3 Use Case: Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle
 
 This use case is designed for the case when we have to deploy a specific version of a bundle or approved bundle by environment. Reliza CLI can be leveraged to update deployments with the correct version of artifacts that can be pushed to GitOps.
