@@ -11,7 +11,7 @@ jobs:
       IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
     steps:
       - name: RelizaHub Build And Submit Release metadata action
-        uses: relizaio/reliza-docker-action@fc626a26a2abea3b4c2d935da79ef8613b83e234
+        uses: relizaio/reliza-docker-action@c3405b93a8d3d32cf57d1c34e95b3841469b602f
         with:
           registry_username: ${{ secrets.DOCKER_LOGIN }}
           registry_password: ${{ secrets.DOCKER_TOKEN }}
