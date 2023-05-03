@@ -34,6 +34,16 @@ jobs:
         run: |
           docker cp reliza-container://$VERSION ./
           aws s3 cp --recursive $VERSION s3://reliza-images/reliza-cli-download/$VERSION
+      - name: Login to DockerHub
+        uses: docker/login-action@v2.1.0
+        with:
+          username: ${{ secrets.DOCKER_LOGIN }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: Push latest image to Docker Hub
+        run: |
+          docker pull relizaio/reliza-cli:$VERSION
+          docker tag relizaio/reliza-cli:latest
+          docker push relizaio/reliza-cli:latest
       - name: Add artifacts to corresponding Reliza Hub release
         run: |
           echo -n "-k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} " >> reliza_command
