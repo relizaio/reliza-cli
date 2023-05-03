@@ -12,6 +12,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 */
 package cmd
 
@@ -222,10 +223,7 @@ const FULL_RELEASE_GQL_DATA = RELEASE_GQL_DATA + `
 			aliases
 		}
 		notes
-		tags {
-			key
-			value
-		}
+		tags
 		dateFrom
 		dateTo
 		buildDuration
@@ -262,11 +260,6 @@ const PROJECT_GQL_DATA = `
 	apiKeyId
 	apiKey
 `
-
-type TagRecord struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
-}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -467,14 +460,9 @@ var addreleaseCmd = &cobra.Command{
 						fmt.Println("number of keys and values per each --tagval and --tagkey flag must be the same")
 						os.Exit(2)
 					}
-
-					k := make([]TagRecord, 0)
+					k := map[string]string{}
 					for j := range tagKeys {
-						tr := TagRecord{
-							Key:   tagKeys[j],
-							Value: tagVals[j],
-						}
-						k = append(k, tr)
+						k[tagKeys[j]] = tagVals[j]
 					}
 					artifacts[i]["tags"] = k
 				}
@@ -699,19 +687,14 @@ var addArtifactCmd = &cobra.Command{
 						fmt.Println("number of keys and values per each --tagval and --tagkey flag must be the same")
 						os.Exit(2)
 					}
-
-					k := make([]TagRecord, 0)
+					k := map[string]string{}
 					for j := range tagKeys {
-						tr := TagRecord{
-							Key:   tagKeys[j],
-							Value: tagVals[j],
-						}
-						k = append(k, tr)
+						k[tagKeys[j]] = tagVals[j]
 					}
-
 					artifacts[i]["tags"] = k
 				}
 			}
+
 			body["artifacts"] = artifacts
 		}
 
