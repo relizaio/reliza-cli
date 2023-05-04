@@ -42,7 +42,7 @@ jobs:
       - name: Push latest image to Docker Hub
         run: |
           docker pull relizaio/reliza-cli:$VERSION
-          docker tag relizaio/reliza-cli:latest
+          docker tag relizaio/reliza-cli:$VERSION relizaio/reliza-cli:latest
           docker push relizaio/reliza-cli:latest
       - name: Add artifacts to corresponding Reliza Hub release
         run: |
