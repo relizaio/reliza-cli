@@ -26,6 +26,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/machinebox/graphql"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -67,6 +68,7 @@ var disapprove bool // approve (default) or disapprove
 var endpoint string
 var environment string
 var featureBranchVersioning string
+var filePath string
 var hash string
 var imageFilePath string
 var imageString string
@@ -803,6 +805,46 @@ var isApprovalNeededCmd = &cobra.Command{
 	},
 }
 
+var testArtifactCmd = &cobra.Command{
+	Use:   "addTestArtifact",
+	Short: "Add test artifact to a release using valid API key",
+	Long:  `This CLI command would connect to Reliza Hub add test artifact to a release.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if debug == "true" {
+			fmt.Println("Using Reliza Hub at", relizaHubUri)
+		}
+
+		body := map[string]string{}
+		if len(releaseId) > 0 {
+			body["uuid"] = releaseId
+		}
+		if len(releaseVersion) > 0 {
+			body["version"] = releaseVersion
+		}
+		if len(project) > 0 {
+			body["project"] = project
+		}
+		if len(instance) > 0 {
+			body["instance"] = instance
+		}
+		if len(namespace) > 0 {
+			body["namespace"] = namespace
+		}
+		client := resty.New()
+		resp, err := client.R().
+			SetHeader("Content-Type", "application/json").
+			SetHeader("User-Agent", "Reliza Go Client").
+			SetHeader("Accept-Encoding", "gzip, deflate").
+			SetFile("file", filePath).
+			SetFormData(body).
+			SetBasicAuth(apiKeyId, apiKey).
+			Post(relizaHubUri + "/api/programmatic/v1/testReport/upload")
+
+		printResponse(err, resp)
+
+	},
+}
+
 var instDataCmd = &cobra.Command{
 	Use:   "instdata",
 	Short: "Sends instance data to Reliza Hub",
@@ -1389,6 +1431,14 @@ func init() {
 	isApprovalNeededCmd.PersistentFlags().StringVar(&approvalType, "approval", "", "Name of approval type to check")
 	isApprovalNeededCmd.MarkPersistentFlagRequired("approval")
 
+	// flags for is approval needed check command
+	testArtifactCmd.PersistentFlags().StringVar(&releaseId, "releaseid", "", "UUID of release (either releaseid or releaseversion and project must be set)")
+	testArtifactCmd.PersistentFlags().StringVar(&releaseVersion, "releaseversion", "", "Version of release (either releaseid or releaseversion and project must be set)")
+	testArtifactCmd.PersistentFlags().StringVar(&project, "project", "", "UUID of project or product for release (either instance and project or releaseid or releaseversion and project must be set)")
+	testArtifactCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID or URI of instance for release (either instance and project or releaseid or releaseversion and project must be set)")
+	testArtifactCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace of the instance for release (optional, only considered if instance is specified")
+	testArtifactCmd.PersistentFlags().StringVarP(&filePath, "file", "f", "", "Path to the artifact")
+
 	// flags for instance data command
 	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images", "Path to image file, ignored if --images parameter is supplied")
 	instDataCmd.PersistentFlags().StringVar(&imageString, "images", "", "Whitespace separated images with digests or simply digests, if supplied takes precedence over imagefile")
@@ -1511,6 +1561,7 @@ func init() {
 	rootCmd.AddCommand(exportBundleCmd)
 	rootCmd.AddCommand(getChangelogCmd)
 	rootCmd.AddCommand(isApprovalNeededCmd)
+	rootCmd.AddCommand(testArtifactCmd)
 	rootCmd.AddCommand(prDataCmd)
 }
 
@@ -1537,6 +1588,38 @@ func sendRequestWithUri(req *graphql.Request, endpoint string, uri string) strin
 
 	jsonResponse, _ := json.Marshal(respData[endpoint])
 	return string(jsonResponse)
+}
+
+func printResponse(err error, resp *resty.Response) {
+	if debug == "true" {
+		// Explore response object
+		fmt.Println("Response Info:")
+		fmt.Println("Error      :", err)
+		fmt.Println("Status Code:", resp.StatusCode())
+		fmt.Println("Status     :", resp.Status())
+		fmt.Println("Time       :", resp.Time())
+		fmt.Println("Received At:", resp.ReceivedAt())
+		fmt.Println("Body       :\n", resp)
+		fmt.Println()
+	} else {
+		fmt.Println(resp)
+	}
+
+	if resp.StatusCode() != 200 {
+		fmt.Println("Error Response Info:")
+		fmt.Println("Error      :", err)
+		var jsonError ErrorBody
+		errJson := json.Unmarshal(resp.Body(), &jsonError)
+		if errJson != nil {
+			fmt.Println("Error when decoding error json data: ", errJson)
+		}
+		fmt.Println("Error Message:", jsonError.Message)
+		fmt.Println("Status Code:", resp.StatusCode())
+		fmt.Println("Status     :", resp.Status())
+		fmt.Println("Time       :", resp.Time())
+		fmt.Println("Received At:", resp.ReceivedAt())
+		os.Exit(1)
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.
