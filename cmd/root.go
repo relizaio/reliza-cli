@@ -45,6 +45,7 @@ var artCiMeta []string
 var artDigests []string
 var artId []string
 var artType []string
+var artifactType string
 var artVersion []string
 var artPublisher []string
 var artGroup []string
@@ -805,10 +806,10 @@ var isApprovalNeededCmd = &cobra.Command{
 	},
 }
 
-var testArtifactCmd = &cobra.Command{
-	Use:   "addTestArtifact",
-	Short: "Add test artifact to a release using valid API key",
-	Long:  `This CLI command would connect to Reliza Hub add test artifact to a release.`,
+var downloadableArtifactCmd = &cobra.Command{
+	Use:   "addDownloadableArtifact",
+	Short: "Add a downloadable artifact to a release using valid API key",
+	Long:  `This CLI command would connect to Reliza Hub add downloadable artifact to a release.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if debug == "true" {
 			fmt.Println("Using Reliza Hub at", relizaHubUri)
@@ -830,6 +831,9 @@ var testArtifactCmd = &cobra.Command{
 		if len(namespace) > 0 {
 			body["namespace"] = namespace
 		}
+		if len(artifactType) > 0 {
+			body["artifactType"] = artifactType
+		}
 		client := resty.New()
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
@@ -838,7 +842,7 @@ var testArtifactCmd = &cobra.Command{
 			SetFile("file", filePath).
 			SetFormData(body).
 			SetBasicAuth(apiKeyId, apiKey).
-			Post(relizaHubUri + "/api/programmatic/v1/testReport/upload")
+			Post(relizaHubUri + "/api/programmatic/v1/artifact/upload")
 
 		printResponse(err, resp)
 
@@ -1432,12 +1436,13 @@ func init() {
 	isApprovalNeededCmd.MarkPersistentFlagRequired("approval")
 
 	// flags for is approval needed check command
-	testArtifactCmd.PersistentFlags().StringVar(&releaseId, "releaseid", "", "UUID of release (either releaseid or releaseversion and project must be set)")
-	testArtifactCmd.PersistentFlags().StringVar(&releaseVersion, "releaseversion", "", "Version of release (either releaseid or releaseversion and project must be set)")
-	testArtifactCmd.PersistentFlags().StringVar(&project, "project", "", "UUID of project or product for release (either instance and project or releaseid or releaseversion and project must be set)")
-	testArtifactCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID or URI of instance for release (either instance and project or releaseid or releaseversion and project must be set)")
-	testArtifactCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace of the instance for release (optional, only considered if instance is specified")
-	testArtifactCmd.PersistentFlags().StringVarP(&filePath, "file", "f", "", "Path to the artifact")
+	downloadableArtifactCmd.PersistentFlags().StringVar(&releaseId, "releaseid", "", "UUID of release (either releaseid or releaseversion and project must be set)")
+	downloadableArtifactCmd.PersistentFlags().StringVar(&releaseVersion, "releaseversion", "", "Version of release (either releaseid or releaseversion and project must be set)")
+	downloadableArtifactCmd.PersistentFlags().StringVar(&project, "project", "", "UUID of project or product for release (either instance and project or releaseid or releaseversion and project must be set)")
+	downloadableArtifactCmd.PersistentFlags().StringVar(&instance, "instance", "", "UUID or URI of instance for release (either instance and project or releaseid or releaseversion and project must be set)")
+	downloadableArtifactCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace of the instance for release (optional, only considered if instance is specified")
+	downloadableArtifactCmd.PersistentFlags().StringVarP(&filePath, "file", "f", "", "Path to the artifact")
+	downloadableArtifactCmd.PersistentFlags().StringVar(&artifactType, "artifactType", "GENERIC", "Type of artifact - can be (TEST_REPORT, SECURITY_SCAN, DOCUMENTATION, GENERIC) or some user defined value")
 
 	// flags for instance data command
 	instDataCmd.PersistentFlags().StringVarP(&imageFilePath, "imagefile", "f", "/resources/images", "Path to image file, ignored if --images parameter is supplied")
@@ -1561,7 +1566,7 @@ func init() {
 	rootCmd.AddCommand(exportBundleCmd)
 	rootCmd.AddCommand(getChangelogCmd)
 	rootCmd.AddCommand(isApprovalNeededCmd)
-	rootCmd.AddCommand(testArtifactCmd)
+	rootCmd.AddCommand(downloadableArtifactCmd)
 	rootCmd.AddCommand(prDataCmd)
 }
 
