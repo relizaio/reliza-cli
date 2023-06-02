@@ -62,7 +62,7 @@ It is possible to set authentication data via explicit flags, login command (see
 17. [Export Bundle CycloneDX Spec](#17-use-case-export-bundle-cyclonedx-spec)
 18. [Override and get merged helm chart values](#18-use-case-override-and-get-merged-helm-chart-values)
 19. [Send Pull Request Data to Reliza Hub](#19-use-case-send-pull-request-data-to-reliza-hub)
-
+20. [Attach a downloadable artifact to a Release on Reliza Hub](#20-use-case-attach-a-downloadable-artifact-to-a-release-on-reliza-hub)
 ## 1. Use Case: Get Version Assignment From Reliza Hub
 
 This use case requests Version from Reliza Hub for our project. Note that project schema must be preset on Reliza Hub prior to using this API. API key must also be generated for the project from Reliza Hub.
@@ -879,6 +879,31 @@ Flags stand for:
 - **--mergedDate** - Datetime when the pull request was merged.
 - **--endpoint** - Title of the pull request.
 - **--project** - Project UUID if org-wide key is used.
+
+## 20. Use Case: Attach a downloadable artifact to a Release on Reliza Hub
+
+This use case is to attach a downloadable artifact to a Release on Reliza Hub. For example, to add a report obtained by automated tests for a release.
+
+Sample command:
+
+```bash
+docker run --rm relizaio/reliza-cli    \
+    addDownloadableArtifact \
+    -i api_id \ 
+    -k api_key    \
+    --release release_uuid    \
+    --artifactType TEST_REPORT \
+    --file <path_to_the_report>
+```
+
+Flags stand for:
+- **--file | -f** - flag to specify path to the artifact file.
+- **--releaseid** - flag to specify release uuid, which can be obtained from the release view or programmatically (either this flag or project id and release version or project id and instance are required).
+- **--project** - flag to specify project uuid, which can be obtained from the project settings on Reliza Hub UI (either this flag and release version or releaseid must be provided).
+- **--instance** - flag to specify instance uuid or URI for which release must be approved (either this flag and project or project and release version or releaseid must be provided).
+- **--namespace** - flag to specify namespace of the instance for which release must be approved (optional, only taken in consideration if instance is provided).
+- **--releaseversion** - flag to specify release string version with the project flag above (either this flag and project or releaseid must be provided).
+- **--artifactType** - flag to specify type of the artifact - can be (TEST_REPORT, SECURITY_SCAN, DOCUMENTATION, GENERIC) or some user defined value .
 
 # Development of Reliza-CLI
 
