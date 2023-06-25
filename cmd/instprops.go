@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/machinebox/graphql"
@@ -96,7 +97,8 @@ func retrieveInstancePropsSecrets(props []string, secrs []string) SecretPropsRHR
 
 		req.Var("instanceUuid", instance)
 		req.Var("instanceUri", instanceURI)
-		req.Var("revision", revision)
+		intRevision, _ := strconv.Atoi(revision)
+		req.Var("revision", intRevision)
 		req.Var("namespace", namespace)
 		req.Var("properties", props)
 		req.Var("secrets", secrs)

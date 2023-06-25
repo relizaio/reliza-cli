@@ -741,7 +741,8 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 	`)
 	req.Var("instanceUuid", instance)
 	req.Var("instanceUri", instanceURI)
-	req.Var("revision", revision)
+	intRevision, _ := strconv.Atoi(revision)
+	req.Var("revision", intRevision)
 	req.Var("namespace", namespace)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "Reliza CLI")
@@ -754,6 +755,7 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 
 	var respData map[string]string
 	if err := client.Run(context.Background(), req, &respData); err != nil {
+		fmt.Println("error on gql")
 		printGqlError(err)
 		os.Exit(1)
 	}
