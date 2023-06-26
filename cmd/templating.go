@@ -755,7 +755,6 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 
 	var respData map[string]string
 	if err := client.Run(context.Background(), req, &respData); err != nil {
-		fmt.Println("error on gql")
 		printGqlError(err)
 		os.Exit(1)
 	}
