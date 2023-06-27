@@ -100,6 +100,8 @@ func resolvePlainSecret(sealedSecret string, namespace string) string {
 	secretFile := createSecretFile(secretPath)
 	produceSecretYaml(secretFile, secretName, sealedSecret, namespace)
 	shellout(KubectlApp + " apply -f " + secretPath)
+	secretWaitCmd := "while ! " + KubectlApp + " get secret " + secretName + " -n " + namespace + "; sleep 1; done"
+	shellout(secretWaitCmd)
 	plainSecret, _, _ := shellout(KubectlApp + " get secret " + secretName + " -o jsonpath={.data.secret} -n " + namespace + " | base64 -d")
 	// cleanup
 	shellout(KubectlApp + " delete sealedsecret " + secretName + " -n " + namespace)
