@@ -835,9 +835,15 @@ var downloadableArtifactCmd = &cobra.Command{
 			body["artifactType"] = artifactType
 		}
 		client := resty.New()
+		session, _ := getSession()
+		if session != nil {
+			client.SetHeader("X-CSRF-Token", session.Token)
+			client.SetHeader("Cookie", "JSESSIONID="+session.JSessionId)
+		}
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json").
 			SetHeader("User-Agent", "Reliza Go Client").
+			SetHeader("Accept-Encoding", "gzip, deflate").
 			SetHeader("Accept-Encoding", "gzip, deflate").
 			SetFile("file", filePath).
 			SetFormData(body).
@@ -1575,24 +1581,31 @@ func sendRequest(req *graphql.Request, endpoint string) string {
 }
 
 func sendRequestWithUri(req *graphql.Request, endpoint string, uri string) string {
+	session, _ := getSession()
+	// if err != nil {
+	// 	fmt.Printf("Error making API request: %s\n", err)
+	// 	os.Exit(1)
+	// }
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "Reliza Go Client")
 	req.Header.Set("Accept-Encoding", "gzip, deflate")
-
+	if session != nil {
+		req.Header.Set("X-CSRF-Token", session.Token)
+		req.Header.Set("Cookie", "JSESSIONID="+session.JSessionId)
+	}
 	if len(apiKeyId) > 0 && len(apiKey) > 0 {
 		auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
 		req.Header.Add("Authorization", "Basic "+auth)
 	}
 
-	var respData map[string]interface{}
+	var respData map[string]string
 	client := graphql.NewClient(uri)
 	if err := client.Run(context.Background(), req, &respData); err != nil {
 		printGqlError(err)
 		os.Exit(1)
 	}
-
-	jsonResponse, _ := json.Marshal(respData[endpoint])
-	return string(jsonResponse)
+	return respData[endpoint]
 }
 
 func printResponse(err error, resp *resty.Response) {
@@ -1684,4 +1697,62 @@ func bindFlags(cmd *cobra.Command, v *viper.Viper) {
 func printGqlError(err error) {
 	splitError := strings.Split(err.Error(), ":")
 	fmt.Println("Error: ", splitError[len(splitError)-1])
+}
+
+func getSession() (*RequestSession, error) {
+	client := resty.New()
+	var result map[string]string
+	resp, err := client.R().
+		SetHeader("Content-Type", "application/json").
+		SetHeader("User-Agent", "Reliza Go Client").
+		SetHeader("Accept-Encoding", "gzip, deflate").
+		SetResult(&result).
+		Get(relizaHubUri + "/api/manual/v1/fetchCsrf")
+
+	if err != nil {
+		return nil, err
+	}
+	// Extract cookies
+	session, err := getJSessionIDCookieAndToken(resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return session, err
+}
+
+func getJSessionIDCookieAndToken(resp *resty.Response) (*RequestSession, error) {
+	// Extract cookies
+	cookies := resp.Cookies()
+	var jsessionid string
+	for _, cookie := range cookies {
+		if cookie.Name == "JSESSIONID" {
+			jsessionid = cookie.Value
+			break
+		}
+	}
+
+	if jsessionid == "" {
+		return nil, fmt.Errorf("JSESSIONID cookie not found")
+	}
+
+	// Assume the token is returned in the response body as a JSON object
+	var result map[string]interface{}
+	err := json.Unmarshal(resp.Body(), &result)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling JSON: %s", err)
+	}
+
+	token, ok := result["token"].(string)
+	if !ok {
+		return nil, fmt.Errorf("token not found in the response body")
+	}
+
+	return &RequestSession{JSessionId: jsessionid, Token: token}, nil
+}
+
+type RequestSession struct {
+	JSessionId string
+	Token      string
 }
