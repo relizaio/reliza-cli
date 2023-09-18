@@ -21,7 +21,7 @@ jobs:
           aws-region: us-east-1
       - name: Obtain version from release from Reliza Hub
         run: |
-          reliza_ver=$(docker run --rm relizaio/reliza-cli getlatestrelease -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b master --project ${{ secrets.RELIZA_HUB_PROJECT_ID }} --env UAT | jq -r ".version")
+          reliza_ver=$(docker run --rm relizaio/reliza-cli:2023.05.15 getlatestrelease -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b master --project ${{ secrets.RELIZA_HUB_PROJECT_ID }} --env UAT | jq -r ".version")
           echo $reliza_ver
           echo "VERSION=$reliza_ver" >> $GITHUB_ENV
       - name: Update version in version.go
@@ -62,7 +62,7 @@ jobs:
           # debug
           echo "$(cat reliza_command)"
           # send data
-          echo docker run --rm relizaio/reliza-cli addartifact $(cat reliza_command) > rlz_cmd_exec
+          echo docker run --rm relizaio/reliza-cli:2023.05.15 addartifact $(cat reliza_command) > rlz_cmd_exec
           eval $(cat rlz_cmd_exec)
       - name: Stop docker container
         run: docker stop reliza-container
