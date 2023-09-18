@@ -14,23 +14,23 @@ Docker image is available at [relizaio/reliza-cli](https://hub.docker.com/r/reli
 
 ## Download Reliza CLI
 
-Below are the available downloads for the latest version of the Reliza CLI (2023.09.0). Please download the proper package for your operating system and architecture.
+Below are the available downloads for the latest version of the Reliza CLI (2023.05.14). Please download the proper package for your operating system and architecture.
 
 The CLI is distributed as a single binary. Install by unzipping it and moving it to a directory included in your system's PATH.
 
-[SHA256 checksums](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/sha256sums.txt)
+[SHA256 checksums](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/sha256sums.txt)
 
-macOS: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-darwin-amd64.zip)
+macOS: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-darwin-amd64.zip)
 
-FreeBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-freebsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-freebsd-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-freebsd-arm.zip)
+FreeBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-freebsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-freebsd-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-freebsd-arm.zip)
 
-Linux: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-linux-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-linux-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-linux-arm.zip) | [Arm64](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-linux-arm64.zip)
+Linux: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-linux-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-linux-amd64.zip) | [Arm](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-linux-arm.zip) | [Arm64](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-linux-arm64.zip)
 
-OpenBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-openbsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-openbsd-amd64.zip)
+OpenBSD: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-openbsd-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-openbsd-amd64.zip)
 
-Solaris: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-solaris-amd64.zip)
+Solaris: [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-solaris-amd64.zip)
 
-Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-windows-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.09.0/reliza-cli-2023.09.0-windows-amd64.zip)
+Windows: [32-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-windows-386.zip) | [64-bit](https://d7ge14utcyki8.cloudfront.net/reliza-cli-download/2023.05.14/reliza-cli-2023.05.14-windows-amd64.zip)
 
 It is possible to set authentication data via explicit flags, login command (see below) or following environment variables:
 
