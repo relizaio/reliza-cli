@@ -107,7 +107,7 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 }
 
 /*
-  sort map by length of keys to always prefer longer matches
+sort map by length of keys to always prefer longer matches
 */
 func sortSubstitutionMap(substitutionMap *map[string]Substitution) *[]KeyValueSorted {
 	var sortedSubstitutions []KeyValueSorted
@@ -138,19 +138,19 @@ func GetDigestedImageFromSubstitution(subst Substitution) string {
 }
 
 /*
-	This function takes as input a inFile file pointer, substitutionMap and parseMode string.
-	The contents of the inFile will be read and parsed according to the mappings of substitutionMap.
-	The output of the function is a slice of strings each representing a line to be written to
-	the CLI output (either outfile or stdout). If the inFile cannot be parsed for any reason
-	(ex: strict mode), then an error message will be displayed and a value of nil will be returned.
+This function takes as input a inFile file pointer, substitutionMap and parseMode string.
+The contents of the inFile will be read and parsed according to the mappings of substitutionMap.
+The output of the function is a slice of strings each representing a line to be written to
+the CLI output (either outfile or stdout). If the inFile cannot be parsed for any reason
+(ex: strict mode), then an error message will be displayed and a value of nil will be returned.
 
-	There are three modes for parsing input files: simple, extended and strict (default = "extended")
-	"simple"   mode: only replaces 'image' keys (suitable for k8s templates or compose files)
-	"extended" mode: replaces all keys present in substitution map (needed for helm values files)
-	"strict"   mode: if artifact is not found upstream, parsing fails, return nil array of lines
+There are three modes for parsing input files: simple, extended and strict (default = "extended")
+"simple"   mode: only replaces 'image' keys (suitable for k8s templates or compose files)
+"extended" mode: replaces all keys present in substitution map (needed for helm values files)
+"strict"   mode: if artifact is not found upstream, parsing fails, return nil array of lines
 
-	resolvedSp - result of resolving secrets and properties on the instance, if applicable
-	forDiff - boolean flag - if true, timestamps will be used instead of secrets
+resolvedSp - result of resolving secrets and properties on the instance, if applicable
+forDiff - boolean flag - if true, timestamps will be used instead of secrets
 */
 func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string]Substitution, parseMode string, resolvedSp SecretPropsRHResp, forDiff bool) []string {
 	resolvedProperties := map[string]string{}
@@ -229,22 +229,26 @@ func parseBitnamiLines(bitnamiLineCache *[]string, sortedSubstitutions *[]KeyVal
 	return &parsedLines
 }
 
-/**
+/*
+*
 Sample non-merged:
-  image:
-    registry: docker.io
-    repository: taleodor/mafia-express
-    tag: latest
-    digest: ""
+
+	image:
+	  registry: docker.io
+	  repository: taleodor/mafia-express
+	  tag: latest
+	  digest: ""
+
 Sample merged:
-  image:
-    debug: false
-    digest: ""
-    pullPolicy: IfNotPresent
-    pullSecrets: []
-    registry: docker.io
-    repository: library/redis
-    tag: latest
+
+	image:
+	  debug: false
+	  digest: ""
+	  pullPolicy: IfNotPresent
+	  pullSecrets: []
+	  registry: docker.io
+	  repository: library/redis
+	  tag: latest
 */
 func validateAndParseBitnamiLines(bitnamiLineCache *[]string, sortedSubstitutions *[]KeyValueSorted) ([]string, bool) {
 	var parsedLines []string
@@ -328,7 +332,8 @@ func isImageMatchingSubstitutionKey(image string, substKey string) bool {
 	return (imageMatch == substKeyMatch)
 }
 
-/**
+/*
+*
 Returns true if is start and returns number of whitespace before image
 */
 func isBitnamiImageStart(line string) (bool, int) {
@@ -451,13 +456,13 @@ func parseLineOnScan(line string, sortedSubstitutions *[]KeyValueSorted, resolve
 }
 
 /*
-	This function addds some extra meta data info as comments to the top of the outfile
-	that is created by the replacetags command. If no outfile is specified, the data
-	will instead be written directly the stdout.
+This function addds some extra meta data info as comments to the top of the outfile
+that is created by the replacetags command. If no outfile is specified, the data
+will instead be written directly the stdout.
 
-	The first line notes the version of reliza-cli that ran the command to generate the outfile, as
-	well as the date the file was generated.
-	The second line contains info about where the replaced tags were sourced from.
+The first line notes the version of reliza-cli that ran the command to generate the outfile, as
+well as the date the file was generated.
+The second line contains info about where the replaced tags were sourced from.
 */
 func addProvenanceToReplaceTagsOutput(outFileOpened *os.File, apiKeyId string, apiKey string, tagSourceFile string, environment string, instance string, instanceURI string, revision string, definitionReferenceFile string, typeVal string, version string, bundle string) {
 	// Add some provenance to output (as comments)
@@ -678,6 +683,12 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 		req.Header.Add("Authorization", "Basic "+auth)
 	}
 
+	session, _ := getSession()
+	if session != nil {
+		req.Header.Set("X-CSRF-Token", session.Token)
+		req.Header.Set("Cookie", "JSESSIONID="+session.JSessionId)
+	}
+
 	var respData map[string]interface{}
 	if err := client.Run(context.Background(), req, &respData); err != nil {
 		printGqlError(err)
@@ -752,6 +763,11 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 		auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
 		req.Header.Add("Authorization", "Basic "+auth)
 	}
+	session, _ := getSession()
+	if session != nil {
+		req.Header.Set("X-CSRF-Token", session.Token)
+		req.Header.Set("Cookie", "JSESSIONID="+session.JSessionId)
+	}
 
 	var respData map[string]string
 	if err := client.Run(context.Background(), req, &respData); err != nil {
@@ -787,6 +803,11 @@ func getBundleVersionCycloneDxExportV1(apiKeyId string, apiKey string, bundle st
 		auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
 		req.Header.Add("Authorization", "Basic "+auth)
 	}
+	session, _ := getSession()
+	if session != nil {
+		req.Header.Set("X-CSRF-Token", session.Token)
+		req.Header.Set("Cookie", "JSESSIONID="+session.JSessionId)
+	}
 
 	var respData map[string]string
 	if err := client.Run(context.Background(), req, &respData); err != nil {
@@ -819,6 +840,11 @@ func getEnvironmentCycloneDxExportV1(apiKeyId string, apiKey string, environment
 	if len(apiKeyId) > 0 && len(apiKey) > 0 {
 		auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
 		req.Header.Add("Authorization", "Basic "+auth)
+	}
+	session, _ := getSession()
+	if session != nil {
+		req.Header.Set("X-CSRF-Token", session.Token)
+		req.Header.Set("Cookie", "JSESSIONID="+session.JSessionId)
 	}
 
 	var respData map[string]string

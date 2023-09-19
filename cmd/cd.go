@@ -101,6 +101,11 @@ var artifactGetSecrets = &cobra.Command{
 			req.Header.Add("Authorization", "Basic "+auth)
 		}
 
+		session, _ := getSession()
+		if session != nil {
+			req.Header.Set("X-CSRF-Token", session.Token)
+			req.Header.Set("Cookie", "JSESSIONID="+session.JSessionId)
+		}
 		if err := client.Run(context.Background(), req, &respData); err != nil {
 			printGqlError(err)
 			os.Exit(1)
@@ -137,6 +142,11 @@ var isInstHasSecretCertCmd = &cobra.Command{
 		if len(apiKeyId) > 0 && len(apiKey) > 0 {
 			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
 			req.Header.Add("Authorization", "Basic "+auth)
+		}
+		session, _ := getSession()
+		if session != nil {
+			req.Header.Set("X-CSRF-Token", session.Token)
+			req.Header.Set("Cookie", "JSESSIONID="+session.JSessionId)
 		}
 
 		if err := client.Run(context.Background(), req, &respData); err != nil {
@@ -176,6 +186,11 @@ var setInstSecretCertCmd = &cobra.Command{
 			req.Header.Add("Authorization", "Basic "+auth)
 		}
 
+		session, _ := getSession()
+		if session != nil {
+			req.Header.Set("X-CSRF-Token", session.Token)
+			req.Header.Set("Cookie", "JSESSIONID="+session.JSessionId)
+		}
 		if err := client.Run(context.Background(), req, &respData); err != nil {
 			printGqlError(err)
 			os.Exit(1)
