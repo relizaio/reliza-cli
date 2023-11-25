@@ -21,4 +21,5 @@ jobs:
           reliza_api_key: ${{ secrets.RELIZA_API_KEY }}
           ci_metadata: ""
           push_latest_tag: false
+          platform_architectures: 'linux/amd64,linux/arm64'
       
