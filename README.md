@@ -891,7 +891,7 @@ docker run --rm relizaio/reliza-cli    \
     addDownloadableArtifact \
     -i api_id \ 
     -k api_key    \
-    --release release_uuid    \
+    --releaseid release_uuid    \
     --artifactType TEST_REPORT \
     --file <path_to_the_report>
 ```
