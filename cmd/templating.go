@@ -729,8 +729,7 @@ func scanTags(replaceTagsVars ReplaceTagsVars) map[string]string {
 }
 
 func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instance string, revision string, instanceURI string, namespace string) []byte {
-
-	if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") {
+	if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") && !strings.HasPrefix(apiKeyId, "CLUSTER__") {
 		//throw error and exit
 		fmt.Println("instance or instanceURI not specified!")
 		os.Exit(1)
