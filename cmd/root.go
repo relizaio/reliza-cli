@@ -95,6 +95,7 @@ var provenance bool  // add provenance (default), or do not add provenance
 var parseMode string // "simple" || "extended" || "strict" mode
 var releaseId string
 var releaseVersion string
+var releaseNs string
 var relizaHubUri string
 var revision string
 var product string

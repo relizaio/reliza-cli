@@ -507,6 +507,14 @@ func addProvenanceToReplaceTagsOutput(outFileOpened *os.File, apiKeyId string, a
 			// no revision specified, using latest
 			provenanceLine2 = "# According to latest approved images for the instance " + instUUIDFromAPIKeyId
 		}
+	} else if strings.HasPrefix(apiKeyId, "CLUSTER__") { // Unessecary
+		instUUIDFromAPIKeyId := apiKeyId[9:36] // remove first 9 chars
+		if len(revision) > 0 {
+			provenanceLine2 = "# According to revision " + revision + " of the instance " + instUUIDFromAPIKeyId
+		} else {
+			// no revision specified, using latest
+			provenanceLine2 = "# According to latest approved images for the instance " + instUUIDFromAPIKeyId
+		}
 	} else {
 		// should have at least one of those things
 		provenanceLine2 = "missing replacetags input"
@@ -716,7 +724,7 @@ func scanTags(replaceTagsVars ReplaceTagsVars) map[string]string {
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes, &bomJSON)
 		extractComponentsFromCycloneJSON(bomJSON, tagSourceMap)
-	} else if len(replaceTagsVars.Instance) > 0 || len(replaceTagsVars.InstanceURI) > 0 || strings.HasPrefix(replaceTagsVars.ApiKeyId, "INSTANCE__") {
+	} else if len(replaceTagsVars.Instance) > 0 || len(replaceTagsVars.InstanceURI) > 0 || strings.HasPrefix(replaceTagsVars.ApiKeyId, "INSTANCE__") || strings.HasPrefix(replaceTagsVars.ApiKeyId, "CLUSTER__") {
 		cycloneBytes := getInstanceRevisionCycloneDxExportV1(replaceTagsVars.ApiKeyId, replaceTagsVars.ApiKey, replaceTagsVars.Instance, replaceTagsVars.Revision, replaceTagsVars.InstanceURI, replaceTagsVars.Namespace)
 		var bomJSON map[string]interface{}
 		json.Unmarshal(cycloneBytes, &bomJSON)

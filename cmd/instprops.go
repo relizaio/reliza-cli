@@ -64,7 +64,7 @@ func retrieveInstancePropsSecrets(props []string, secrs []string) SecretPropsRHR
 	var respData SecretPropsRHResp
 
 	if resolveProps {
-		if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") {
+		if len(instance) <= 0 && len(instanceURI) <= 0 && !strings.HasPrefix(apiKeyId, "INSTANCE__") && !strings.HasPrefix(apiKeyId, "CLUSTER__") {
 			//throw error and exit
 			fmt.Println("instance or instanceURI not specified!")
 			os.Exit(1)
