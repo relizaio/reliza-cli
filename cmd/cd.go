@@ -41,7 +41,9 @@ func init() {
 	artifactGetSecrets.PersistentFlags().StringVar(&instanceURI, "instanceuri", "", "URI of instance for which to generate (either this, or instanceuri must be provided)")
 	artifactGetSecrets.PersistentFlags().StringVar(&artDigest, "artdigest", "", "Digest or hash of the artifact to resolve secrets for")
 	artifactGetSecrets.PersistentFlags().StringVar(&namespace, "namespace", "", "Namespace to use for secrets (optional, defaults to default namespace)")
-	artifactGetSecrets.PersistentFlags().StringVar(&releaseNs, "releasens", "", "Namespace to identify instance (optional, used in case of cluster keys)")
+	// Using instanceuri for releaseNs
+	// TODO: reintroduce releaseNs when the backend is in
+	// artifactGetSecrets.PersistentFlags().StringVar(&releaseNs, "releasens", "", "Namespace to identify instance (optional, used in case of cluster keys)")
 	artifactGetSecrets.MarkPersistentFlagRequired("artdigest")
 
 	cdCmd.AddCommand(artifactGetSecrets)
@@ -81,8 +83,8 @@ var artifactGetSecrets = &cobra.Command{
 
 		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
-			query ($instanceUuid: ID, $instanceUri: String, $artDigest: String!, $namespace: String, $releaseNs: String) {
-				artifactDownloadSecrets(instanceUuid: $instanceUuid, instanceUri: $instanceUri, artDigest: $artDigest, namespace: $namespace, releaseNs: $releaseNs) {
+			query ($instanceUuid: ID, $instanceUri: String, $artDigest: String!, $namespace: String) {
+				artifactDownloadSecrets(instanceUuid: $instanceUuid, instanceUri: $instanceUri, artDigest: $artDigest, namespace: $namespace) {
 					login
 					password
 					type
@@ -93,7 +95,6 @@ var artifactGetSecrets = &cobra.Command{
 		req.Var("instanceUri", instanceURI)
 		req.Var("artDigest", artDigest)
 		req.Var("namespace", namespace)
-		req.Var("releaseNs", releaseNs)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("User-Agent", "Reliza CLI")
 		req.Header.Set("Accept-Encoding", "gzip, deflate")
@@ -101,7 +102,6 @@ var artifactGetSecrets = &cobra.Command{
 			auth := base64.StdEncoding.EncodeToString([]byte(apiKeyId + ":" + apiKey))
 			req.Header.Add("Authorization", "Basic "+auth)
 		}
-
 		session, _ := getSession()
 		if session != nil {
 			req.Header.Set("X-CSRF-Token", session.Token)
@@ -167,7 +167,6 @@ var setInstSecretCertCmd = &cobra.Command{
 	This command sets this certificate for the particular instance.
 	Only supports instance own API Key.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("setsecret relizacli called:  processing - relizaHubUri: ", relizaHubUri)
 		var respData SetCertRHResp
 		client := graphql.NewClient(relizaHubUri + "/graphql")
 		req := graphql.NewRequest(`
@@ -193,7 +192,6 @@ var setInstSecretCertCmd = &cobra.Command{
 			req.Header.Set("X-CSRF-Token", session.Token)
 			req.Header.Set("Cookie", "JSESSIONID="+session.JSessionId)
 		}
-		fmt.Println("making request: ", req)
 		if err := client.Run(context.Background(), req, &respData); err != nil {
 			printGqlError(err)
 			os.Exit(1)
