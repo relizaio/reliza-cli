@@ -20,7 +20,6 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -263,10 +262,22 @@ func replaceTagsOnFile(replaceTagsVars *ReplaceTagsVars, substitutionMap *map[st
 	return retOut
 }
 
+func isDirectory(dir *string) bool {
+	isDir := false
+	dirInfo, err := os.Stat(*dir)
+	if err != nil {
+		fmt.Println(err)
+	} else if dirInfo.IsDir() {
+		isDir = true
+	}
+	return isDir
+}
+
 func replaceTagsOnDirectory(substitutionMap *map[string]Substitution) {
 	// If parsing files from input directory, an output directory path should be provided, not an output file path.
 	if len(outfile) > 0 {
-		fmt.Println("Warning: please only provide '--outdirectory' flag (no '--outfile') when using '--indirectory' as input instead of '--infile'.")
+		fmt.Println("Error: please only provide '--outdirectory' flag (no '--outfile') when using '--indirectory' as input instead of '--infile'.")
+		os.Exit(1)
 	}
 	// Check that outDirectory has value. Cannot write to stdout when parsing multiple files from a directory.
 	if len(outDirectory) == 0 {
@@ -274,24 +285,22 @@ func replaceTagsOnDirectory(substitutionMap *map[string]Substitution) {
 		os.Exit(1)
 	}
 	// Check that inDirectory and out dir end in '/' or '\'
-	if string(outDirectory[len(outDirectory)-1:]) != "\\" && string(outDirectory[len(outDirectory)-1:]) != "/" {
-		outDirectory = outDirectory + "\\"
-	}
-	if string(inDirectory[len(inDirectory)-1:]) != "\\" && string(inDirectory[len(inDirectory)-1:]) != "/" {
-		inDirectory = inDirectory + "\\"
-	}
+	// if string(outDirectory[len(outDirectory)-1:]) != "\\" && string(outDirectory[len(outDirectory)-1:]) != "/" {
+	// 	outDirectory = outDirectory + "\\"
+	// }
+	// if string(inDirectory[len(inDirectory)-1:]) != "\\" && string(inDirectory[len(inDirectory)-1:]) != "/" {
+	// 	inDirectory = inDirectory + "\\"
+	// }
 	// check that outDirectory is a real directory (no stdout output for inDirectory)
-	dirInfo, err := os.Stat(outDirectory)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	} else if !dirInfo.IsDir() {
+	if !isDirectory(&outDirectory) {
 		fmt.Println("Error: outdirectory must be a path to a valid directory!")
 		os.Exit(1)
 	}
-	// Open
+
+	fmt.Println("Error: outdirectory must be a path to a valid directory!")
+
 	var fileNames []string
-	files, err := ioutil.ReadDir(inDirectory)
+	files, err := os.ReadDir(inDirectory)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
