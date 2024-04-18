@@ -20,9 +20,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/machinebox/graphql"
 	"github.com/spf13/cobra"
 )
@@ -36,12 +36,20 @@ type BomInput struct {
 }
 
 func init() {
+	attachBomCmd.PersistentFlags().StringVar(&infile, "infile", "", "Input file with bom json")
+	attachBomCmd.PersistentFlags().StringVar(&artDigest, "artdigest", "", "SHA 256 digest of the artifact")
+	attachBomCmd.PersistentFlags().StringVar(&releaseId, "releaseid", "", "UUID of release")
+	attachBomCmd.MarkPersistentFlagRequired("infile")
+	attachBomCmd.MarkPersistentFlagRequired("artdigest")
+	attachBomCmd.MarkPersistentFlagRequired("releaseid")
+
 	putBomCmd.PersistentFlags().StringVar(&infile, "infile", "", "Input file with bom json")
 	putBomCmd.PersistentFlags().StringVar(&rebomUri, "rebomuri", "http://localhost:4000", "Rebom URI")
 	putBomCmd.MarkPersistentFlagRequired("infile")
 
 	rootCmd.AddCommand(rebomCmd)
 	rebomCmd.AddCommand(putBomCmd)
+	rebomCmd.AddCommand(attachBomCmd)
 }
 
 var rebomCmd = &cobra.Command{
@@ -62,6 +70,58 @@ var putBomCmd = &cobra.Command{
 	},
 }
 
+var attachBomCmd = &cobra.Command{
+	Use:   "attach",
+	Short: "Attach bom file to an artifact on RH",
+	Long:  `Attach bom file to an artifact on RH`,
+	Run: func(cmd *cobra.Command, args []string) {
+		attachToRebomFunc()
+	},
+}
+
+func attachToRebomFunc() {
+	// open infile
+	// Make sure infile is a file and not a directory
+	fileInfo, err := os.Stat(infile)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	} else if fileInfo.IsDir() {
+		fmt.Println("Error: infile must be a path to a file, not a directory!")
+		os.Exit(1)
+	}
+
+	if debug == "true" {
+		fmt.Println("Using Reliza Hub at", relizaHubUri)
+	}
+
+	body := map[string]string{}
+	if len(releaseId) > 0 {
+		body["release"] = releaseId
+	}
+	if len(artDigest) > 0 {
+		body["digest"] = artDigest
+	}
+
+	client := resty.New()
+	session, _ := getSession()
+	if session != nil {
+		client.SetHeader("X-CSRF-Token", session.Token)
+		client.SetHeader("Cookie", "JSESSIONID="+session.JSessionId)
+	}
+	resp, err := client.R().
+		SetHeader("Content-Type", "application/json").
+		SetHeader("User-Agent", "Reliza Go Client").
+		SetHeader("Accept-Encoding", "gzip, deflate").
+		SetHeader("Accept-Encoding", "gzip, deflate").
+		SetFile("file", infile).
+		SetFormData(body).
+		SetBasicAuth(apiKeyId, apiKey).
+		Post(relizaHubUri + "/api/programmatic/v1/sbom/upload")
+
+	printResponse(err, resp)
+}
+
 func addBomToRebomFunc() {
 	// open infile
 	// Make sure infile is a file and not a directory
@@ -74,7 +134,7 @@ func addBomToRebomFunc() {
 		os.Exit(1)
 	}
 	// Read infile if not directory:
-	fileContentByteSlice, _ := ioutil.ReadFile(infile)
+	fileContentByteSlice, _ := os.ReadFile(infile)
 	// fileContent := string(fileContentByteSlice)
 
 	// Parse file content into json
