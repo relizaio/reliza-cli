@@ -41,6 +41,7 @@ var apiKeyId string
 var apiKey string
 var artBuildId []string
 var artBuildUri []string
+var artBomFilePaths []string
 var artCiMeta []string
 var artDigests []string
 var artId []string
@@ -454,6 +455,16 @@ var addreleaseCmd = &cobra.Command{
 				}
 			}
 
+			if len(artBomFilePaths) > 0 && len(artBomFilePaths) != len(artId) {
+				fmt.Println("number of --artboms flags must be either zero or match number of --artid flags")
+				os.Exit(2)
+			} else if len(artBomFilePaths) > 0 {
+				for i, bomPath := range artBomFilePaths {
+
+					artifacts[i]["bom"] = ReadBomJsonFromFile(bomPath)
+				}
+			}
+
 			if len(tagKeyArr) > 0 && len(tagKeyArr) != len(artId) {
 				fmt.Println("number of --tagkey flags must be either zero or match number of --artid flags")
 				os.Exit(2)
@@ -546,7 +557,10 @@ var addreleaseCmd = &cobra.Command{
 
 		// 		fmt.Println(body)
 		jsonBody, _ := json.Marshal(body)
-		fmt.Println(string(jsonBody))
+
+		if debug == "true" {
+			fmt.Println(string(jsonBody))
+		}
 
 		req := graphql.NewRequest(`
 			mutation ($releaseInputProg: ReleaseInputProg) {
@@ -1402,6 +1416,7 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artPackage, "artpackage", []string{}, "Artifact package type (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artPublisher, "artpublisher", []string{}, "Artifact publisher (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artGroup, "artgroup", []string{}, "Artifact group (multiple allowed)")
+	addreleaseCmd.PersistentFlags().StringArrayVar(&artBomFilePaths, "artboms", []string{}, "Artifact Sbom file paths (multiple allowed)")
 
 	addreleaseCmd.PersistentFlags().StringVar(&status, "status", "", "Status of release - set to 'rejected' for failed releases, otherwise 'completed' is used (optional).")
 

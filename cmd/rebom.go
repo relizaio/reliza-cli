@@ -122,10 +122,10 @@ func attachToRebomFunc() {
 	printResponse(err, resp)
 }
 
-func addBomToRebomFunc() {
+func ReadBomJsonFromFile(filePath string) map[string]interface{} {
 	// open infile
 	// Make sure infile is a file and not a directory
-	fileInfo, err := os.Stat(infile)
+	fileInfo, err := os.Stat(filePath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -134,7 +134,7 @@ func addBomToRebomFunc() {
 		os.Exit(1)
 	}
 	// Read infile if not directory:
-	fileContentByteSlice, _ := os.ReadFile(infile)
+	fileContentByteSlice, _ := os.ReadFile(filePath)
 	// fileContent := string(fileContentByteSlice)
 
 	// Parse file content into json
@@ -145,15 +145,15 @@ func addBomToRebomFunc() {
 		fmt.Println(parseError)
 		os.Exit(1)
 	}
-	//var bomJSON map[string]interface{}
-	// json.Unmarshal(jsonizedTResult, &bomJSON)
-	// cleanJson, _ := json.Marshal(bomJSON)
+	return bomJSON
+}
 
+func addBomToRebomFunc() {
 	var bomInput BomInput
 	bomInput.Meta = "sent from reliza cli"
-	bomInput.Bom = bomJSON
+	bomInput.Bom = ReadBomJsonFromFile(infile)
 
-	fmt.Println(bomInput)
+	// fmt.Println(bomInput)
 
 	req := graphql.NewRequest(`
 		mutation addBom ($bomInput: BomInput) {
