@@ -186,10 +186,13 @@ func parseLines(inFileOpened *os.File, sortedSubstitutions *[]KeyValueSorted, re
 	establishedWhiteSpacePrefix := 0
 
 	var bitnamiLineCache []string
+	lineindex := 0
 	for inScanner.Scan() {
 		line := inScanner.Text()
 		isBitnamiImageStart, whiteSpacePrefix := isBitnamiImageStart(line)
-		if isBitnamiImageStart {
+		if (lineindex == 0 && strings.HasPrefix(line, "# Tags replaced with Reliza CLI")) || (lineindex == 1 && strings.HasPrefix(line, "# According to")) {
+			// do nothing
+		} else if isBitnamiImageStart {
 			establishedWhiteSpacePrefix = whiteSpacePrefix + 2
 			bitnamiLineCache = append(bitnamiLineCache, line)
 		} else if len(bitnamiLineCache) > 0 && IsInBitnamiParse(line, establishedWhiteSpacePrefix) {
@@ -204,6 +207,7 @@ func parseLines(inFileOpened *os.File, sortedSubstitutions *[]KeyValueSorted, re
 			line = parseLineOnScan(line, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
 			parsedLines = append(parsedLines, line)
 		}
+		lineindex++
 	}
 	if len(bitnamiLineCache) > 0 {
 		parsedBitnamiLines := parseBitnamiLines(&bitnamiLineCache, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
