@@ -21,6 +21,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -164,7 +165,7 @@ func ReplaceTags(replaceTagsVars ReplaceTagsVars) string {
 	if len(replaceTagsVars.Infile) > 0 && len(replaceTagsVars.Indirectory) == 0 {
 		retOut = replaceTagsOnFile(&replaceTagsVars, &substitutionMap)
 	} else if len(infile) == 0 && len(replaceTagsVars.Indirectory) > 0 {
-		replaceTagsOnDirectory(&substitutionMap)
+		replaceTagsOnDirectory(&replaceTagsVars.Indirectory, &outDirectory, &substitutionMap)
 	} else {
 		// either infile and inDirectory provided (too many inputs), or neither provided
 		fmt.Println("Error: Must supply either infile or indirectory (but not both)!")
@@ -273,7 +274,7 @@ func isDirectory(dir *string) bool {
 	return isDir
 }
 
-func replaceTagsOnDirectory(substitutionMap *map[string]Substitution) {
+func replaceTagsOnDirectory(indir *string, outdir *string, substitutionMap *map[string]Substitution) {
 	// If parsing files from input directory, an output directory path should be provided, not an output file path.
 	if len(outfile) > 0 {
 		fmt.Println("Error: please only provide '--outdirectory' flag (no '--outfile') when using '--indirectory' as input instead of '--infile'.")
@@ -281,111 +282,56 @@ func replaceTagsOnDirectory(substitutionMap *map[string]Substitution) {
 	}
 	// Check that outDirectory has value. Cannot write to stdout when parsing multiple files from a directory.
 	if len(outDirectory) == 0 {
-		fmt.Println("Error: '--outdirectory' is empty. Must supply a path to an output directory when using --indirectory flag.")
-		os.Exit(1)
-	}
-	// Check that inDirectory and out dir end in '/' or '\'
-	// if string(outDirectory[len(outDirectory)-1:]) != "\\" && string(outDirectory[len(outDirectory)-1:]) != "/" {
-	// 	outDirectory = outDirectory + "\\"
-	// }
-	// if string(inDirectory[len(inDirectory)-1:]) != "\\" && string(inDirectory[len(inDirectory)-1:]) != "/" {
-	// 	inDirectory = inDirectory + "\\"
-	// }
-	// check that outDirectory is a real directory (no stdout output for inDirectory)
-	if !isDirectory(&outDirectory) {
-		fmt.Println("Error: outdirectory must be a path to a valid directory!")
+		fmt.Println("Error: '--outdirectory' flag is not set. Must supply a path to an output directory when using --indirectory flag.")
 		os.Exit(1)
 	}
 
-	fmt.Println("Error: outdirectory must be a path to a valid directory!")
+	_, err := os.ReadDir(*outdir)
+	if err == nil {
+		fmt.Println("Error: output directory already exists " + *outdir)
+		os.Exit(1)
+	}
+
+	err1 := os.MkdirAll(*outdir, os.FileMode(0770))
+	if err1 != nil {
+		fmt.Println("Error: could not create directory " + *outdir)
+		fmt.Println(err1)
+		os.Exit(1)
+	}
 
 	var fileNames []string
-	files, err := os.ReadDir(inDirectory)
+	files, err := os.ReadDir(*indir)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	// Get slice of names of each file in inDirectory
+
 	for _, f := range files {
 		fileNames = append(fileNames, f.Name())
 	}
 
-	// replacetags based on substitutionMap for each file in directory
 	for _, fileName := range fileNames {
-		// open infile
-		var inFileOpened *os.File
-		inFileOpened, err = os.Open(inDirectory + fileName)
-		if err != nil {
-			fmt.Println("Error opening infile: " + inDirectory + fileName)
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		stat, err := inFileOpened.Stat()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		} else if stat.IsDir() {
-			// only parse files not directories
-			// instead of throwing error just skip directories and contiue to next file
-			continue
-		}
-		// Generate path of next output file (same as input file name, but in outDirectory)
-		outFilePath := outDirectory + fileName
-		// Create outFile to write to inside outDirectory
-		var outFileOpened *os.File
-		outFileOpened, err = os.Create(outFilePath)
-		if err != nil {
-			fmt.Println("Error opening outfile: " + outFilePath)
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		// Parse infile and write to outfile with replace tags (or stdout if no outfile)
-
-		// retrieve secrets and props from infile
-		sp := parseSecretsPropsFromInFile(inFileOpened)
-		resolvedSp := resolveSecretPropsOnRelizaHub(sp)
-		// fmt.Println(resolvedSp)
-
-		// reopen in file for substitution
-		inFileOpened, err = os.Open(infile)
-		if err != nil {
-			fmt.Println("Error opening infile: " + infile)
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode, resolvedSp, forDiff)
-
-		// write parsed lines to output file
-		if parsedLines != nil {
-			// write provenance to output file
-			if !forDiff && provenance {
-				addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
-			}
-			for _, line := range parsedLines {
-				outFileOpened.WriteString(line + "\n")
-			}
+		curinfile := filepath.Join(*indir, fileName)
+		curoutfile := filepath.Join(*outdir, fileName)
+		fmt.Println("curinfile = " + curinfile + " , curoutfile = " + curoutfile)
+		if isDirectory(&curinfile) {
+			replaceTagsOnDirectory(&curinfile, &curoutfile, substitutionMap)
 		} else {
-			// parsing failed on file
-			// should we delete files already parsed and created if a later one fails? all or nothing?
-			os.Exit(1)
-		}
-
-		// Remember to close outfile when done, and check for errors
-		outFileCloseError := outFileOpened.Close()
-		if outFileCloseError != nil {
-			fmt.Println("Error closing outfile: " + outDirectory + fileName)
-			fmt.Println(outFileCloseError)
-			os.Exit(1)
-		}
-
-		// also close infile
-		inFileCloseError := inFileOpened.Close()
-		if inFileCloseError != nil {
-			fmt.Println("Error closing infile: " + inDirectory + fileName)
-			fmt.Println(inFileCloseError)
-			os.Exit(1)
+			var replaceTagsVars ReplaceTagsVars
+			replaceTagsVars.TagSourceFile = tagSourceFile
+			replaceTagsVars.TypeVal = typeVal
+			replaceTagsVars.ApiKeyId = apiKeyId
+			replaceTagsVars.ApiKey = apiKey
+			replaceTagsVars.Instance = instance
+			replaceTagsVars.Revision = revision
+			replaceTagsVars.InstanceURI = instanceURI
+			replaceTagsVars.Bundle = bundle
+			replaceTagsVars.Version = version
+			replaceTagsVars.Environment = environment
+			replaceTagsVars.Namespace = namespace
+			replaceTagsVars.Infile = curinfile
+			replaceTagsVars.Outfile = curoutfile
+			replaceTagsOnFile(&replaceTagsVars, substitutionMap)
 		}
 	}
 }
