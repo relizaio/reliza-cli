@@ -211,7 +211,7 @@ func replaceTagsOnFile(replaceTagsVars *ReplaceTagsVars, substitutionMap *map[st
 	}
 
 	// Parse infile and get slice of lines to be written to outfile/stdout
-	parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode, resolvedSp, forDiff)
+	parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode, resolvedSp)
 
 	// Close infile
 	inFileCloseError := inFileOpened.Close()

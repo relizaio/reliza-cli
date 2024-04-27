@@ -152,7 +152,7 @@ There are three modes for parsing input files: simple, extended and strict (defa
 resolvedSp - result of resolving secrets and properties on the instance, if applicable
 forDiff - boolean flag - if true, timestamps will be used instead of secrets
 */
-func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string]Substitution, parseMode string, resolvedSp SecretPropsRHResp, forDiff bool) []string {
+func substituteCopyBasedOnMap(inFileOpened *os.File, substitutionMap *map[string]Substitution, parseMode string, resolvedSp SecretPropsRHResp) []string {
 	resolvedProperties := map[string]string{}
 	resolvedSecrets := map[string]ResolvedSecret{}
 
@@ -196,9 +196,7 @@ func parseLines(inFileOpened *os.File, sortedSubstitutions *[]KeyValueSorted, re
 			bitnamiLineCache = append(bitnamiLineCache, line)
 		} else if len(bitnamiLineCache) > 0 {
 			parsedBitnamiLines := parseBitnamiLines(&bitnamiLineCache, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
-			for _, pbl := range *parsedBitnamiLines {
-				parsedLines = append(parsedLines, pbl)
-			}
+			parsedLines = append(parsedLines, *parsedBitnamiLines...)
 			bitnamiLineCache = []string{}
 			line = parseLineOnScan(line, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
 			parsedLines = append(parsedLines, line)
@@ -209,9 +207,7 @@ func parseLines(inFileOpened *os.File, sortedSubstitutions *[]KeyValueSorted, re
 	}
 	if len(bitnamiLineCache) > 0 {
 		parsedBitnamiLines := parseBitnamiLines(&bitnamiLineCache, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileOpened.Name())
-		for _, pbl := range *parsedBitnamiLines {
-			parsedLines = append(parsedLines, pbl)
-		}
+		parsedLines = append(parsedLines, *parsedBitnamiLines...)
 		bitnamiLineCache = []string{}
 	}
 	return &parsedLines
