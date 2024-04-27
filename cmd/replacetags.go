@@ -197,19 +197,6 @@ func replaceTagsOnFile(replaceTagsVars *ReplaceTagsVars, substitutionMap *map[st
 		os.Exit(1)
 	}
 
-	// Create outFile to write to, if outfile not specified, write to stdout
-	var outFileOpened *os.File
-	var outFileOpenedError error
-	if len(outfile) > 0 {
-		//fmt.Println("Opening output file...")
-		outFileOpened, outFileOpenedError = os.Create(outfile)
-		if outFileOpenedError != nil {
-			fmt.Println("Error opening outfile: " + outfile)
-			fmt.Println(outFileOpenedError)
-			os.Exit(1)
-		}
-	}
-
 	// retrieve secrets and props from infile
 	sp := parseSecretsPropsFromInFile(inFileOpened)
 	resolvedSp := resolveSecretPropsOnRelizaHub(sp)
@@ -225,8 +212,33 @@ func replaceTagsOnFile(replaceTagsVars *ReplaceTagsVars, substitutionMap *map[st
 
 	// Parse infile and get slice of lines to be written to outfile/stdout
 	parsedLines := substituteCopyBasedOnMap(inFileOpened, substitutionMap, parseMode, resolvedSp, forDiff)
+
+	// Close infile
+	inFileCloseError := inFileOpened.Close()
+	if inFileCloseError != nil {
+		fmt.Println("Error closing infile: " + infile)
+		fmt.Println(inFileCloseError)
+		os.Exit(1)
+	}
+
 	// write parsed lines to outfile/stdout if parsing did not fail
 	if parsedLines != nil {
+		// Create outFile to write to, if outfile not specified, write to stdout
+		var outFileOpened *os.File
+		var outFileOpenedError error
+		if len(outfile) > 0 {
+			//fmt.Println("Opening output file...")
+			if outfile == infile {
+				os.Remove(infile)
+			}
+			outFileOpened, outFileOpenedError = os.Create(outfile)
+			if outFileOpenedError != nil {
+				fmt.Println("Error opening outfile: " + outfile)
+				fmt.Println(outFileOpenedError)
+				os.Exit(1)
+			}
+		}
+
 		// need to add provenance first, beacuse can only write to stdout sequentially
 		if !forDiff && provenance {
 			addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
@@ -239,27 +251,20 @@ func replaceTagsOnFile(replaceTagsVars *ReplaceTagsVars, substitutionMap *map[st
 				fmt.Print(line + "\n")
 			}
 		}
+
+		if outFileOpened != nil { // outfile might not exist if writing to stdout
+			outFileCloseError := outFileOpened.Close()
+			if outFileCloseError != nil {
+				fmt.Println("Error closing outfile: " + outfile)
+				fmt.Println(outFileCloseError)
+				os.Exit(1)
+			}
+		}
 	} else {
 		fmt.Println("Error parsing input file")
 		os.Exit(1)
 	}
-	// Remember to close outfile+infile when done, and check for errors
-	//fmt.Println("Closing output file...")
-	if outFileOpened != nil { // outfile might not exist if writing to stdout
-		outFileCloseError := outFileOpened.Close()
-		if outFileCloseError != nil {
-			fmt.Println("Error closing outfile: " + outfile)
-			fmt.Println(outFileCloseError)
-			os.Exit(1)
-		}
-	}
-	// Close infile
-	inFileCloseError := inFileOpened.Close()
-	if inFileCloseError != nil {
-		fmt.Println("Error closing infile: " + infile)
-		fmt.Println(inFileCloseError)
-		os.Exit(1)
-	}
+
 	return retOut
 }
 
@@ -287,7 +292,7 @@ func replaceTagsOnDirectory(indir *string, outdir *string, substitutionMap *map[
 	}
 
 	_, err := os.ReadDir(*outdir)
-	if err == nil {
+	if err == nil && *outdir != *indir {
 		fmt.Println("Error: output directory already exists " + *outdir)
 		os.Exit(1)
 	}
@@ -313,7 +318,9 @@ func replaceTagsOnDirectory(indir *string, outdir *string, substitutionMap *map[
 	for _, fileName := range fileNames {
 		curinfile := filepath.Join(*indir, fileName)
 		curoutfile := filepath.Join(*outdir, fileName)
-		fmt.Println("curinfile = " + curinfile + " , curoutfile = " + curoutfile)
+		if debug == "true" {
+			fmt.Println("curinfile = " + curinfile + " , curoutfile = " + curoutfile)
+		}
 		if isDirectory(&curinfile) {
 			replaceTagsOnDirectory(&curinfile, &curoutfile, substitutionMap)
 		} else {
