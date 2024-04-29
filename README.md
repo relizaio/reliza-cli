@@ -1,5 +1,5 @@
-![Docker Image CI](https://github.com/relizaio/reliza-cli/workflows/Docker%20Image%20CI/badge.svg?branch=master)
-
+![Docker Image CI](https://github.com/relizaio/reliza-cli/actions/workflows/dockerimage.yml/badge.svg?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/relizaio/reliza-cli)](https://goreportcard.com/report/github.com/relizaio/reliza-cli)
 # Reliza CLI
 
 This tool allows for command-line interactions with [Reliza Hub at relizahub.com](https://relizahub.com) (currently in public preview mode). Particularly, Reliza CLI can stream metadata about instances, releases, artifacts, resolve bundles based on Reliza Hub data. Available as either a Docker image or binary.
