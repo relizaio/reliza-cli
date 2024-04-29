@@ -67,7 +67,7 @@ var cdCmd = &cobra.Command{
 var artifactGetSecrets = &cobra.Command{
 	Use:   "artsecrets",
 	Short: "Get secrets to download specific artifact",
-	Long: `Command to get secrets for specific. Artifact must belong to the organizaiton.
+	Long: `Command to get secrets for specific. Artifact must belong to the organization.
 			Secret names are returned`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var respData ProjectAuthResp
