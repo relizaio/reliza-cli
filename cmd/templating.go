@@ -52,7 +52,7 @@ func parseCopyTemplate(directory string, outDirectory string, relizaHubUri strin
 				product = ""
 				// extract project id to request latest applicable release from reliza hub
 				//match, _ := regexp.MatchString("<%PROJECT__(.+)%>", line)
-				r, _ := regexp.Compile("<%PROJECT__([-_a-zA-Z0-9\\s]+)%>")
+				r, _ := regexp.Compile(`<%PROJECT__([-_a-zA-Z0-9\\s]+)%>`)
 				subLineToReplace := r.FindStringSubmatch(line)[0]
 				projectProductTemplate := r.FindStringSubmatch(line)[1]
 				projectProductArray := strings.Split(projectProductTemplate, "PRODUCT__")
@@ -464,8 +464,7 @@ The first line notes the version of reliza-cli that ran the command to generate 
 well as the date the file was generated.
 The second line contains info about where the replaced tags were sourced from.
 */
-func addProvenanceToReplaceTagsOutput(outFileOpened *os.File, apiKeyId string, apiKey string, tagSourceFile string, environment string, instance string, instanceURI string, revision string, definitionReferenceFile string, typeVal string, version string, bundle string) {
-	// Add some provenance to output (as comments)
+func addProvenanceToReplaceTagsOutput(outFileOpened *os.File, apiKeyId string, tagSourceFile string, environment string, instance string, instanceURI string, revision string, version string, bundle string) {
 	var provenanceLine1 string
 	var provenanceLine2 string
 
@@ -481,7 +480,6 @@ func addProvenanceToReplaceTagsOutput(outFileOpened *os.File, apiKeyId string, a
 	if tagSourceFile != "" {
 		provenanceLine2 = "# According to tag source file " + tagSourceFile
 	} else if len(environment) > 0 {
-		//provenanceLine2 = "# According to the latest approved images in environment " + environment + " for instance " + "XXX"
 		provenanceLine2 = "# According to the latest approved images in  " + environment + " environment."
 	} else if len(bundle) > 0 && len(version) > 0 {
 		provenanceLine2 = "# According to bundle " + bundle + " version " + version
@@ -499,7 +497,7 @@ func addProvenanceToReplaceTagsOutput(outFileOpened *os.File, apiKeyId string, a
 			// no revision specified, using latest
 			provenanceLine2 = "# According to latest approved images for the instance at " + instanceURI
 		}
-	} else if strings.HasPrefix(apiKeyId, "INSTANCE__") { // Unessecary
+	} else if strings.HasPrefix(apiKeyId, "INSTANCE__") {
 		instUUIDFromAPIKeyId := apiKeyId[10:37] // remove first 10 chars
 		if len(revision) > 0 {
 			provenanceLine2 = "# According to revision " + revision + " of the instance " + instUUIDFromAPIKeyId
@@ -507,7 +505,7 @@ func addProvenanceToReplaceTagsOutput(outFileOpened *os.File, apiKeyId string, a
 			// no revision specified, using latest
 			provenanceLine2 = "# According to latest approved images for the instance " + instUUIDFromAPIKeyId
 		}
-	} else if strings.HasPrefix(apiKeyId, "CLUSTER__") { // Unessecary
+	} else if strings.HasPrefix(apiKeyId, "CLUSTER__") {
 		instUUIDFromAPIKeyId := apiKeyId[9:36] // remove first 9 chars
 		if len(revision) > 0 {
 			provenanceLine2 = "# According to revision " + revision + " of the instance " + instUUIDFromAPIKeyId
@@ -599,7 +597,7 @@ func extractComponentsFromCycloneJSON(bomJSON map[string]interface{}, tagSourceM
 				// if purl is not set - use name and hash if present, but only if hashes contain SHA-256 algorithm
 				for _, hashEntry := range bomc.(map[string]interface{})["hashes"].([]interface{}) {
 					alg := hashEntry.(map[string]interface{})["alg"].(string)
-					if 0 == strings.Compare(alg, "SHA-256") {
+					if strings.Compare(alg, "SHA-256") == 0 {
 						// take name and attach hash
 						fullImageName := stripImageHashTag(contName) + "@sha256:" + hashEntry.(map[string]interface{})["content"].(string)
 						parseImageNameIntoMap(fullImageName, tagSourceMap)
@@ -704,7 +702,7 @@ func getLatestReleaseFunc(debug string, relizaHubUri string, project string, pro
 	}
 
 	jsonResponse, _ := json.Marshal(respData["getLatestRelease"])
-	if "null" != string(jsonResponse) {
+	if string(jsonResponse) != "null" {
 		fmt.Println(string(jsonResponse))
 	}
 	return jsonResponse
@@ -743,7 +741,7 @@ func getInstanceRevisionCycloneDxExportV1(apiKeyId string, apiKey string, instan
 		os.Exit(1)
 	}
 
-	if "" == revision {
+	if len(revision) < 1 {
 		revision = "-1"
 	}
 

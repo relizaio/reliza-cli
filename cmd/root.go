@@ -348,8 +348,7 @@ var addreleaseCmd = &cobra.Command{
 			body["project"] = project
 		}
 		if len(artId) > 0 {
-			// use artifacts, construct artifact array
-			artifacts := make([]map[string]interface{}, len(artId), len(artId))
+			artifacts := make([]map[string]interface{}, len(artId))
 			for i, aid := range artId {
 				artifacts[i] = map[string]interface{}{"identifier": aid}
 			}
@@ -517,7 +516,7 @@ var addreleaseCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			indCommits := strings.Split(string(plainCommits), "\n")
-			commitsInBody := make([]map[string]interface{}, len(indCommits)-1, len(indCommits)-1)
+			commitsInBody := make([]map[string]interface{}, len(indCommits)-1)
 			for i := range indCommits {
 				if len(indCommits[i]) > 0 {
 					singleCommitEl := map[string]interface{}{}
@@ -594,7 +593,7 @@ var addArtifactCmd = &cobra.Command{
 
 		if len(artId) > 0 {
 			// use artifacts, construct artifact array
-			artifacts := make([]map[string]interface{}, len(artId), len(artId))
+			artifacts := make([]map[string]interface{}, len(artId))
 			for i, aid := range artId {
 				artifacts[i] = map[string]interface{}{"identifier": aid}
 			}
@@ -1082,7 +1081,7 @@ var getVersionCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			indCommits := strings.Split(string(plainCommits), "\n")
-			commitsInBody := make([]map[string]interface{}, len(indCommits)-1, len(indCommits)-1)
+			commitsInBody := make([]map[string]interface{}, len(indCommits)-1)
 			for i := range indCommits {
 				if len(indCommits[i]) > 0 {
 					singleCommitEl := map[string]interface{}{}
@@ -1316,7 +1315,7 @@ var prDataCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			indCommits := strings.Split(string(plainCommits), "\n")
-			commitsInBody := make([]map[string]interface{}, len(indCommits)-1, len(indCommits)-1)
+			commitsInBody := make([]map[string]interface{}, len(indCommits)-1)
 			for i := range indCommits {
 				if len(indCommits[i]) > 0 {
 					singleCommitEl := map[string]interface{}{}

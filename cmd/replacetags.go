@@ -241,7 +241,7 @@ func replaceTagsOnFile(replaceTagsVars *ReplaceTagsVars, substitutionMap *map[st
 
 		// need to add provenance first, because can only write to stdout sequentially
 		if !forDiff && provenance {
-			addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, apiKey, tagSourceFile, environment, instance, instanceURI, revision, definitionReferenceFile, typeVal, version, bundle)
+			addProvenanceToReplaceTagsOutput(outFileOpened, apiKeyId, tagSourceFile, environment, instance, instanceURI, revision, version, bundle)
 		}
 		for _, line := range parsedLines {
 			if outFileOpened != nil {

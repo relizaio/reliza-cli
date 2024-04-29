@@ -70,7 +70,7 @@ func retrieveInstancePropsSecrets(props []string, secrs []string) SecretPropsRHR
 			os.Exit(1)
 		}
 
-		if "" == revision {
+		if len(revision) < 1 {
 			revision = "-1"
 		}
 
