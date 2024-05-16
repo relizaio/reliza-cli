@@ -459,8 +459,26 @@ var addreleaseCmd = &cobra.Command{
 				os.Exit(2)
 			} else if len(artBomFilePaths) > 0 {
 				for i, bomPath := range artBomFilePaths {
+					bomInputs := strings.Split(bomPath, ",")
 
-					artifacts[i]["bom"] = ReadBomJsonFromFile(bomPath)
+					boms := make(map[string]interface{}, len(bomInputs))
+					for _, bomInput := range bomInputs {
+						typeAndBom := strings.Split(bomInput, ":")
+
+						if len(typeAndBom) != 2 {
+							fmt.Println("Each bom should have a type")
+							os.Exit(2)
+						}
+						bomType := strings.ToUpper(typeAndBom[0])
+
+						if bomType != "APPLICATION" && bomType != "CONTAINER" {
+							fmt.Println("Incorrect type: only APPLICATION and CONTAINER type boms are supported!")
+							os.Exit(2)
+						}
+
+						boms[bomType] = ReadBomJsonFromFile(typeAndBom[1])
+					}
+					artifacts[i]["bomInputs"] = boms
 				}
 			}
 
