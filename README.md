@@ -48,7 +48,7 @@ It is possible to set authentication data via explicit flags, login command (see
 7. GitOps Operations:
     1. *Deprecated* [Parse Deployment Templates To Inject Correct Artifacts For GitOps](#71-use-case-parse-deployment-templates-to-inject-correct-artifacts-for-gitops)
     2. [Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Instance And Revision](#72-use-case-replace-tags-on-deployment-templates-to-inject-correct-artifacts-for-gitops-using-instance-and-revision)
-    3. [Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle And Version](#73-use-case-replace-tags-on-deployment-templates-to-inject-correct-artifacts-for-gitops-using-bundle-and-version)
+    3. [Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Bundle And Version](#73-use-case-replace-tags-on-deployment-templates-to-inject-correct-artifacts-for-gitops-using-bundle)
     4. [Replace Tags On Deployment Templates To Inject Correct Artifacts For GitOps Using Environment](#74-use-case-replace-tags-on-deployment-templates-to-inject-correct-artifacts-for-gitops-using-environment)
 8. [Programmatic Approvals of Releases on Reliza Hub](#8-use-case-programmatic-approvals-of-releases-on-reliza-hub)
 9. [Check if Specific Approval is Needed for a Release on Reliza Hub](#9-use-case-check-if-specific-approval-is-needed-for-a-release-on-reliza-hub)
@@ -458,7 +458,7 @@ Flags stand for:
 - **-i** - flag for api id which can be a organization-wide read API (required).
 - **-k** - flag for api key which can be a organization-wide read API (required).
 - **--bundle** - Name of the bundle (optional, either bundle name & version or tagsource flag must be used).
-- **--version** - Version number for the bundle to use as a source for tags (optional, either version or environment must be used bundle flag).
+- **--version** - Version number for the bundle to use as a source for tags (optional, either version or environment must be used with the bundle flag).
 - **--environment** - Environment for which latest approved bundle should be used as a source for tags (optional, either version or environment must be used bundle flag).
 - **--infile** - Input file to parse, such as helm values file or docker compose file.
 - **--outfile** - Output file with parsed values (optional, if not supplied - outputs to stdout).
