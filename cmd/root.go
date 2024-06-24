@@ -71,6 +71,7 @@ var endpoint string
 var environment string
 var featureBranchVersioning string
 var filePath string
+var fsBomPath string
 var hash string
 var imageFilePath string
 var imageString string
@@ -461,7 +462,7 @@ var addreleaseCmd = &cobra.Command{
 				for i, bomPath := range artBomFilePaths {
 					bomInputs := strings.Split(bomPath, ",")
 
-					boms := make(map[string]interface{}, len(bomInputs))
+					boms := make(map[string][]interface{}, len(bomInputs))
 					for _, bomInput := range bomInputs {
 						typeAndBom := strings.Split(bomInput, ":")
 
@@ -471,12 +472,11 @@ var addreleaseCmd = &cobra.Command{
 						}
 						bomType := strings.ToUpper(typeAndBom[0])
 
-						if bomType != "APPLICATION" && bomType != "CONTAINER" {
-							fmt.Println("Incorrect type: only APPLICATION and CONTAINER type boms are supported!")
+						if bomType != "CONTAINER" && bomType != "FILE" {
+							fmt.Println("Incorrect type: only APPLICATION and CONTAINER type boms are supported for artifacts!")
 							os.Exit(2)
 						}
-
-						boms[bomType] = ReadBomJsonFromFile(typeAndBom[1])
+						boms[bomType] = append(boms[bomType], ReadBomJsonFromFile(typeAndBom[1]))
 					}
 					artifacts[i]["bomInputs"] = boms
 				}
@@ -570,6 +570,10 @@ var addreleaseCmd = &cobra.Command{
 				}
 			}
 			body["commits"] = commitsInBody
+		}
+
+		if fsBomPath != "" {
+			body["fsBom"] = ReadBomJsonFromFile(fsBomPath)
 		}
 
 		// 		fmt.Println(body)
@@ -1434,6 +1438,7 @@ func init() {
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artPublisher, "artpublisher", []string{}, "Artifact publisher (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artGroup, "artgroup", []string{}, "Artifact group (multiple allowed)")
 	addreleaseCmd.PersistentFlags().StringArrayVar(&artBomFilePaths, "artboms", []string{}, "Artifact Sbom file paths (multiple allowed)")
+	addreleaseCmd.PersistentFlags().StringVar(&fsBomPath, "fsbom", "", "File System Bom Path")
 
 	addreleaseCmd.PersistentFlags().StringVar(&status, "status", "", "Status of release - set to 'rejected' for failed releases, otherwise 'completed' is used (optional).")
 
