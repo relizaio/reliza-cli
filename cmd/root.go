@@ -228,7 +228,7 @@ const FULL_RELEASE_GQL_DATA = RELEASE_GQL_DATA + `
 			aliases
 		}
 		notes
-		tagRecords{
+		tags {
             key
             value
         }
