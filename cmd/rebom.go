@@ -35,6 +35,11 @@ type BomInput struct {
 	Tags map[string]interface{} `json:"tags"`
 }
 
+type RawBomInput struct {
+	RawBom  map[string]interface{} `json:"rawBom"`
+	BomType string                 `json:"bomType"`
+}
+
 func init() {
 	attachBomCmd.PersistentFlags().StringVar(&infile, "infile", "", "Input file with bom json")
 	attachBomCmd.PersistentFlags().StringVar(&artDigest, "artdigest", "", "SHA 256 digest of the artifact")

@@ -461,8 +461,8 @@ var addreleaseCmd = &cobra.Command{
 			} else if len(artBomFilePaths) > 0 {
 				for i, bomPath := range artBomFilePaths {
 					bomInputs := strings.Split(bomPath, ",")
+					var boms []RawBomInput
 
-					boms := make(map[string][]interface{}, len(bomInputs))
 					for _, bomInput := range bomInputs {
 						typeAndBom := strings.Split(bomInput, ":")
 
@@ -476,7 +476,10 @@ var addreleaseCmd = &cobra.Command{
 							fmt.Println("Incorrect type: only APPLICATION and CONTAINER type boms are supported for artifacts!")
 							os.Exit(2)
 						}
-						boms[bomType] = append(boms[bomType], ReadBomJsonFromFile(typeAndBom[1]))
+						boms = append(boms, RawBomInput{
+							RawBom:  ReadBomJsonFromFile(typeAndBom[1]),
+							BomType: bomType,
+						})
 					}
 					artifacts[i]["bomInputs"] = boms
 				}
@@ -573,7 +576,7 @@ var addreleaseCmd = &cobra.Command{
 		}
 
 		if fsBomPath != "" {
-			body["fsBom"] = ReadBomJsonFromFile(fsBomPath)
+			body["fsBom"] = RawBomInput{RawBom: ReadBomJsonFromFile(fsBomPath), BomType: "APPLICATION"}
 		}
 
 		// 		fmt.Println(body)
