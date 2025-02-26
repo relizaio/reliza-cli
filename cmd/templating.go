@@ -221,6 +221,7 @@ func parseBitnamiLines(bitnamiLineCache *[]string, sortedSubstitutions *[]KeyVal
 	resolvedProperties *map[string]string, resolvedSecrets *map[string]ResolvedSecret, inFileName string) *[]string {
 	parsedLines, isBitnami := validateAndParseBitnamiLines(bitnamiLineCache, sortedSubstitutions)
 	if !isBitnami {
+		parsedLines = []string{}
 		for _, blc := range *bitnamiLineCache {
 			line := parseLineOnScan(blc, sortedSubstitutions, resolvedProperties, resolvedSecrets, inFileName)
 			parsedLines = append(parsedLines, line)
