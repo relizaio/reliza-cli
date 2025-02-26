@@ -257,12 +257,17 @@ func validateAndParseBitnamiLines(bitnamiLineCache *[]string, sortedSubstitution
 
 	bitnamiCheckMap := map[string]bool{}
 	isBitnami := true
+	isTagAsDigest := true
 
 	if len(*bitnamiLineCache) < 5 {
 		isBitnami = false
 	}
 
-	if isBitnami {
+	if len(*bitnamiLineCache) < 4 {
+		isTagAsDigest = false
+	}
+
+	if isBitnami || isTagAsDigest {
 		for _, line := range *bitnamiLineCache {
 			trimmedLine := strings.Trim(line, " ")
 			if strings.HasPrefix(trimmedLine, "registry: ") {
@@ -285,7 +290,11 @@ func validateAndParseBitnamiLines(bitnamiLineCache *[]string, sortedSubstitution
 		isBitnami = false
 	}
 
-	if isBitnami {
+	if isTagAsDigest && len(bitnamiCheckMap) < 3 {
+		isTagAsDigest = false
+	}
+
+	if isBitnami || isTagAsDigest {
 		matchKey := GetMatchingKeyFromSubstitution(bitnamiSubst)
 		var replacedSubst Substitution
 		for _, kvs := range *sortedSubstitutions {
@@ -307,7 +316,11 @@ func validateAndParseBitnamiLines(bitnamiLineCache *[]string, sortedSubstitution
 					parsedLines = append(parsedLines, lineSplit[0]+": "+replacedSubst.Image)
 				} else if strings.HasPrefix(trimmedLine, "tag: ") {
 					lineSplit := strings.Split(line, ": ")
-					parsedLines = append(parsedLines, lineSplit[0]+": "+replacedSubst.Tag)
+					if isBitnami {
+						parsedLines = append(parsedLines, lineSplit[0]+": "+replacedSubst.Tag)
+					} else if isTagAsDigest {
+						parsedLines = append(parsedLines, lineSplit[0]+": "+replacedSubst.Digest)
+					}
 				} else if strings.HasPrefix(trimmedLine, "digest: ") {
 					lineSplit := strings.Split(line, ": ")
 					parsedLines = append(parsedLines, lineSplit[0]+": "+replacedSubst.Digest)
@@ -318,11 +331,11 @@ func validateAndParseBitnamiLines(bitnamiLineCache *[]string, sortedSubstitution
 		}
 	}
 
-	if !isBitnami {
+	if !isBitnami && !isTagAsDigest {
 		parsedLines = *bitnamiLineCache
 	}
 
-	return parsedLines, isBitnami
+	return parsedLines, isBitnami || isTagAsDigest
 }
 
 func isImageMatchingSubstitutionKey(image string, substKey string) bool {
