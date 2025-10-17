@@ -592,6 +592,11 @@ func extractComponentsFromCycloneJSON(bomJSON map[string]interface{}, tagSourceM
 
 			// name is a mandatory field in cyclonedx spec
 			contName := bomc.(map[string]interface{})["name"].(string)
+			// version field may contain the tag
+			contVersion := ""
+			if bomc.(map[string]interface{})["version"] != nil {
+				contVersion = bomc.(map[string]interface{})["version"].(string)
+			}
 			// 1st try to parse purl if present
 
 			if bomc.(map[string]interface{})["purl"] != nil {
@@ -612,8 +617,12 @@ func extractComponentsFromCycloneJSON(bomJSON map[string]interface{}, tagSourceM
 				for _, hashEntry := range bomc.(map[string]interface{})["hashes"].([]interface{}) {
 					alg := hashEntry.(map[string]interface{})["alg"].(string)
 					if strings.Compare(alg, "SHA-256") == 0 {
-						// take name and attach hash
-						fullImageName := stripImageHashTag(contName) + "@sha256:" + hashEntry.(map[string]interface{})["content"].(string)
+						// take name and attach hash, include version/tag if present
+						fullImageName := stripImageHashTag(contName)
+						if len(contVersion) > 0 {
+							fullImageName += ":" + contVersion
+						}
+						fullImageName += "@sha256:" + hashEntry.(map[string]interface{})["content"].(string)
 						parseImageNameIntoMap(fullImageName, tagSourceMap)
 						resolvedImage = true
 						break
