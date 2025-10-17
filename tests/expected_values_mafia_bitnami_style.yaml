@@ -3,7 +3,7 @@ backend:
   image:
     registry: docker.io
     repository: taleodor/mafia-express
-    tag: 
+    tag: 21.08.3
     digest: sha256:7205756e730e3c614f30509bdb33770f5816897abb49aa8308364fec1864882d
   replicaCount: 1
   port: 3000
@@ -12,7 +12,7 @@ ui:
   image:
     registry: docker.io
     repository: taleodor/mafia-vue
-    tag: 
+    tag: 21.08.10
     digest: sha256:daa1335d480d9786f9dc1383727ea67b8c141f07ac464cc65afd11db7cff7153
   replicaCount: 1
   port: 80
@@ -21,7 +21,7 @@ redis:
   image:
     registry: docker.io
     repository: library/redis
-    tag: 
+    tag: 6.2.4
     digest: sha256:7e2c6181ad5c425443b56c7c73a9cd6df24a122345847d1ea9bb86a5afc76325
 ingress:
   nginxEnabled: false

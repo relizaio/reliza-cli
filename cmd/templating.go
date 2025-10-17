@@ -654,7 +654,8 @@ func stripImageHashTag(imageName string) string {
 	if strings.Contains(strippedImageName, "@") {
 		sourceTagSplit := strings.Split(strippedImageName, "@")
 		strippedImageName = sourceTagSplit[0]
-	} else if strings.Contains(strippedImageName, ":") {
+	}
+	if strings.Contains(strippedImageName, ":") {
 		sourceTagSplit := strings.SplitN(strippedImageName, ":", 2)
 		strippedImageName = sourceTagSplit[0]
 	}

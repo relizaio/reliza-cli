@@ -7,7 +7,7 @@ backend:
     pullSecrets: []
     registry: docker.io
     repository: taleodor/mafia-express
-    tag: 
+    tag: 21.08.3
   replicaCount: 1
   port: 3000
   targetPort: 3000
@@ -19,7 +19,7 @@ ui:
     pullSecrets: []
     registry: docker.io
     repository: taleodor/mafia-vue
-    tag: 
+    tag: 21.08.10
   replicaCount: 1
   port: 80
   targetPort: 80
@@ -31,7 +31,7 @@ redis:
     pullSecrets: []
     registry: docker.io
     repository: library/redis
-    tag: 
+    tag: 6.2.4
 ingress:
   nginxEnabled: false
   traefikEnabled: false
