@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"io"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -116,8 +117,8 @@ func mergeMaps(a, b map[string]interface{}) map[string]interface{} {
 // readFile load a file from stdin, the local directory, or a remote file with a url.
 func readFile(filePath string) ([]byte, error) {
 	if strings.TrimSpace(filePath) == "-" {
-		return ioutil.ReadAll(os.Stdin)
+		return io.ReadAll(os.Stdin)
 	}
-	return ioutil.ReadFile(filePath)
+	return os.ReadFile(filePath)
 
 }

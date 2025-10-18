@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"sort"
@@ -14,30 +13,32 @@ import (
 	"strings"
 	"time"
 
+	"io"
+
 	"github.com/machinebox/graphql"
 )
 
 func parseCopyTemplate(directory string, outDirectory string, relizaHubUri string, environment string, tagKey string,
 	tagVal string, apiKeyId string, apiKey string, instance string, namespace string) {
-	files, err := ioutil.ReadDir(directory)
+	entries, err := os.ReadDir(directory)
 	if err != nil {
 		fmt.Println("Error opening parse directory = " + directory)
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	for _, f := range files {
-		// fmt.Println(f.Name())
+	for _, entry := range entries {
+		// fmt.Println(entry.Name())
 		// open read file
-		fullFile, fileOpenErr := os.Open(directory + "/" + f.Name())
+		fullFile, fileOpenErr := os.Open(directory + "/" + entry.Name())
 		if fileOpenErr != nil {
-			fmt.Println("Error opening source file for parse = " + directory + "/" + f.Name())
+			fmt.Println("Error opening source file for parse = " + directory + "/" + entry.Name())
 			fmt.Println(fileOpenErr)
 			os.Exit(1)
 		}
 		// open write file
-		writeFile, writeFileCreateErr := os.Create(outDirectory + "/" + f.Name())
+		writeFile, writeFileCreateErr := os.Create(outDirectory + "/" + entry.Name())
 		if writeFileCreateErr != nil {
-			fmt.Println("Error creating parse output file = " + outDirectory + "/" + f.Name())
+			fmt.Println("Error creating parse output file = " + outDirectory + "/" + entry.Name())
 			fmt.Println(writeFileCreateErr)
 			os.Exit(1)
 		}
@@ -554,7 +555,7 @@ func scanTagFile(tagSourceFile string, typeVal string) map[string]string {
 	tagSourceMap := map[string]string{}
 
 	if typeVal == "cyclonedx" {
-		cycloneBytes, ioReadErr := ioutil.ReadAll(tagFile)
+		cycloneBytes, ioReadErr := io.ReadAll(tagFile)
 		if ioReadErr != nil {
 			fmt.Println("Error opening tagFile = " + tagSourceFile)
 			fmt.Println(ioReadErr)

@@ -36,7 +36,7 @@ func TestReplaceTags(t *testing.T) {
 		t.Fatalf("failed reading expected values file")
 	}
 	if replacedTags != string(expectedReplacement) {
-		t.Fatalf("replaced tags do not equal expected, actual = " + replacedTags)
+		t.Fatalf("replaced tags do not equal expected, actual = %s", replacedTags)
 	}
 }
 
@@ -44,7 +44,7 @@ func TestGetSubstitutionFromDigestedString1(t *testing.T) {
 	digestedImage := "taleodor/mafia-express:tag@sha256:7205756e730e3c614f30509bdb33770f5816897abb49aa8308364fec1864882d"
 	subst := cmd.GetSubstitutionFromDigestedString(digestedImage)
 	if subst.Digest != "sha256:7205756e730e3c614f30509bdb33770f5816897abb49aa8308364fec1864882d" || subst.Tag != "tag" || subst.Image != "taleodor/mafia-express" || subst.Registry != "docker.io" {
-		t.Fatalf("Substitution parse failed = " + cmd.GetDigestedImageFromSubstitution(subst))
+		t.Fatalf("Substitution parse failed = %s", cmd.GetDigestedImageFromSubstitution(subst))
 	}
 }
 
@@ -52,7 +52,7 @@ func TestGetSubstitutionFromDigestedString2(t *testing.T) {
 	digestedImage := "12345.dkr.ecr.us-east-1.amazonaws.com/mafia-express:tag@sha256:7205756e730e3c614f30509bdb33770f5816897abb49aa8308364fec1864882d"
 	subst := cmd.GetSubstitutionFromDigestedString(digestedImage)
 	if subst.Digest != "sha256:7205756e730e3c614f30509bdb33770f5816897abb49aa8308364fec1864882d" || subst.Tag != "tag" || subst.Image != "mafia-express" || subst.Registry != "12345.dkr.ecr.us-east-1.amazonaws.com" {
-		t.Fatalf("Substitution parse failed = " + cmd.GetDigestedImageFromSubstitution(subst))
+		t.Fatalf("Substitution parse failed = %s", cmd.GetDigestedImageFromSubstitution(subst))
 	}
 }
 
@@ -65,7 +65,7 @@ func TestDigestedStringFromSubstitution(t *testing.T) {
 	expDigestedImage := "12345.dkr.ecr.us-east-1.amazonaws.com/taleodor/mafia-express:tag@sha256:7205756e730e3c614f30509bdb33770f5816897abb49aa8308364fec1864882d"
 	actualDigestedImage := cmd.GetDigestedImageFromSubstitution(subst)
 	if expDigestedImage != actualDigestedImage {
-		t.Fatalf("Images mismatch, actual image = " + actualDigestedImage)
+		t.Fatalf("Images mismatch, actual image = %s", actualDigestedImage)
 	}
 }
 
@@ -85,7 +85,7 @@ func TestReplaceTagsBitnamiStyle(t *testing.T) {
 		t.Fatalf("failed reading expected values file")
 	}
 	if replacedTags != string(expectedReplacement) {
-		t.Fatalf("replaced tags do not equal expected, actual = " + replacedTags)
+		t.Fatalf("replaced tags do not equal expected, actual = %s", replacedTags)
 	}
 }
 
@@ -127,6 +127,6 @@ func TestReplaceTagsBitnamiStyleMerged(t *testing.T) {
 		t.Fatalf("failed reading expected values file")
 	}
 	if replacedTags != string(expectedReplacement) {
-		t.Fatalf("replaced tags do not equal expected, actual = " + replacedTags)
+		t.Fatalf("replaced tags do not equal expected, actual = %s", replacedTags)
 	}
 }

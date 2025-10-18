@@ -20,7 +20,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -909,7 +908,7 @@ var instDataCmd = &cobra.Command{
 			// only non-k8s images supported
 			body["images"] = strings.Fields(imageString)
 		} else {
-			imageBytes, err := ioutil.ReadFile(imageFilePath)
+			imageBytes, err := os.ReadFile(imageFilePath)
 			if err != nil {
 				fmt.Println("Error when reading images file")
 				fmt.Print(err)
@@ -966,7 +965,7 @@ var matchBundleCmd = &cobra.Command{
 			// only non-k8s images supported
 			body["images"] = strings.Fields(imageString)
 		} else {
-			imageBytes, err := ioutil.ReadFile(imageFilePath)
+			imageBytes, err := os.ReadFile(imageFilePath)
 			if err != nil {
 				fmt.Println("Error when reading images file")
 				fmt.Print(err)
