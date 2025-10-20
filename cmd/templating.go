@@ -598,6 +598,20 @@ func extractComponentsFromCycloneJSON(bomJSON map[string]interface{}, tagSourceM
 			if bomc.(map[string]interface{})["version"] != nil {
 				contVersion = bomc.(map[string]interface{})["version"].(string)
 			}
+			// Check if there's a containerSafeVersion property - use that instead for Docker tags
+			if properties, ok := bomc.(map[string]interface{})["properties"].([]interface{}); ok {
+				for _, prop := range properties {
+					if propMap, ok := prop.(map[string]interface{}); ok {
+						if propMap["name"] == "reliza:containerSafeVersion" {
+							if safeVersion, ok := propMap["value"].(string); ok {
+								contVersion = safeVersion
+								break
+							}
+						}
+					}
+				}
+			}
+
 			// 1st try to parse purl if present
 
 			if bomc.(map[string]interface{})["purl"] != nil {
